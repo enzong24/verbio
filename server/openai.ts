@@ -37,7 +37,7 @@ Respond with JSON in this exact format:
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -49,7 +49,7 @@ Respond with JSON in this exact format:
         }
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 1024,
+      max_tokens: 1024,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -69,8 +69,9 @@ Respond with JSON in this exact format:
       feedback: result.feedback || ["Great effort! Keep practicing."],
       overall: Math.max(0, Math.min(100, result.overall || 0)),
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error grading conversation:", error);
+    console.error("Error details:", error.message, error.response?.data);
     throw new Error("Failed to grade conversation");
   }
 }
@@ -101,7 +102,7 @@ Keep your response engaging and conversational.`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -112,12 +113,13 @@ Keep your response engaging and conversational.`;
           content: prompt
         }
       ],
-      max_completion_tokens: 150,
+      max_tokens: 150,
     });
 
     return response.choices[0].message.content || "有意思！";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating bot response:", error);
+    console.error("Error details:", error.message, error.response?.data);
     return "有意思！请继续说。";
   }
 }
