@@ -11,6 +11,7 @@ import MatchResults from "@/components/MatchResults";
 import Leaderboard from "@/components/Leaderboard";
 import ProfileStats from "@/components/ProfileStats";
 import PracticeMode from "@/components/PracticeMode";
+import type { GradingResult } from "@shared/schema";
 
 type Page = "duel" | "practice" | "leaderboard" | "profile" | "match" | "results";
 
@@ -22,9 +23,10 @@ function MainApp() {
     topic: string;
     vocabulary: string[];
   } | null>(null);
+  const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
 
   //todo: remove mock functionality - This is prototype data
-  const userElo = 1547;
+  const [userElo, setUserElo] = useState(1547);
   const username = "Alex";
 
   const handleMatchFound = (opponent: string, isBot: boolean) => {
@@ -45,11 +47,26 @@ function MainApp() {
     setCurrentPage("match");
   };
 
-  const handleDuelComplete = () => {
+  const handleDuelComplete = (result: GradingResult) => {
+    setGradingResult(result);
     setCurrentPage("results");
   };
 
   const handleResultsContinue = () => {
+    // Update Elo based on result
+    if (gradingResult) {
+      const isWin = gradingResult.overall >= 70;
+      const change = isWin ? 15 : -15;
+      setUserElo(prev => prev + change);
+    }
+    setMatchData(null);
+    setGradingResult(null);
+    setCurrentPage("duel");
+  };
+
+  const handleForfeit = () => {
+    // Forfeit penalty
+    setUserElo(prev => prev - 25);
     setMatchData(null);
     setCurrentPage("duel");
   };
@@ -84,15 +101,17 @@ function MainApp() {
             opponentName={matchData.opponent}
             opponentElo={matchData.isBot ? 1200 : 1520}
             userElo={userElo}
+            isBot={matchData.isBot}
             onComplete={handleDuelComplete}
+            onForfeit={handleForfeit}
           />
         )}
         
-        {currentPage === "results" && (
+        {currentPage === "results" && gradingResult && (
           <MatchResults
-            isWinner={Math.random() > 0.5}
-            eloChange={Math.floor(Math.random() * 20) + 5}
-            newElo={userElo + 15}
+            gradingResult={gradingResult}
+            eloChange={15}
+            newElo={userElo}
             onContinue={handleResultsContinue}
           />
         )}

@@ -6,12 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-
-interface Message {
-  id: string;
-  sender: "user" | "opponent";
-  text: string;
-}
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import type { Message, GradingResult } from "@shared/schema";
 
 interface DuelInterfaceProps {
   topic?: string;
@@ -19,7 +16,9 @@ interface DuelInterfaceProps {
   opponentName?: string;
   opponentElo?: number;
   userElo?: number;
-  onComplete?: () => void;
+  isBot?: boolean;
+  onComplete?: (result: GradingResult) => void;
+  onForfeit?: () => void;
 }
 
 export default function DuelInterface({
@@ -28,24 +27,55 @@ export default function DuelInterface({
   opponentName = "Maria García",
   opponentElo = 1520,
   userElo = 1547,
-  onComplete
+  isBot = false,
+  onComplete,
+  onForfeit
 }: DuelInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [timeLeft, setTimeLeft] = useState(30);
   const [round, setRound] = useState(1);
+  const [isGrading, setIsGrading] = useState(false);
   const maxRounds = 5;
+  const userMessageCount = messages.filter(m => m.sender === "user").length;
+
+  const botResponseMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest("POST", "/api/bot-response", {
+        message,
+        topic,
+        vocabulary,
+        language: "Spanish"
+      });
+      return await response.json();
+    },
+  });
+
+  const gradingMutation = useMutation({
+    mutationFn: async (msgs: Message[]) => {
+      const response = await apiRequest("POST", "/api/grade", {
+        messages: msgs,
+        topic,
+        vocabulary,
+        language: "Spanish"
+      });
+      return await response.json() as GradingResult;
+    },
+    onSuccess: (result) => {
+      onComplete?.(result);
+    },
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          if (round < maxRounds) {
+          if (userMessageCount < maxRounds) {
             setRound(r => r + 1);
             return 30;
           } else {
             clearInterval(timer);
-            setTimeout(() => onComplete?.(), 1000);
+            handleComplete();
             return 0;
           }
         }
@@ -54,34 +84,68 @@ export default function DuelInterface({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [round, onComplete]);
+  }, [userMessageCount]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    
-    setMessages([...messages, {
-      id: Date.now().toString(),
-      sender: "user",
-      text: input
-    }]);
-    setInput("");
-
-    // Simulate opponent response
-    setTimeout(() => {
-      const responses = [
-        "¡Me encanta viajar! Mi último destino fue Barcelona.",
-        "La cultura española es fascinante, especialmente su gastronomía.",
-        "Explorar nuevos lugares siempre es una aventura emocionante."
-      ];
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        sender: "opponent",
-        text: responses[Math.floor(Math.random() * responses.length)]
-      }]);
-    }, 1500);
+  const handleComplete = async () => {
+    if (isGrading || messages.length === 0) return;
+    setIsGrading(true);
+    await gradingMutation.mutateAsync(messages);
   };
 
-  const progress = ((maxRounds - round + 1) / maxRounds) * 100;
+  const handleSend = async () => {
+    if (!input.trim() || userMessageCount >= maxRounds) return;
+    
+    const newMessage: Message = {
+      sender: "user",
+      text: input,
+      timestamp: Date.now()
+    };
+    
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
+    setInput("");
+
+    // If it's a bot match, generate response
+    if (isBot) {
+      const response = await botResponseMutation.mutateAsync(input);
+      if (response?.response) {
+        setMessages([...updatedMessages, {
+          sender: "opponent",
+          text: response.response,
+          timestamp: Date.now()
+        }]);
+      }
+    } else {
+      // Simulate opponent response for human matches (would be WebSocket in real app)
+      setTimeout(() => {
+        const responses = [
+          "¡Me encanta viajar! Mi último destino fue Barcelona.",
+          "La cultura española es fascinante, especialmente su gastronomía.",
+          "Explorar nuevos lugares siempre es una aventura emocionante.",
+          "¿Has visitado alguna vez América Latina?",
+          "El viaje es la mejor forma de aprender sobre otras culturas."
+        ];
+        setMessages(prev => [...prev, {
+          sender: "opponent",
+          text: responses[Math.floor(Math.random() * responses.length)],
+          timestamp: Date.now()
+        }]);
+      }, 1500);
+    }
+
+    // Check if this was the last message
+    if (userMessageCount + 1 >= maxRounds) {
+      setTimeout(() => handleComplete(), 2000);
+    }
+  };
+
+  const handleForfeit = () => {
+    if (window.confirm("Are you sure you want to forfeit this match? You will lose Elo points.")) {
+      onForfeit?.();
+    }
+  };
+
+  const progress = (userMessageCount / maxRounds) * 100;
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -94,7 +158,10 @@ export default function DuelInterface({
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-semibold" data-testid="text-opponent-name">{opponentName}</div>
+              <div className="font-semibold flex items-center gap-2" data-testid="text-opponent-name">
+                {opponentName}
+                {isBot && <Badge variant="secondary" className="text-xs">AI Bot</Badge>}
+              </div>
               <div className="text-sm text-muted-foreground font-mono">{opponentElo} Elo</div>
             </div>
           </div>
@@ -106,10 +173,16 @@ export default function DuelInterface({
                 {timeLeft}s
               </span>
             </div>
-            <div className="text-xs text-muted-foreground">Round {round}/{maxRounds}</div>
+            <div className="text-xs text-muted-foreground">Messages: {userMessageCount}/{maxRounds}</div>
           </div>
 
-          <Button variant="destructive" size="sm" data-testid="button-forfeit">
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={handleForfeit}
+            disabled={isGrading}
+            data-testid="button-forfeit"
+          >
             <Flag className="w-4 h-4 mr-2" />
             Forfeit
           </Button>
@@ -134,9 +207,9 @@ export default function DuelInterface({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="chat-messages">
-              {messages.map((msg) => (
+              {messages.map((msg, idx) => (
                 <div
-                  key={msg.id}
+                  key={idx}
                   className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
@@ -150,6 +223,13 @@ export default function DuelInterface({
                   </div>
                 </div>
               ))}
+              {isGrading && (
+                <div className="flex justify-center">
+                  <Badge variant="outline" className="animate-pulse">
+                    AI is grading your performance...
+                  </Badge>
+                </div>
+              )}
             </div>
 
             <div className="p-4 border-t border-card-border bg-card">
@@ -160,9 +240,14 @@ export default function DuelInterface({
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder="Type your message in Spanish..."
                   className="flex-1"
+                  disabled={userMessageCount >= maxRounds || isGrading}
                   data-testid="input-message"
                 />
-                <Button onClick={handleSend} data-testid="button-send">
+                <Button 
+                  onClick={handleSend} 
+                  disabled={userMessageCount >= maxRounds || isGrading || !input.trim()}
+                  data-testid="button-send"
+                >
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
@@ -195,7 +280,7 @@ export default function DuelInterface({
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Messages Sent</span>
                     <span className="font-mono font-semibold">
-                      {messages.filter(m => m.sender === "user").length}/5
+                      {userMessageCount}/{maxRounds}
                     </span>
                   </div>
                 </div>

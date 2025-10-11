@@ -3,39 +3,30 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import type { GradingResult } from "@shared/schema";
 
 interface MatchResultsProps {
-  isWinner?: boolean;
+  gradingResult: GradingResult;
   eloChange?: number;
   newElo?: number;
-  scores?: {
-    grammar: number;
-    fluency: number;
-    vocabulary: number;
-    naturalness: number;
-  };
-  feedback?: string[];
   onContinue?: () => void;
 }
 
 export default function MatchResults({
-  isWinner = true,
+  gradingResult,
   eloChange = 15,
   newElo = 1562,
-  scores = {
-    grammar: 85,
-    fluency: 78,
-    vocabulary: 92,
-    naturalness: 81
-  },
-  feedback = [
-    "Great use of 'destination' and 'adventure' in context",
-    "Minor grammar issue: 'yo visitar' should be 'yo visito'",
-    "Natural conversation flow maintained throughout"
-  ],
   onContinue
 }: MatchResultsProps) {
-  const avgScore = Math.round((scores.grammar + scores.fluency + scores.vocabulary + scores.naturalness) / 4);
+  const isWinner = gradingResult.overall >= 70;
+  const actualEloChange = isWinner ? Math.abs(eloChange) : -Math.abs(eloChange);
+
+  const scores = {
+    grammar: gradingResult.grammar,
+    fluency: gradingResult.fluency,
+    vocabulary: gradingResult.vocabulary,
+    naturalness: gradingResult.naturalness,
+  };
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
@@ -50,22 +41,22 @@ export default function MatchResults({
               </div>
             </div>
             <CardTitle className="text-4xl font-bold mb-2" data-testid="text-result">
-              {isWinner ? "Victory!" : "Defeat"}
+              {isWinner ? "Victory!" : "Good Effort!"}
             </CardTitle>
             <div className="flex items-center justify-center gap-2 text-2xl font-mono font-bold">
-              {isWinner ? (
+              {actualEloChange > 0 ? (
                 <>
                   <TrendingUp className="w-6 h-6 text-success" />
-                  <span className="text-success">+{eloChange}</span>
+                  <span className="text-success">+{actualEloChange}</span>
                 </>
               ) : (
                 <>
                   <TrendingDown className="w-6 h-6 text-destructive" />
-                  <span className="text-destructive">-{eloChange}</span>
+                  <span className="text-destructive">{actualEloChange}</span>
                 </>
               )}
               <span className="text-muted-foreground mx-2">→</span>
-              <span data-testid="text-new-elo">{newElo} Elo</span>
+              <span data-testid="text-new-elo">{newElo + actualEloChange} Elo</span>
             </div>
           </CardHeader>
 
@@ -85,7 +76,7 @@ export default function MatchResults({
               </div>
               <div className="mt-4 text-center">
                 <Badge variant="outline" className="text-lg font-mono">
-                  Average: {avgScore}%
+                  Average: {gradingResult.overall}%
                 </Badge>
               </div>
             </div>
@@ -93,7 +84,7 @@ export default function MatchResults({
             <div>
               <h3 className="font-semibold mb-3">AI Feedback</h3>
               <div className="space-y-2">
-                {feedback.map((item, idx) => (
+                {gradingResult.feedback.map((item, idx) => (
                   <div key={idx} className="flex gap-2 text-sm" data-testid={`feedback-${idx}`}>
                     <ArrowRight className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <span className="text-muted-foreground">{item}</span>
@@ -107,7 +98,7 @@ export default function MatchResults({
                 Continue
               </Button>
               <Button variant="outline" className="flex-1" data-testid="button-rematch">
-                Rematch
+                New Match
               </Button>
             </div>
           </CardContent>
