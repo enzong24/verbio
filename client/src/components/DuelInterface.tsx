@@ -133,13 +133,31 @@ export default function DuelInterface({
     } else {
       // Simulate opponent response for human matches (would be WebSocket in real app)
       setTimeout(() => {
-        const responses = [
-          "我很喜欢旅行！我最近去了北京。",
-          "中国文化真的很迷人，特别是美食。",
-          "探索新地方总是一个令人兴奋的冒险。",
-          "你去过中国吗？",
-          "旅行是了解其他文化的最好方式。"
-        ];
+        const responsesByLanguage: Record<string, string[]> = {
+          Chinese: [
+            "我很喜欢旅行！我最近去了北京。",
+            "中国文化真的很迷人，特别是美食。",
+            "探索新地方总是一个令人兴奋的冒险。",
+            "你去过中国吗？",
+            "旅行是了解其他文化的最好方式。"
+          ],
+          Spanish: [
+            "¡Me encanta viajar! Recientemente fui a Madrid.",
+            "La cultura española es fascinante, especialmente la comida.",
+            "Explorar nuevos lugares siempre es una aventura emocionante.",
+            "¿Has estado en España?",
+            "Viajar es la mejor manera de conocer otras culturas."
+          ],
+          Italian: [
+            "Adoro viaggiare! Recentemente sono stato a Roma.",
+            "La cultura italiana è affascinante, soprattutto il cibo.",
+            "Esplorare nuovi luoghi è sempre un'avventura emozionante.",
+            "Sei mai stato in Italia?",
+            "Viaggiare è il modo migliore per conoscere altre culture."
+          ]
+        };
+        
+        const responses = responsesByLanguage[language] || responsesByLanguage.Chinese;
         setMessages(prev => [...prev, {
           sender: "opponent",
           text: responses[Math.floor(Math.random() * responses.length)],
