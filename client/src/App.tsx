@@ -5,7 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Header from "@/components/Header";
-import MatchFinder from "@/components/MatchFinder";
+import MatchFinder, { type Language } from "@/components/MatchFinder";
 import DuelInterface from "@/components/DuelInterface";
 import MatchResults from "@/components/MatchResults";
 import Leaderboard from "@/components/Leaderboard";
@@ -15,13 +15,19 @@ import type { GradingResult } from "@shared/schema";
 
 type Page = "duel" | "practice" | "leaderboard" | "profile" | "match" | "results";
 
+interface VocabWord {
+  word: string;
+  romanization: string;
+}
+
 function MainApp() {
   const [currentPage, setCurrentPage] = useState<Page>("duel");
   const [matchData, setMatchData] = useState<{
     opponent: string;
     isBot: boolean;
     topic: string;
-    vocabulary: Array<{ chinese: string; pinyin: string }>;
+    vocabulary: VocabWord[];
+    language: Language;
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
 
@@ -29,40 +35,108 @@ function MainApp() {
   const [userElo, setUserElo] = useState(1547);
   const username = "Alex";
 
-  const handleMatchFound = (opponent: string, isBot: boolean) => {
+  const handleMatchFound = (opponent: string, isBot: boolean, language: Language) => {
     // todo: remove mock functionality - Simulated match setup
-    const topics = [
-      { 
-        title: "Travel & Tourism", 
-        vocabulary: [
-          { chinese: "旅行", pinyin: "lǚxíng" },
-          { chinese: "目的地", pinyin: "mùdìdì" },
-          { chinese: "探索", pinyin: "tànsuǒ" },
-          { chinese: "冒险", pinyin: "màoxiǎn" },
-          { chinese: "文化", pinyin: "wénhuà" }
-        ] 
-      },
-      { 
-        title: "Food & Dining", 
-        vocabulary: [
-          { chinese: "美味", pinyin: "měiwèi" },
-          { chinese: "菜谱", pinyin: "càipǔ" },
-          { chinese: "餐厅", pinyin: "cāntīng" },
-          { chinese: "味道", pinyin: "wèidào" },
-          { chinese: "风味", pinyin: "fēngwèi" }
-        ] 
-      },
-      { 
-        title: "Technology", 
-        vocabulary: [
-          { chinese: "设备", pinyin: "shèbèi" },
-          { chinese: "软件", pinyin: "ruǎnjiàn" },
-          { chinese: "创新", pinyin: "chuàngxīn" },
-          { chinese: "数字", pinyin: "shùzì" },
-          { chinese: "连接", pinyin: "liánjiē" }
-        ] 
-      },
-    ];
+    const topicsByLanguage: Record<Language, Array<{ title: string; vocabulary: VocabWord[] }>> = {
+      Chinese: [
+        { 
+          title: "Travel & Tourism", 
+          vocabulary: [
+            { word: "旅行", romanization: "lǚxíng" },
+            { word: "目的地", romanization: "mùdìdì" },
+            { word: "探索", romanization: "tànsuǒ" },
+            { word: "冒险", romanization: "màoxiǎn" },
+            { word: "文化", romanization: "wénhuà" }
+          ] 
+        },
+        { 
+          title: "Food & Dining", 
+          vocabulary: [
+            { word: "美味", romanization: "měiwèi" },
+            { word: "菜谱", romanization: "càipǔ" },
+            { word: "餐厅", romanization: "cāntīng" },
+            { word: "味道", romanization: "wèidào" },
+            { word: "风味", romanization: "fēngwèi" }
+          ] 
+        },
+        { 
+          title: "Technology", 
+          vocabulary: [
+            { word: "设备", romanization: "shèbèi" },
+            { word: "软件", romanization: "ruǎnjiàn" },
+            { word: "创新", romanization: "chuàngxīn" },
+            { word: "数字", romanization: "shùzì" },
+            { word: "连接", romanization: "liánjiē" }
+          ] 
+        },
+      ],
+      Spanish: [
+        { 
+          title: "Travel & Tourism", 
+          vocabulary: [
+            { word: "viajar", romanization: "viajar" },
+            { word: "destino", romanization: "destino" },
+            { word: "explorar", romanization: "explorar" },
+            { word: "aventura", romanization: "aventura" },
+            { word: "cultura", romanization: "cultura" }
+          ] 
+        },
+        { 
+          title: "Food & Dining", 
+          vocabulary: [
+            { word: "delicioso", romanization: "delicioso" },
+            { word: "receta", romanization: "receta" },
+            { word: "restaurante", romanization: "restaurante" },
+            { word: "sabor", romanization: "sabor" },
+            { word: "plato", romanization: "plato" }
+          ] 
+        },
+        { 
+          title: "Technology", 
+          vocabulary: [
+            { word: "dispositivo", romanization: "dispositivo" },
+            { word: "software", romanization: "software" },
+            { word: "innovación", romanization: "innovación" },
+            { word: "digital", romanization: "digital" },
+            { word: "conexión", romanization: "conexión" }
+          ] 
+        },
+      ],
+      Italian: [
+        { 
+          title: "Travel & Tourism", 
+          vocabulary: [
+            { word: "viaggiare", romanization: "viaggiare" },
+            { word: "destinazione", romanization: "destinazione" },
+            { word: "esplorare", romanization: "esplorare" },
+            { word: "avventura", romanization: "avventura" },
+            { word: "cultura", romanization: "cultura" }
+          ] 
+        },
+        { 
+          title: "Food & Dining", 
+          vocabulary: [
+            { word: "delizioso", romanization: "delizioso" },
+            { word: "ricetta", romanization: "ricetta" },
+            { word: "ristorante", romanization: "ristorante" },
+            { word: "sapore", romanization: "sapore" },
+            { word: "piatto", romanization: "piatto" }
+          ] 
+        },
+        { 
+          title: "Technology", 
+          vocabulary: [
+            { word: "dispositivo", romanization: "dispositivo" },
+            { word: "software", romanization: "software" },
+            { word: "innovazione", romanization: "innovazione" },
+            { word: "digitale", romanization: "digitale" },
+            { word: "connessione", romanization: "connessione" }
+          ] 
+        },
+      ],
+    };
+    
+    const topics = topicsByLanguage[language];
     const topic = topics[Math.floor(Math.random() * topics.length)];
     
     setMatchData({
@@ -70,6 +144,7 @@ function MainApp() {
       isBot,
       topic: topic.title,
       vocabulary: topic.vocabulary,
+      language,
     });
     setCurrentPage("match");
   };
@@ -100,7 +175,7 @@ function MainApp() {
 
   const handlePracticeTopic = (topicId: string) => {
     console.log('Starting practice with topic:', topicId);
-    handleMatchFound("AI Bot", true);
+    handleMatchFound("AI Bot", true, "Chinese");
   };
 
   return (
@@ -129,6 +204,7 @@ function MainApp() {
             opponentElo={matchData.isBot ? 1200 : 1520}
             userElo={userElo}
             isBot={matchData.isBot}
+            language={matchData.language}
             onComplete={handleDuelComplete}
             onForfeit={handleForfeit}
           />

@@ -1,26 +1,30 @@
 import { useState } from "react";
-import { Swords, Bot, Loader2 } from "lucide-react";
+import { Swords, Bot, Loader2, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+export type Language = "Chinese" | "Spanish" | "Italian";
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language) => void;
 }
 
 export default function MatchFinder({ onMatchFound }: MatchFinderProps) {
   const [searching, setSearching] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>("Chinese");
 
   const handleFindMatch = () => {
     setSearching(true);
     // Simulate matchmaking
     setTimeout(() => {
       setSearching(false);
-      onMatchFound?.("Maria García", false);
+      onMatchFound?.("Maria García", false, selectedLanguage);
     }, 2000);
   };
 
   const handlePractice = () => {
-    onMatchFound?.("AI Bot", true);
+    onMatchFound?.("AI Bot", true, selectedLanguage);
   };
 
   return (
@@ -39,6 +43,19 @@ export default function MatchFinder({ onMatchFound }: MatchFinderProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pb-8">
+            <div className="flex items-center gap-3 mb-2">
+              <Languages className="w-5 h-5 text-muted-foreground" />
+              <Select value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value as Language)}>
+                <SelectTrigger className="flex-1" data-testid="select-language">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Chinese" data-testid="option-chinese">Chinese (中文)</SelectItem>
+                  <SelectItem value="Spanish" data-testid="option-spanish">Spanish (Español)</SelectItem>
+                  <SelectItem value="Italian" data-testid="option-italian">Italian (Italiano)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button
               size="lg"
               className="w-full h-14 text-lg font-semibold"

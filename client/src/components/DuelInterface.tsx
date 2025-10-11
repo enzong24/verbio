@@ -12,8 +12,8 @@ import VocabularyBadge from "@/components/VocabularyBadge";
 import type { Message, GradingResult } from "@shared/schema";
 
 interface VocabWord {
-  chinese: string;
-  pinyin: string;
+  word: string;
+  romanization: string;
 }
 
 interface DuelInterfaceProps {
@@ -23,6 +23,7 @@ interface DuelInterfaceProps {
   opponentElo?: number;
   userElo?: number;
   isBot?: boolean;
+  language?: string;
   onComplete?: (result: GradingResult) => void;
   onForfeit?: () => void;
 }
@@ -30,14 +31,15 @@ interface DuelInterfaceProps {
 export default function DuelInterface({
   topic = "Travel & Tourism",
   vocabulary = [
-    { chinese: "旅行", pinyin: "lǚxíng" },
-    { chinese: "目的地", pinyin: "mùdìdì" },
-    { chinese: "探索", pinyin: "tànsuǒ" }
+    { word: "旅行", romanization: "lǚxíng" },
+    { word: "目的地", romanization: "mùdìdì" },
+    { word: "探索", romanization: "tànsuǒ" }
   ],
   opponentName = "Maria García",
   opponentElo = 1520,
   userElo = 1547,
   isBot = false,
+  language = "Chinese",
   onComplete,
   onForfeit
 }: DuelInterfaceProps) {
@@ -51,12 +53,12 @@ export default function DuelInterface({
 
   const botResponseMutation = useMutation({
     mutationFn: async (conversationHistory: Message[]) => {
-      const vocabStrings = vocabulary.map(v => v.chinese);
+      const vocabStrings = vocabulary.map(v => v.word);
       const response = await apiRequest("POST", "/api/bot-response", {
         conversationHistory,
         topic,
         vocabulary: vocabStrings,
-        language: "Chinese"
+        language
       });
       return await response.json();
     },
@@ -64,12 +66,12 @@ export default function DuelInterface({
 
   const gradingMutation = useMutation({
     mutationFn: async (msgs: Message[]) => {
-      const vocabStrings = vocabulary.map(v => v.chinese);
+      const vocabStrings = vocabulary.map(v => v.word);
       const response = await apiRequest("POST", "/api/grade", {
         messages: msgs,
         topic,
         vocabulary: vocabStrings,
-        language: "Chinese"
+        language
       });
       return await response.json() as GradingResult;
     },
@@ -210,11 +212,11 @@ export default function DuelInterface({
                 <Badge variant="outline">{topic}</Badge>
               </div>
               <div className="flex flex-wrap gap-2">
-                {vocabulary.map((word) => (
+                {vocabulary.map((vocabItem) => (
                   <VocabularyBadge 
-                    key={word.chinese}
-                    chinese={word.chinese}
-                    pinyin={word.pinyin}
+                    key={vocabItem.word}
+                    chinese={vocabItem.word}
+                    pinyin={vocabItem.romanization}
                     className="text-xs"
                   />
                 ))}
