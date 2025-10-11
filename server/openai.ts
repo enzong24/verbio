@@ -11,6 +11,7 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     .map(m => m.text);
 
   const allUserText = userMessages.join(" ").toLowerCase();
+  const isChinese = request.language === "Chinese";
   
   // Vocabulary score: Check how many target words were used
   let vocabularyUsed = 0;
@@ -23,18 +24,27 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
 
   // Fluency score: Based on message count and average length
   const avgMessageLength = userMessages.reduce((sum, msg) => sum + msg.length, 0) / Math.max(1, userMessages.length);
-  const fluencyScore = Math.min(100, Math.round((avgMessageLength / 20) * 100)); // 20+ chars = good
+  const fluencyScore = Math.min(100, Math.round((avgMessageLength / (isChinese ? 10 : 20)) * 100));
 
   // Grammar score: Simple heuristic based on message structure
   let grammarScore = 70; // Base score
-  if (userMessages.some(msg => msg.length > 30)) grammarScore += 10; // Bonus for longer sentences
-  if (userMessages.some(msg => /[.!?]$/.test(msg))) grammarScore += 10; // Bonus for punctuation
-  if (userMessages.some(msg => /[A-Z]/.test(msg[0]))) grammarScore += 10; // Bonus for capitalization
+  if (userMessages.some(msg => msg.length > (isChinese ? 15 : 30))) grammarScore += 10; // Bonus for longer sentences
+  if (userMessages.some(msg => /[.!?。！？]$/.test(msg))) grammarScore += 10; // Bonus for punctuation (including Chinese)
+  if (!isChinese && userMessages.some(msg => /[A-Z]/.test(msg[0]))) grammarScore += 10; // Capitalization bonus (non-Chinese only)
+  if (isChinese) grammarScore += 10; // Compensate for Chinese not having capitalization
   grammarScore = Math.min(100, grammarScore);
 
-  // Naturalness score: Based on variety and engagement
-  const uniqueWords = new Set(allUserText.split(/\s+/)).size;
-  const naturalness = Math.min(100, Math.round((uniqueWords / 5) * 100));
+  // Naturalness score: Language-aware variety check
+  let naturalness: number;
+  if (isChinese) {
+    // For Chinese: count unique characters
+    const uniqueChars = new Set(allUserText.split("")).size;
+    naturalness = Math.min(100, Math.round((uniqueChars / 10) * 100));
+  } else {
+    // For Latin-based languages: count unique words
+    const uniqueWords = new Set(allUserText.split(/\s+/)).size;
+    naturalness = Math.min(100, Math.round((uniqueWords / 5) * 100));
+  }
 
   // Overall score
   const overall = Math.round((vocabularyScore + fluencyScore + grammarScore + naturalness) / 4);
