@@ -1,4 +1,4 @@
-import pinyin from "pinyin";
+import { pinyin } from "pinyin-pro";
 
 interface TextWithPinyinProps {
   text: string;
@@ -12,23 +12,15 @@ export default function TextWithPinyin({ text, language, className = "" }: TextW
     return <span className={className}>{text}</span>;
   }
 
-  // Convert Chinese text to pinyin
-  const pinyinArray = pinyin(text, {
-    style: pinyin.STYLE_TONE,
-    segment: true,
-  });
-
-  // Split text into characters/words for display
+  // Split text into characters for display
   const chars = text.split('');
   const words: Array<{ char: string; pinyin: string }> = [];
   
-  let pinyinIndex = 0;
   chars.forEach((char) => {
     // Check if character is Chinese
     if (/[\u4e00-\u9fa5]/.test(char)) {
-      const pinyinForChar = pinyinArray[pinyinIndex]?.[0] || '';
+      const pinyinForChar = pinyin(char, { toneType: 'symbol' });
       words.push({ char, pinyin: pinyinForChar });
-      pinyinIndex++;
     } else {
       words.push({ char, pinyin: '' });
     }
