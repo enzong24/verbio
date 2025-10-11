@@ -76,16 +76,28 @@ Respond with JSON in this exact format:
 }
 
 export async function generateBotResponse(
-  userMessage: string,
+  conversationHistory: Array<{ sender: string; text: string }>,
   topic: string,
   vocabulary: string[],
-  language: string = "Spanish"
+  language: string = "Chinese"
 ): Promise<string> {
-  const prompt = `You are a ${language} language learning partner having a casual conversation about ${topic}. 
-The learner just said: "${userMessage}"
+  // Build conversation context
+  const conversationContext = conversationHistory
+    .map(msg => `${msg.sender === "user" ? "Learner" : "You"}: ${msg.text}`)
+    .join("\n");
 
-Respond naturally in ${language} (1-2 sentences). Try to use some of these vocabulary words naturally: ${vocabulary.join(", ")}.
-Keep it conversational and appropriate for language practice.`;
+  const prompt = `You are having a natural conversation in ${language} about ${topic}. 
+
+Previous conversation:
+${conversationContext}
+
+Continue the conversation naturally in ${language}. Respond with 1-2 sentences that:
+- Directly relate to what the learner just said
+- Ask follow-up questions or share relevant thoughts
+- Naturally incorporate vocabulary words when appropriate: ${vocabulary.join(", ")}
+- Sound like a real person having a genuine conversation
+
+Keep your response engaging and conversational.`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -93,7 +105,7 @@ Keep it conversational and appropriate for language practice.`;
       messages: [
         {
           role: "system",
-          content: `You are a friendly ${language} conversation partner helping someone practice the language.`
+          content: `You are a native ${language} speaker having a natural, flowing conversation. Be engaging, ask questions, share thoughts, and respond authentically to what the learner says. Avoid repetitive patterns.`
         },
         {
           role: "user",
@@ -103,9 +115,9 @@ Keep it conversational and appropriate for language practice.`;
       max_completion_tokens: 150,
     });
 
-    return response.choices[0].message.content || "¡Interesante!";
+    return response.choices[0].message.content || "有意思！";
   } catch (error) {
     console.error("Error generating bot response:", error);
-    return "¡Interesante! Cuéntame más.";
+    return "有意思！请继续说。";
   }
 }

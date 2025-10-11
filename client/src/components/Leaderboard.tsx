@@ -44,7 +44,7 @@ export default function Leaderboard({
             <Trophy className="w-8 h-8 text-gold" />
             <div>
               <CardTitle className="text-2xl">Global Leaderboard</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Top Spanish learners worldwide</p>
+              <p className="text-sm text-muted-foreground mt-1">Top Chinese learners worldwide</p>
             </div>
           </div>
         </CardHeader>

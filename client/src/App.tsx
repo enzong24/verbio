@@ -32,9 +32,9 @@ function MainApp() {
   const handleMatchFound = (opponent: string, isBot: boolean) => {
     // todo: remove mock functionality - Simulated match setup
     const topics = [
-      { title: "Travel & Tourism", vocabulary: ["journey", "destination", "explore", "adventure", "culture"] },
-      { title: "Food & Dining", vocabulary: ["delicious", "recipe", "restaurant", "taste", "flavor"] },
-      { title: "Technology", vocabulary: ["device", "software", "innovation", "digital", "connect"] },
+      { title: "Travel & Tourism", vocabulary: ["旅行", "目的地", "探索", "冒险", "文化"] },
+      { title: "Food & Dining", vocabulary: ["美味", "菜谱", "餐厅", "味道", "风味"] },
+      { title: "Technology", vocabulary: ["设备", "软件", "创新", "数字", "连接"] },
     ];
     const topic = topics[Math.floor(Math.random() * topics.length)];
     

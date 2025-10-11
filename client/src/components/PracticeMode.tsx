@@ -21,37 +21,37 @@ export default function PracticeMode({
       id: "1",
       title: "Travel & Tourism",
       difficulty: "Intermediate",
-      vocabulary: ["journey", "destination", "explore", "adventure", "culture"]
+      vocabulary: ["旅行", "目的地", "探索", "冒险", "文化"]
     },
     {
       id: "2",
       title: "Food & Dining",
       difficulty: "Beginner",
-      vocabulary: ["delicious", "recipe", "restaurant", "taste", "flavor"]
+      vocabulary: ["美味", "菜谱", "餐厅", "味道", "风味"]
     },
     {
       id: "3",
       title: "Business & Work",
       difficulty: "Advanced",
-      vocabulary: ["colleague", "deadline", "project", "meeting", "strategy"]
+      vocabulary: ["同事", "截止日期", "项目", "会议", "策略"]
     },
     {
       id: "4",
       title: "Family & Friends",
       difficulty: "Beginner",
-      vocabulary: ["family", "friend", "relationship", "together", "celebrate"]
+      vocabulary: ["家庭", "朋友", "关系", "一起", "庆祝"]
     },
     {
       id: "5",
       title: "Technology",
       difficulty: "Intermediate",
-      vocabulary: ["device", "software", "innovation", "digital", "connect"]
+      vocabulary: ["设备", "软件", "创新", "数字", "连接"]
     },
     {
       id: "6",
       title: "Health & Wellness",
       difficulty: "Intermediate",
-      vocabulary: ["exercise", "nutrition", "wellness", "healthy", "fitness"]
+      vocabulary: ["锻炼", "营养", "健康", "养生", "健身"]
     },
   ],
   onSelectTopic

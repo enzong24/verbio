@@ -23,8 +23,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate bot response
   app.post("/api/bot-response", async (req, res) => {
     try {
-      const { message, topic, vocabulary, language = "Spanish" } = req.body;
-      const response = await generateBotResponse(message, topic, vocabulary, language);
+      const { conversationHistory, topic, vocabulary, language = "Chinese" } = req.body;
+      const response = await generateBotResponse(conversationHistory, topic, vocabulary, language);
       res.json({ response });
     } catch (error: any) {
       console.error("Bot response error:", error);

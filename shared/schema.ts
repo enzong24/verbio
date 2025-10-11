@@ -28,7 +28,7 @@ export const gradingRequestSchema = z.object({
   messages: z.array(messageSchema),
   topic: z.string(),
   vocabulary: z.array(z.string()),
-  language: z.string().default("Spanish"),
+  language: z.string().default("Chinese"),
 });
 
 export const gradingResultSchema = z.object({

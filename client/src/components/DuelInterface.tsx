@@ -40,12 +40,12 @@ export default function DuelInterface({
   const userMessageCount = messages.filter(m => m.sender === "user").length;
 
   const botResponseMutation = useMutation({
-    mutationFn: async (message: string) => {
+    mutationFn: async (conversationHistory: Message[]) => {
       const response = await apiRequest("POST", "/api/bot-response", {
-        message,
+        conversationHistory,
         topic,
         vocabulary,
-        language: "Spanish"
+        language: "Chinese"
       });
       return await response.json();
     },
@@ -57,7 +57,7 @@ export default function DuelInterface({
         messages: msgs,
         topic,
         vocabulary,
-        language: "Spanish"
+        language: "Chinese"
       });
       return await response.json() as GradingResult;
     },
@@ -107,7 +107,7 @@ export default function DuelInterface({
 
     // If it's a bot match, generate response
     if (isBot) {
-      const response = await botResponseMutation.mutateAsync(input);
+      const response = await botResponseMutation.mutateAsync(updatedMessages);
       if (response?.response) {
         setMessages([...updatedMessages, {
           sender: "opponent",
@@ -119,11 +119,11 @@ export default function DuelInterface({
       // Simulate opponent response for human matches (would be WebSocket in real app)
       setTimeout(() => {
         const responses = [
-          "¡Me encanta viajar! Mi último destino fue Barcelona.",
-          "La cultura española es fascinante, especialmente su gastronomía.",
-          "Explorar nuevos lugares siempre es una aventura emocionante.",
-          "¿Has visitado alguna vez América Latina?",
-          "El viaje es la mejor forma de aprender sobre otras culturas."
+          "我很喜欢旅行！我最近去了北京。",
+          "中国文化真的很迷人，特别是美食。",
+          "探索新地方总是一个令人兴奋的冒险。",
+          "你去过中国吗？",
+          "旅行是了解其他文化的最好方式。"
         ];
         setMessages(prev => [...prev, {
           sender: "opponent",
@@ -238,7 +238,7 @@ export default function DuelInterface({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Type your message in Spanish..."
+                  placeholder="Type your message in Chinese..."
                   className="flex-1"
                   disabled={userMessageCount >= maxRounds || isGrading}
                   data-testid="input-message"
