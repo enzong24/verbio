@@ -21,7 +21,7 @@ function MainApp() {
     opponent: string;
     isBot: boolean;
     topic: string;
-    vocabulary: string[];
+    vocabulary: Array<{ chinese: string; pinyin: string }>;
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
 
@@ -32,9 +32,36 @@ function MainApp() {
   const handleMatchFound = (opponent: string, isBot: boolean) => {
     // todo: remove mock functionality - Simulated match setup
     const topics = [
-      { title: "Travel & Tourism", vocabulary: ["旅行", "目的地", "探索", "冒险", "文化"] },
-      { title: "Food & Dining", vocabulary: ["美味", "菜谱", "餐厅", "味道", "风味"] },
-      { title: "Technology", vocabulary: ["设备", "软件", "创新", "数字", "连接"] },
+      { 
+        title: "Travel & Tourism", 
+        vocabulary: [
+          { chinese: "旅行", pinyin: "lǚxíng" },
+          { chinese: "目的地", pinyin: "mùdìdì" },
+          { chinese: "探索", pinyin: "tànsuǒ" },
+          { chinese: "冒险", pinyin: "màoxiǎn" },
+          { chinese: "文化", pinyin: "wénhuà" }
+        ] 
+      },
+      { 
+        title: "Food & Dining", 
+        vocabulary: [
+          { chinese: "美味", pinyin: "měiwèi" },
+          { chinese: "菜谱", pinyin: "càipǔ" },
+          { chinese: "餐厅", pinyin: "cāntīng" },
+          { chinese: "味道", pinyin: "wèidào" },
+          { chinese: "风味", pinyin: "fēngwèi" }
+        ] 
+      },
+      { 
+        title: "Technology", 
+        vocabulary: [
+          { chinese: "设备", pinyin: "shèbèi" },
+          { chinese: "软件", pinyin: "ruǎnjiàn" },
+          { chinese: "创新", pinyin: "chuàngxīn" },
+          { chinese: "数字", pinyin: "shùzì" },
+          { chinese: "连接", pinyin: "liánjiē" }
+        ] 
+      },
     ];
     const topic = topics[Math.floor(Math.random() * topics.length)];
     

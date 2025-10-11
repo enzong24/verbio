@@ -8,11 +8,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import VocabularyBadge from "@/components/VocabularyBadge";
 import type { Message, GradingResult } from "@shared/schema";
+
+interface VocabWord {
+  chinese: string;
+  pinyin: string;
+}
 
 interface DuelInterfaceProps {
   topic?: string;
-  vocabulary?: string[];
+  vocabulary?: VocabWord[];
   opponentName?: string;
   opponentElo?: number;
   userElo?: number;
@@ -23,7 +29,11 @@ interface DuelInterfaceProps {
 
 export default function DuelInterface({
   topic = "Travel & Tourism",
-  vocabulary = ["journey", "destination", "explore", "adventure", "culture"],
+  vocabulary = [
+    { chinese: "旅行", pinyin: "lǚxíng" },
+    { chinese: "目的地", pinyin: "mùdìdì" },
+    { chinese: "探索", pinyin: "tànsuǒ" }
+  ],
   opponentName = "Maria García",
   opponentElo = 1520,
   userElo = 1547,
@@ -41,10 +51,11 @@ export default function DuelInterface({
 
   const botResponseMutation = useMutation({
     mutationFn: async (conversationHistory: Message[]) => {
+      const vocabStrings = vocabulary.map(v => v.chinese);
       const response = await apiRequest("POST", "/api/bot-response", {
         conversationHistory,
         topic,
-        vocabulary,
+        vocabulary: vocabStrings,
         language: "Chinese"
       });
       return await response.json();
@@ -53,10 +64,11 @@ export default function DuelInterface({
 
   const gradingMutation = useMutation({
     mutationFn: async (msgs: Message[]) => {
+      const vocabStrings = vocabulary.map(v => v.chinese);
       const response = await apiRequest("POST", "/api/grade", {
         messages: msgs,
         topic,
-        vocabulary,
+        vocabulary: vocabStrings,
         language: "Chinese"
       });
       return await response.json() as GradingResult;
@@ -199,9 +211,12 @@ export default function DuelInterface({
               </div>
               <div className="flex flex-wrap gap-2">
                 {vocabulary.map((word) => (
-                  <Badge key={word} variant="secondary" className="text-xs">
-                    {word}
-                  </Badge>
+                  <VocabularyBadge 
+                    key={word.chinese}
+                    chinese={word.chinese}
+                    pinyin={word.pinyin}
+                    className="text-xs"
+                  />
                 ))}
               </div>
             </div>

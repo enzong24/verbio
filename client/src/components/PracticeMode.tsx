@@ -2,12 +2,18 @@ import { Bot, Book, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import VocabularyBadge from "@/components/VocabularyBadge";
+
+interface VocabWord {
+  chinese: string;
+  pinyin: string;
+}
 
 interface Topic {
   id: string;
   title: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
-  vocabulary: string[];
+  vocabulary: VocabWord[];
 }
 
 interface PracticeModeProps {
@@ -21,37 +27,73 @@ export default function PracticeMode({
       id: "1",
       title: "Travel & Tourism",
       difficulty: "Intermediate",
-      vocabulary: ["旅行", "目的地", "探索", "冒险", "文化"]
+      vocabulary: [
+        { chinese: "旅行", pinyin: "lǚxíng" },
+        { chinese: "目的地", pinyin: "mùdìdì" },
+        { chinese: "探索", pinyin: "tànsuǒ" },
+        { chinese: "冒险", pinyin: "màoxiǎn" },
+        { chinese: "文化", pinyin: "wénhuà" }
+      ]
     },
     {
       id: "2",
       title: "Food & Dining",
       difficulty: "Beginner",
-      vocabulary: ["美味", "菜谱", "餐厅", "味道", "风味"]
+      vocabulary: [
+        { chinese: "美味", pinyin: "měiwèi" },
+        { chinese: "菜谱", pinyin: "càipǔ" },
+        { chinese: "餐厅", pinyin: "cāntīng" },
+        { chinese: "味道", pinyin: "wèidào" },
+        { chinese: "风味", pinyin: "fēngwèi" }
+      ]
     },
     {
       id: "3",
       title: "Business & Work",
       difficulty: "Advanced",
-      vocabulary: ["同事", "截止日期", "项目", "会议", "策略"]
+      vocabulary: [
+        { chinese: "同事", pinyin: "tóngshì" },
+        { chinese: "截止日期", pinyin: "jiézhǐ rìqī" },
+        { chinese: "项目", pinyin: "xiàngmù" },
+        { chinese: "会议", pinyin: "huìyì" },
+        { chinese: "策略", pinyin: "cèlüè" }
+      ]
     },
     {
       id: "4",
       title: "Family & Friends",
       difficulty: "Beginner",
-      vocabulary: ["家庭", "朋友", "关系", "一起", "庆祝"]
+      vocabulary: [
+        { chinese: "家庭", pinyin: "jiātíng" },
+        { chinese: "朋友", pinyin: "péngyou" },
+        { chinese: "关系", pinyin: "guānxi" },
+        { chinese: "一起", pinyin: "yìqǐ" },
+        { chinese: "庆祝", pinyin: "qìngzhù" }
+      ]
     },
     {
       id: "5",
       title: "Technology",
       difficulty: "Intermediate",
-      vocabulary: ["设备", "软件", "创新", "数字", "连接"]
+      vocabulary: [
+        { chinese: "设备", pinyin: "shèbèi" },
+        { chinese: "软件", pinyin: "ruǎnjiàn" },
+        { chinese: "创新", pinyin: "chuàngxīn" },
+        { chinese: "数字", pinyin: "shùzì" },
+        { chinese: "连接", pinyin: "liánjiē" }
+      ]
     },
     {
       id: "6",
       title: "Health & Wellness",
       difficulty: "Intermediate",
-      vocabulary: ["锻炼", "营养", "健康", "养生", "健身"]
+      vocabulary: [
+        { chinese: "锻炼", pinyin: "duànliàn" },
+        { chinese: "营养", pinyin: "yíngyǎng" },
+        { chinese: "健康", pinyin: "jiànkāng" },
+        { chinese: "养生", pinyin: "yǎngshēng" },
+        { chinese: "健身", pinyin: "jiànshēn" }
+      ]
     },
   ],
   onSelectTopic
@@ -107,14 +149,19 @@ export default function PracticeMode({
             <CardContent className="space-y-3">
               <div className="flex flex-wrap gap-1">
                 {topic.vocabulary.slice(0, 3).map((word) => (
-                  <Badge key={word} variant="secondary" className="text-xs">
-                    {word}
-                  </Badge>
+                  <VocabularyBadge 
+                    key={word.chinese} 
+                    chinese={word.chinese} 
+                    pinyin={word.pinyin}
+                    className="text-xs"
+                  />
                 ))}
                 {topic.vocabulary.length > 3 && (
-                  <Badge variant="secondary" className="text-xs">
-                    +{topic.vocabulary.length - 3} more
-                  </Badge>
+                  <VocabularyBadge 
+                    chinese={`+${topic.vocabulary.length - 3}更多`}
+                    pinyin="gèng duō"
+                    className="text-xs"
+                  />
                 )}
               </div>
               <Button
