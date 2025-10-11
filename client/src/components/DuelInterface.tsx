@@ -236,6 +236,7 @@ export default function DuelInterface({
                     key={vocabItem.word}
                     chinese={vocabItem.word}
                     pinyin={vocabItem.romanization}
+                    language={language}
                     className="text-xs"
                   />
                 ))}
