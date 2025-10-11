@@ -116,10 +116,19 @@ Keep your response engaging and conversational.`;
       max_tokens: 150,
     });
 
-    return response.choices[0].message.content || "有意思！";
+    return response.choices[0].message.content || getFallbackResponse(language);
   } catch (error: any) {
     console.error("Error generating bot response:", error);
     console.error("Error details:", error.message, error.response?.data);
-    return "有意思！请继续说。";
+    return getFallbackResponse(language);
   }
+}
+
+function getFallbackResponse(language: string): string {
+  const fallbacks: Record<string, string> = {
+    Chinese: "有意思！请继续说。",
+    Spanish: "¡Interesante! Por favor continúa.",
+    Italian: "Interessante! Per favore continua.",
+  };
+  return fallbacks[language] || "Please continue.";
 }
