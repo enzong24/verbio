@@ -5,75 +5,85 @@ import type { GradingRequest, GradingResult } from "@shared/schema";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function gradeConversation(request: GradingRequest): Promise<GradingResult> {
+  // Basic prototype grading system (no OpenAI)
   const userMessages = request.messages
     .filter(m => m.sender === "user")
-    .map(m => m.text)
-    .join("\n");
+    .map(m => m.text);
 
-  const prompt = `You are an expert ${request.language} language teacher evaluating a student's conversation performance.
-
-Topic: ${request.topic}
-Target vocabulary: ${request.vocabulary.join(", ")}
-
-Student's messages:
-${userMessages}
-
-Evaluate the student's ${request.language} language usage and provide:
-1. Grammar score (0-100): Accuracy of grammar, verb conjugations, sentence structure
-2. Fluency score (0-100): Natural flow, coherence, and ease of expression
-3. Vocabulary score (0-100): Appropriate use of vocabulary, especially target words
-4. Naturalness score (0-100): How natural and native-like the language sounds
-5. Feedback: 3-5 specific points about what they did well or could improve
-
-Respond with JSON in this exact format:
-{
-  "grammar": number,
-  "fluency": number,
-  "vocabulary": number,
-  "naturalness": number,
-  "feedback": ["point 1", "point 2", "point 3"],
-  "overall": number
-}`;
-
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert language teacher providing detailed, constructive feedback. Always respond with valid JSON."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 1024,
-    });
-
-    const result = JSON.parse(response.choices[0].message.content || "{}");
-    
-    // Calculate overall if not provided
-    if (!result.overall) {
-      result.overall = Math.round(
-        (result.grammar + result.fluency + result.vocabulary + result.naturalness) / 4
-      );
+  const allUserText = userMessages.join(" ").toLowerCase();
+  
+  // Vocabulary score: Check how many target words were used
+  let vocabularyUsed = 0;
+  request.vocabulary.forEach(word => {
+    if (allUserText.includes(word.toLowerCase())) {
+      vocabularyUsed++;
     }
+  });
+  const vocabularyScore = Math.min(100, Math.round((vocabularyUsed / Math.max(1, request.vocabulary.length)) * 100));
 
-    return {
-      grammar: Math.max(0, Math.min(100, result.grammar || 0)),
-      fluency: Math.max(0, Math.min(100, result.fluency || 0)),
-      vocabulary: Math.max(0, Math.min(100, result.vocabulary || 0)),
-      naturalness: Math.max(0, Math.min(100, result.naturalness || 0)),
-      feedback: result.feedback || ["Great effort! Keep practicing."],
-      overall: Math.max(0, Math.min(100, result.overall || 0)),
-    };
-  } catch (error: any) {
-    console.error("Error grading conversation:", error);
-    console.error("Error details:", error.message, error.response?.data);
-    throw new Error("Failed to grade conversation");
+  // Fluency score: Based on message count and average length
+  const avgMessageLength = userMessages.reduce((sum, msg) => sum + msg.length, 0) / Math.max(1, userMessages.length);
+  const fluencyScore = Math.min(100, Math.round((avgMessageLength / 20) * 100)); // 20+ chars = good
+
+  // Grammar score: Simple heuristic based on message structure
+  let grammarScore = 70; // Base score
+  if (userMessages.some(msg => msg.length > 30)) grammarScore += 10; // Bonus for longer sentences
+  if (userMessages.some(msg => /[.!?]$/.test(msg))) grammarScore += 10; // Bonus for punctuation
+  if (userMessages.some(msg => /[A-Z]/.test(msg[0]))) grammarScore += 10; // Bonus for capitalization
+  grammarScore = Math.min(100, grammarScore);
+
+  // Naturalness score: Based on variety and engagement
+  const uniqueWords = new Set(allUserText.split(/\s+/)).size;
+  const naturalness = Math.min(100, Math.round((uniqueWords / 5) * 100));
+
+  // Overall score
+  const overall = Math.round((vocabularyScore + fluencyScore + grammarScore + naturalness) / 4);
+
+  // Generate feedback
+  const feedback: string[] = [];
+  
+  if (vocabularyScore >= 80) {
+    feedback.push(`Excellent use of target vocabulary! You used ${vocabularyUsed} out of ${request.vocabulary.length} words.`);
+  } else if (vocabularyScore >= 50) {
+    feedback.push(`Good effort with vocabulary. Try to incorporate more target words in your responses.`);
+  } else {
+    feedback.push(`Focus on using the target vocabulary words more frequently.`);
   }
+
+  if (fluencyScore >= 70) {
+    feedback.push("Your messages show good length and detail. Keep it up!");
+  } else {
+    feedback.push("Try to write more detailed responses to improve fluency.");
+  }
+
+  if (grammarScore >= 80) {
+    feedback.push("Great sentence structure and punctuation!");
+  } else {
+    feedback.push("Remember to use proper punctuation and capitalization.");
+  }
+
+  if (naturalness >= 70) {
+    feedback.push("Your language use is varied and natural.");
+  } else {
+    feedback.push("Try to vary your vocabulary more for more natural conversation.");
+  }
+
+  if (overall >= 80) {
+    feedback.push("Outstanding performance overall! 🌟");
+  } else if (overall >= 60) {
+    feedback.push("Good work! Keep practicing to improve further.");
+  } else {
+    feedback.push("Keep practicing! Focus on using more vocabulary and writing longer responses.");
+  }
+
+  return {
+    grammar: grammarScore,
+    fluency: fluencyScore,
+    vocabulary: vocabularyScore,
+    naturalness,
+    feedback: feedback.slice(0, 5),
+    overall,
+  };
 }
 
 export async function generateBotResponse(
