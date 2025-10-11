@@ -102,53 +102,98 @@ export async function generateBotResponse(
   vocabulary: string[],
   language: string = "Chinese"
 ): Promise<string> {
-  // Build conversation context
-  const conversationContext = conversationHistory
-    .map(msg => `${msg.sender === "user" ? "Learner" : "You"}: ${msg.text}`)
-    .join("\n");
-
-  const prompt = `You are having a natural conversation in ${language} about ${topic}. 
-
-Previous conversation:
-${conversationContext}
-
-Continue the conversation naturally in ${language}. Respond with 1-2 sentences that:
-- Directly relate to what the learner just said
-- Ask follow-up questions or share relevant thoughts
-- Naturally incorporate vocabulary words when appropriate: ${vocabulary.join(", ")}
-- Sound like a real person having a genuine conversation
-
-Keep your response engaging and conversational.`;
-
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are a native ${language} speaker having a natural, flowing conversation. Be engaging, ask questions, share thoughts, and respond authentically to what the learner says. Avoid repetitive patterns.`
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 150,
-    });
-
-    return response.choices[0].message.content || getFallbackResponse(language);
-  } catch (error: any) {
-    console.error("Error generating bot response:", error);
-    console.error("Error details:", error.message, error.response?.data);
-    return getFallbackResponse(language);
-  }
+  // Use rule-based conversation system for prototype
+  return generateThematicResponse(conversationHistory, topic, vocabulary, language);
 }
 
-function getFallbackResponse(language: string): string {
-  const fallbacks: Record<string, string> = {
-    Chinese: "有意思！请继续说。",
-    Spanish: "¡Interesante! Por favor continúa.",
-    Italian: "Interessante! Per favore continua.",
+function generateThematicResponse(
+  conversationHistory: Array<{ sender: string; text: string }>,
+  topic: string,
+  vocabulary: string[],
+  language: string
+): string {
+  const messageCount = conversationHistory.filter(m => m.sender === "opponent").length;
+  const lastUserMessage = conversationHistory.filter(m => m.sender === "user").slice(-1)[0]?.text || "";
+  
+  // Theme-specific response templates
+  const responseTemplates: Record<string, Record<string, string[]>> = {
+    "Travel & Tourism": {
+      Chinese: [
+        `我也很喜欢${vocabulary[0] || "旅行"}！你最喜欢去哪里？`,
+        `${vocabulary[1] || "探索"}新地方真的很有趣。你觉得呢？`,
+        `我对${vocabulary[2] || "文化"}也很感兴趣。你去过哪些国家？`,
+        `${vocabulary[3] || "冒险"}让生活更精彩！你有什么难忘的经历吗？`,
+        `我最近计划去一个新的${vocabulary[4] || "目的地"}。你有推荐吗？`
+      ],
+      Spanish: [
+        `¡A mí también me encanta ${vocabulary[0] || "viajar"}! ¿Cuál es tu lugar favorito?`,
+        `${vocabulary[1] || "Explorar"} nuevos lugares es realmente emocionante. ¿Qué piensas?`,
+        `También me interesa mucho la ${vocabulary[2] || "cultura"}. ¿Qué países has visitado?`,
+        `¡La ${vocabulary[3] || "aventura"} hace la vida más emocionante! ¿Tienes alguna experiencia memorable?`,
+        `Estoy planeando ir a un nuevo ${vocabulary[4] || "destino"} pronto. ¿Tienes alguna recomendación?`
+      ],
+      Italian: [
+        `Anche a me piace molto ${vocabulary[0] || "viaggiare"}! Qual è il tuo posto preferito?`,
+        `${vocabulary[1] || "Esplorare"} posti nuovi è davvero emozionante. Cosa ne pensi?`,
+        `Mi interessa molto anche la ${vocabulary[2] || "cultura"}. Quali paesi hai visitato?`,
+        `L'${vocabulary[3] || "avventura"} rende la vita più eccitante! Hai qualche esperienza memorabile?`,
+        `Sto pianificando di andare in una nuova ${vocabulary[4] || "destinazione"} presto. Hai qualche raccomandazione?`
+      ]
+    },
+    "Food & Dining": {
+      Chinese: [
+        `我也很喜欢${vocabulary[0] || "美食"}！你最喜欢什么菜？`,
+        `${vocabulary[1] || "烹饪"}是一门艺术。你会做菜吗？`,
+        `这个${vocabulary[2] || "餐厅"}听起来不错！你经常去吗？`,
+        `我喜欢尝试新的${vocabulary[3] || "菜单"}。你呢？`,
+        `${vocabulary[4] || "味道"}很重要。你喜欢什么口味？`
+      ],
+      Spanish: [
+        `¡A mí también me encanta la ${vocabulary[0] || "comida"}! ¿Cuál es tu plato favorito?`,
+        `${vocabulary[1] || "Cocinar"} es un arte. ¿Sabes cocinar?`,
+        `¡Ese ${vocabulary[2] || "restaurante"} suena genial! ¿Vas a menudo?`,
+        `Me gusta probar ${vocabulary[3] || "menús"} nuevos. ¿Y tú?`,
+        `El ${vocabulary[4] || "sabor"} es muy importante. ¿Qué sabores te gustan?`
+      ],
+      Italian: [
+        `Anche a me piace molto il ${vocabulary[0] || "cibo"}! Qual è il tuo piatto preferito?`,
+        `${vocabulary[1] || "Cucinare"} è un'arte. Sai cucinare?`,
+        `Quel ${vocabulary[2] || "ristorante"} sembra fantastico! Ci vai spesso?`,
+        `Mi piace provare ${vocabulary[3] || "menu"} nuovi. E tu?`,
+        `Il ${vocabulary[4] || "sapore"} è molto importante. Quali sapori ti piacciono?`
+      ]
+    },
+    "Technology": {
+      Chinese: [
+        `${vocabulary[0] || "科技"}发展真快！你怎么看？`,
+        `我也对${vocabulary[1] || "创新"}很感兴趣。你用什么设备？`,
+        `这个${vocabulary[2] || "应用"}很有用。你试过吗？`,
+        `${vocabulary[3] || "人工智能"}改变了很多。你的看法是什么？`,
+        `${vocabulary[4] || "未来"}会更加数字化。你觉得呢？`
+      ],
+      Spanish: [
+        `¡La ${vocabulary[0] || "tecnología"} avanza muy rápido! ¿Qué opinas?`,
+        `También me interesa la ${vocabulary[1] || "innovación"}. ¿Qué dispositivos usas?`,
+        `Esta ${vocabulary[2] || "aplicación"} es muy útil. ¿La has probado?`,
+        `La ${vocabulary[3] || "inteligencia artificial"} ha cambiado mucho. ¿Cuál es tu opinión?`,
+        `El ${vocabulary[4] || "futuro"} será más digital. ¿Qué piensas?`
+      ],
+      Italian: [
+        `La ${vocabulary[0] || "tecnologia"} avanza molto velocemente! Cosa ne pensi?`,
+        `Anche a me interessa l'${vocabulary[1] || "innovazione"}. Quali dispositivi usi?`,
+        `Questa ${vocabulary[2] || "applicazione"} è molto utile. L'hai provata?`,
+        `L'${vocabulary[3] || "intelligenza artificiale"} ha cambiato molto. Qual è la tua opinione?`,
+        `Il ${vocabulary[4] || "futuro"} sarà più digitale. Cosa ne pensi?`
+      ]
+    }
   };
-  return fallbacks[language] || "Please continue.";
+
+  // Get templates for current topic and language, or use Travel as default
+  const topicTemplates = responseTemplates[topic]?.[language] || 
+                         responseTemplates["Travel & Tourism"]?.[language] ||
+                         responseTemplates["Travel & Tourism"]["Chinese"];
+  
+  // Select response based on message count to ensure variety
+  const responseIndex = messageCount % topicTemplates.length;
+  return topicTemplates[responseIndex];
 }

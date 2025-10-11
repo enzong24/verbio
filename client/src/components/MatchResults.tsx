@@ -82,7 +82,7 @@ export default function MatchResults({
             </div>
 
             <div>
-              <h3 className="font-semibold mb-3">AI Feedback</h3>
+              <h3 className="font-semibold mb-3">Feedback</h3>
               <div className="space-y-2">
                 {gradingResult.feedback.map((item, idx) => (
                   <div key={idx} className="flex gap-2 text-sm" data-testid={`feedback-${idx}`}>
