@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import VocabularyBadge from "@/components/VocabularyBadge";
+import TextWithPinyin from "@/components/TextWithPinyin";
 import type { Message, GradingResult } from "@shared/schema";
 
 interface VocabWord {
@@ -236,7 +237,7 @@ export default function DuelInterface({
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {msg.text}
+                    <TextWithPinyin text={msg.text} language={language} />
                   </div>
                 </div>
               ))}
@@ -255,7 +256,7 @@ export default function DuelInterface({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Type your message in Chinese..."
+                  placeholder={`Type your message in ${language}...`}
                   className="flex-1"
                   disabled={userMessageCount >= maxRounds || isGrading}
                   data-testid="input-message"
