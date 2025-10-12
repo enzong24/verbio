@@ -4,6 +4,7 @@ import { type User, type UpsertUser } from "@shared/schema";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -33,6 +34,10 @@ export class MemStorage implements IStorage {
     };
     this.users.set(user.id, user);
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 }
 

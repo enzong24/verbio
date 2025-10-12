@@ -101,16 +101,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get leaderboard
   app.get("/api/leaderboard", async (req, res) => {
     try {
-      // For now, return mock data since we're using in-memory storage
-      // In production, this would query the database
-      const mockLeaderboard = [
-        { username: "DragonMaster", elo: 1850, wins: 45, losses: 12 },
-        { username: "PhoenixRising", elo: 1720, wins: 38, losses: 15 },
-        { username: "ShadowNinja", elo: 1680, wins: 42, losses: 20 },
-        { username: "ThunderBolt", elo: 1590, wins: 35, losses: 18 },
-        { username: "CrystalSage", elo: 1520, wins: 28, losses: 14 },
-      ];
-      res.json(mockLeaderboard);
+      const allUsers = await storage.getAllUsers();
+      
+      // Sort by Elo (descending) and map to leaderboard format
+      const leaderboard = allUsers
+        .filter(user => user.wins + user.losses > 0) // Only show users with at least 1 match
+        .sort((a, b) => b.elo - a.elo)
+        .map(user => ({
+          username: user.firstName || user.email?.split('@')[0] || "Unknown",
+          elo: user.elo,
+          wins: user.wins,
+          losses: user.losses,
+        }));
+      
+      res.json(leaderboard);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       res.status(500).json({ message: "Failed to fetch leaderboard" });
