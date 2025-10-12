@@ -22,7 +22,6 @@ export default function Header({
 }: HeaderProps) {
   const navItems = [
     { id: "duel", label: "Duel", icon: Swords },
-    { id: "practice", label: "Practice", icon: Target },
     { id: "leaderboard", label: "Leaderboard", icon: Trophy },
     { id: "profile", label: "Profile", icon: User },
   ];
