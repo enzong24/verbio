@@ -25,6 +25,7 @@ interface DuelInterfaceProps {
   userElo?: number;
   isBot?: boolean;
   language?: string;
+  difficulty?: string;
   onComplete?: (result: GradingResult) => void;
   onForfeit?: () => void;
 }
@@ -41,6 +42,7 @@ export default function DuelInterface({
   userElo = 1547,
   isBot = false,
   language = "Chinese",
+  difficulty = "Medium",
   onComplete,
   onForfeit
 }: DuelInterfaceProps) {
@@ -59,7 +61,8 @@ export default function DuelInterface({
         conversationHistory,
         topic,
         vocabulary: vocabStrings,
-        language
+        language,
+        difficulty
       });
       return await response.json();
     },

@@ -1,30 +1,32 @@
 import { useState } from "react";
-import { Swords, Bot, Loader2, Languages } from "lucide-react";
+import { Swords, Bot, Loader2, Languages, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
+export type Difficulty = "Easy" | "Medium" | "Hard";
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean, language: Language) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty) => void;
 }
 
 export default function MatchFinder({ onMatchFound }: MatchFinderProps) {
   const [searching, setSearching] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>("Chinese");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
 
   const handleFindMatch = () => {
     setSearching(true);
     // Simulate matchmaking
     setTimeout(() => {
       setSearching(false);
-      onMatchFound?.("Maria García", false, selectedLanguage);
+      onMatchFound?.("Maria García", false, selectedLanguage, selectedDifficulty);
     }, 2000);
   };
 
   const handlePractice = () => {
-    onMatchFound?.("AI Bot", true, selectedLanguage);
+    onMatchFound?.("AI Bot", true, selectedLanguage, selectedDifficulty);
   };
 
   return (
@@ -53,6 +55,19 @@ export default function MatchFinder({ onMatchFound }: MatchFinderProps) {
                   <SelectItem value="Chinese" data-testid="option-chinese">Chinese (中文)</SelectItem>
                   <SelectItem value="Spanish" data-testid="option-spanish">Spanish (Español)</SelectItem>
                   <SelectItem value="Italian" data-testid="option-italian">Italian (Italiano)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <Target className="w-5 h-5 text-muted-foreground" />
+              <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as Difficulty)}>
+                <SelectTrigger className="flex-1" data-testid="select-difficulty">
+                  <SelectValue placeholder="Select difficulty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Easy" data-testid="option-easy">Easy - Simple vocabulary</SelectItem>
+                  <SelectItem value="Medium" data-testid="option-medium">Medium - Conversational</SelectItem>
+                  <SelectItem value="Hard" data-testid="option-hard">Hard - Advanced & Complex</SelectItem>
                 </SelectContent>
               </Select>
             </div>

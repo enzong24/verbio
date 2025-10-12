@@ -5,7 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Header from "@/components/Header";
-import MatchFinder, { type Language } from "@/components/MatchFinder";
+import MatchFinder, { type Language, type Difficulty } from "@/components/MatchFinder";
 import DuelInterface from "@/components/DuelInterface";
 import MatchResults from "@/components/MatchResults";
 import Leaderboard from "@/components/Leaderboard";
@@ -28,6 +28,7 @@ function MainApp() {
     topic: string;
     vocabulary: VocabWord[];
     language: Language;
+    difficulty: Difficulty;
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
 
@@ -35,7 +36,7 @@ function MainApp() {
   const [userElo, setUserElo] = useState(1547);
   const username = "Alex";
 
-  const handleMatchFound = (opponent: string, isBot: boolean, language: Language) => {
+  const handleMatchFound = (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty) => {
     // todo: remove mock functionality - Simulated match setup
     const topicsByLanguage: Record<Language, Array<{ title: string; vocabulary: VocabWord[] }>> = {
       Chinese: [
@@ -145,6 +146,7 @@ function MainApp() {
       topic: topic.title,
       vocabulary: topic.vocabulary,
       language,
+      difficulty,
     });
     setCurrentPage("match");
   };
@@ -175,7 +177,7 @@ function MainApp() {
 
   const handlePracticeTopic = (topicId: string) => {
     console.log('Starting practice with topic:', topicId);
-    handleMatchFound("AI Bot", true, "Chinese");
+    handleMatchFound("AI Bot", true, "Chinese", "Medium");
   };
 
   return (
@@ -205,6 +207,7 @@ function MainApp() {
             userElo={userElo}
             isBot={matchData.isBot}
             language={matchData.language}
+            difficulty={matchData.difficulty}
             onComplete={handleDuelComplete}
             onForfeit={handleForfeit}
           />
