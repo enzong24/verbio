@@ -21,6 +21,9 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  elo: integer("elo").notNull().default(1000),
+  wins: integer("wins").notNull().default(0),
+  losses: integer("losses").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

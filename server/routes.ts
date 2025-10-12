@@ -69,6 +69,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user stats
+  app.post("/api/user/stats", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { elo, wins, losses } = req.body;
+      
+      const existingUser = await storage.getUser(userId);
+      if (!existingUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updatedUser = await storage.upsertUser({
+        ...existingUser,
+        elo: elo ?? existingUser.elo,
+        wins: wins ?? existingUser.wins,
+        losses: losses ?? existingUser.losses,
+      });
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user stats:", error);
+      res.status(500).json({ message: "Failed to update user stats" });
+    }
+  });
+
+  // Get leaderboard
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      // For now, return mock data since we're using in-memory storage
+      // In production, this would query the database
+      const mockLeaderboard = [
+        { username: "DragonMaster", elo: 1850, wins: 45, losses: 12 },
+        { username: "PhoenixRising", elo: 1720, wins: 38, losses: 15 },
+        { username: "ShadowNinja", elo: 1680, wins: 42, losses: 20 },
+        { username: "ThunderBolt", elo: 1590, wins: 35, losses: 18 },
+        { username: "CrystalSage", elo: 1520, wins: 28, losses: 14 },
+      ];
+      res.json(mockLeaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

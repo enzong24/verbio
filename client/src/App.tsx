@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,8 +36,23 @@ function MainApp() {
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
 
-  //todo: remove mock functionality - This is prototype data for guest mode
-  const [userElo, setUserElo] = useState(1000);
+  // Get stats from user for authenticated, or localStorage for guest
+  const [guestElo, setGuestElo] = useState(() => {
+    const saved = localStorage.getItem('guestElo');
+    return saved ? parseInt(saved) : 1000;
+  });
+  const [guestWins, setGuestWins] = useState(() => {
+    const saved = localStorage.getItem('guestWins');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [guestLosses, setGuestLosses] = useState(() => {
+    const saved = localStorage.getItem('guestLosses');
+    return saved ? parseInt(saved) : 0;
+  });
+
+  const userElo = isAuthenticated ? (user?.elo ?? 1000) : guestElo;
+  const userWins = isAuthenticated ? (user?.wins ?? 0) : guestWins;
+  const userLosses = isAuthenticated ? (user?.losses ?? 0) : guestLosses;
   const username = user?.firstName || user?.email?.split('@')[0] || "Guest";
 
   useEffect(() => {
@@ -110,21 +125,50 @@ function MainApp() {
     setCurrentPage("results");
   };
 
-  const handleResultsContinue = () => {
+  const updateStats = async (eloChange: number, isWin: boolean, isLoss: boolean) => {
+    const newElo = userElo + eloChange;
+    const newWins = userWins + (isWin ? 1 : 0);
+    const newLosses = userLosses + (isLoss ? 1 : 0);
+
+    if (isAuthenticated) {
+      // Update database for authenticated users
+      try {
+        await apiRequest("POST", "/api/user/stats", {
+          elo: newElo,
+          wins: newWins,
+          losses: newLosses
+        });
+        // Refresh user data
+        window.location.reload();
+      } catch (error) {
+        console.error("Failed to update stats:", error);
+      }
+    } else {
+      // Update localStorage for guests
+      setGuestElo(newElo);
+      setGuestWins(newWins);
+      setGuestLosses(newLosses);
+      localStorage.setItem('guestElo', newElo.toString());
+      localStorage.setItem('guestWins', newWins.toString());
+      localStorage.setItem('guestLosses', newLosses.toString());
+    }
+  };
+
+  const handleResultsContinue = async () => {
     // Update Elo based on result
     if (gradingResult) {
       const isWin = gradingResult.overall >= 70;
       const change = isWin ? 15 : -15;
-      setUserElo(prev => prev + change);
+      await updateStats(change, isWin, !isWin);
     }
     setMatchData(null);
     setGradingResult(null);
     setCurrentPage("duel");
   };
 
-  const handleForfeit = () => {
+  const handleForfeit = async () => {
     // Forfeit penalty
-    setUserElo(prev => prev - 25);
+    await updateStats(-25, false, true);
     setMatchData(null);
     setCurrentPage("duel");
   };
@@ -143,7 +187,12 @@ function MainApp() {
       
       <main className="pt-16">
         {currentPage === "duel" && (
-          <MatchFinder onMatchFound={handleMatchFound} />
+          <MatchFinder 
+            onMatchFound={handleMatchFound}
+            userElo={userElo}
+            userWins={userWins}
+            userLosses={userLosses}
+          />
         )}
         
         {currentPage === "match" && matchData && (
@@ -175,7 +224,13 @@ function MainApp() {
         )}
         
         {currentPage === "profile" && (
-          <ProfileStats username={username} elo={userElo} />
+          <ProfileStats 
+            username={username} 
+            elo={userElo}
+            wins={userWins}
+            losses={userLosses}
+            totalMatches={userWins + userLosses}
+          />
         )}
       </main>
       

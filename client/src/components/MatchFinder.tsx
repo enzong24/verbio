@@ -7,11 +7,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
+const BOT_NAMES = [
+  "语言大师 (Language Master)",
+  "流利小助手 (Fluent Helper)",
+  "对话机器人 (Dialogue Bot)",
+  "智能陪练 (Smart Partner)",
+  "语言教练 (Language Coach)",
+  "学习伙伴 (Study Buddy)",
+  "会话高手 (Conversation Expert)",
+  "多语达人 (Polyglot Pro)",
+  "AI语伴 (AI Language Partner)",
+  "智慧导师 (Wise Tutor)",
+  "练习助手 (Practice Assistant)",
+  "语法专家 (Grammar Expert)",
+  "发音教练 (Pronunciation Coach)",
+  "词汇大师 (Vocabulary Master)",
+  "文化向导 (Culture Guide)",
+];
+
 interface MatchFinderProps {
   onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty) => void;
+  userElo?: number;
+  userWins?: number;
+  userLosses?: number;
 }
 
-export default function MatchFinder({ onMatchFound }: MatchFinderProps) {
+export default function MatchFinder({ 
+  onMatchFound,
+  userElo = 1000,
+  userWins = 0,
+  userLosses = 0
+}: MatchFinderProps) {
   const [searching, setSearching] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>("Chinese");
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
@@ -26,7 +52,8 @@ export default function MatchFinder({ onMatchFound }: MatchFinderProps) {
   };
 
   const handlePractice = () => {
-    onMatchFound?.("AI Bot", true, selectedLanguage, selectedDifficulty);
+    const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+    onMatchFound?.(randomBotName, true, selectedLanguage, selectedDifficulty);
   };
 
   return (
@@ -104,15 +131,15 @@ export default function MatchFinder({ onMatchFound }: MatchFinderProps) {
 
             <div className="grid grid-cols-3 gap-4 pt-4 text-center">
               <div>
-                <div className="text-2xl font-bold font-mono">1,547</div>
+                <div className="text-2xl font-bold font-mono" data-testid="text-user-elo">{userElo}</div>
                 <div className="text-sm text-muted-foreground">Your Elo</div>
               </div>
               <div>
-                <div className="text-2xl font-bold font-mono">23</div>
+                <div className="text-2xl font-bold font-mono" data-testid="text-user-wins">{userWins}</div>
                 <div className="text-sm text-muted-foreground">Wins</div>
               </div>
               <div>
-                <div className="text-2xl font-bold font-mono">12</div>
+                <div className="text-2xl font-bold font-mono" data-testid="text-user-losses">{userLosses}</div>
                 <div className="text-sm text-muted-foreground">Losses</div>
               </div>
             </div>

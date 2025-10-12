@@ -1,10 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { Trophy, Medal, Crown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 interface LeaderboardEntry {
-  rank: number;
+  rank?: number;
   username: string;
   elo: number;
   wins: number;
@@ -13,22 +14,21 @@ interface LeaderboardEntry {
 }
 
 interface LeaderboardProps {
-  entries?: LeaderboardEntry[];
   currentUserId?: string;
 }
 
 export default function Leaderboard({
-  entries = [
-    { rank: 1, username: "Elena", elo: 2145, wins: 156, losses: 43 },
-    { rank: 2, username: "Carlos", elo: 1998, wins: 134, losses: 52 },
-    { rank: 3, username: "Sofia", elo: 1876, wins: 121, losses: 61 },
-    { rank: 4, username: "Miguel", elo: 1743, wins: 98, losses: 54 },
-    { rank: 5, username: "Alex", elo: 1547, wins: 23, losses: 12, isCurrentUser: true },
-    { rank: 6, username: "Isabella", elo: 1489, wins: 87, losses: 68 },
-    { rank: 7, username: "Diego", elo: 1432, wins: 76, losses: 71 },
-    { rank: 8, username: "Luna", elo: 1398, wins: 65, losses: 59 },
-  ]
+  currentUserId
 }: LeaderboardProps) {
+  const { data: leaderboardData, isLoading } = useQuery<LeaderboardEntry[]>({
+    queryKey: ["/api/leaderboard"],
+    refetchOnWindowFocus: false,
+  });
+
+  const entries = leaderboardData?.map((entry, index) => ({
+    ...entry,
+    rank: index + 1,
+  })) || [];
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-5 h-5 text-gold" />;
     if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;

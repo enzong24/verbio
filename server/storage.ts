@@ -25,6 +25,9 @@ export class MemStorage implements IStorage {
       firstName: userData.firstName || null,
       lastName: userData.lastName || null,
       profileImageUrl: userData.profileImageUrl || null,
+      elo: userData.elo ?? existingUser?.elo ?? 1000,
+      wins: userData.wins ?? existingUser?.wins ?? 0,
+      losses: userData.losses ?? existingUser?.losses ?? 0,
       createdAt: existingUser?.createdAt || new Date(),
       updatedAt: new Date(),
     };
