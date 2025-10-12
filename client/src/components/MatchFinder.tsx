@@ -8,21 +8,21 @@ export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
 const BOT_NAMES = [
-  "语言大师 (Language Master)",
-  "流利小助手 (Fluent Helper)",
-  "对话机器人 (Dialogue Bot)",
-  "智能陪练 (Smart Partner)",
-  "语言教练 (Language Coach)",
-  "学习伙伴 (Study Buddy)",
-  "会话高手 (Conversation Expert)",
-  "多语达人 (Polyglot Pro)",
-  "AI语伴 (AI Language Partner)",
-  "智慧导师 (Wise Tutor)",
-  "练习助手 (Practice Assistant)",
-  "语法专家 (Grammar Expert)",
-  "发音教练 (Pronunciation Coach)",
-  "词汇大师 (Vocabulary Master)",
-  "文化向导 (Culture Guide)",
+  "AI Bot",
+  "Language Master",
+  "Fluent Helper",
+  "Smart Partner",
+  "Language Coach",
+  "Study Buddy",
+  "Conversation Expert",
+  "Polyglot Pro",
+  "AI Language Partner",
+  "Wise Tutor",
+  "Practice Assistant",
+  "Grammar Expert",
+  "Pronunciation Coach",
+  "Vocabulary Master",
+  "Culture Guide",
 ];
 
 interface MatchFinderProps {
@@ -135,7 +135,7 @@ export default function MatchFinder({
               data-testid="button-practice"
             >
               <Bot className="w-5 h-5 mr-2" />
-              AI
+              Practice with AI Bot
             </Button>
 
             <div className="grid grid-cols-3 gap-4 pt-4 text-center">
