@@ -54,6 +54,13 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 - Initial match history set to 0 wins/losses
 - Turn phase indicators show current action (answer/ask/bot thinking)
 
+**Timer System**
+- Difficulty-based timer durations: Easy=90s, Medium=60s, Hard=30s
+- Timer pauses during bot phases (bot-question, bot-answer) and only counts during user phases
+- Single interval implementation using refs to prevent multiple timers and stale closures
+- Countdown rate: exactly 1 second per real second
+- Timer resets to full duration at the start of each user turn (answer/question)
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
