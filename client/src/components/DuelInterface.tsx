@@ -135,6 +135,12 @@ export default function DuelInterface({
   }, [round, turnPhase]);
 
   const askBotQuestion = async () => {
+    setTurnPhase("bot-question"); // Show "Bot is thinking..." state
+    
+    // Add delay to simulate bot typing (1.5-2.5 seconds)
+    const delay = 1500 + Math.random() * 1000;
+    await new Promise(resolve => setTimeout(resolve, delay));
+    
     const response = await botQuestionMutation.mutateAsync();
     if (response?.question) {
       const botMessage: Message = {
@@ -198,6 +204,10 @@ export default function DuelInterface({
 
     // Bot answers the question
     if (isBot) {
+      // Add delay to simulate bot typing (1.5-2.5 seconds)
+      const delay = 1500 + Math.random() * 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
       const response = await botAnswerMutation.mutateAsync(userMessage.text);
       if (response?.answer) {
         const botAnswerMsg: Message = {
@@ -227,7 +237,11 @@ export default function DuelInterface({
   };
 
   const handleForfeit = () => {
-    if (window.confirm("Are you sure you want to forfeit this match? You will lose Elo points.")) {
+    const message = isBot 
+      ? "Are you sure you want to end this practice session?" 
+      : "Are you sure you want to forfeit this match? You will lose Elo points.";
+    
+    if (window.confirm(message)) {
       onForfeit?.();
     }
   };

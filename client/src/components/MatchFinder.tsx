@@ -27,6 +27,8 @@ const BOT_NAMES = [
 
 interface MatchFinderProps {
   onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty) => void;
+  onLanguageChange?: (language: Language) => void;
+  currentLanguage?: Language;
   userElo?: number;
   userWins?: number;
   userLosses?: number;
@@ -34,13 +36,20 @@ interface MatchFinderProps {
 
 export default function MatchFinder({ 
   onMatchFound,
+  onLanguageChange,
+  currentLanguage = "Chinese",
   userElo = 1000,
   userWins = 0,
   userLosses = 0
 }: MatchFinderProps) {
   const [searching, setSearching] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>("Chinese");
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(currentLanguage);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
+
+  const handleLanguageChange = (language: Language) => {
+    setSelectedLanguage(language);
+    onLanguageChange?.(language);
+  };
 
   const handleFindMatch = () => {
     setSearching(true);
@@ -74,7 +83,7 @@ export default function MatchFinder({
           <CardContent className="space-y-4 pb-8">
             <div className="flex items-center gap-3 mb-2">
               <Languages className="w-5 h-5 text-muted-foreground" />
-              <Select value={selectedLanguage} onValueChange={(value) => setSelectedLanguage(value as Language)}>
+              <Select value={selectedLanguage} onValueChange={(value) => handleLanguageChange(value as Language)}>
                 <SelectTrigger className="flex-1" data-testid="select-language">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>

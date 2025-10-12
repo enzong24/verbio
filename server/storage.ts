@@ -1,17 +1,43 @@
-import { type User, type UpsertUser } from "@shared/schema";
+import { 
+  type User, 
+  type UpsertUser, 
+  type UserLanguageStats, 
+  type InsertUserLanguageStats,
+  type Match,
+  type InsertMatch
+} from "@shared/schema";
 
 // Storage interface for Replit Auth
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
+  
+  // Language-specific stats
+  getUserLanguageStats(userId: string, language: string): Promise<UserLanguageStats | undefined>;
+  upsertUserLanguageStats(stats: InsertUserLanguageStats): Promise<UserLanguageStats>;
+  getAllLanguageStats(language: string): Promise<UserLanguageStats[]>;
+  
+  // Match history
+  createMatch(match: InsertMatch): Promise<Match>;
+  getUserMatches(userId: string, language?: string, limit?: number): Promise<Match[]>;
+  getUserSkillProgress(userId: string, language?: string): Promise<{
+    grammar: number;
+    fluency: number;
+    vocabulary: number;
+    naturalness: number;
+  }>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private languageStats: Map<string, UserLanguageStats>; // key: `${userId}-${language}`
+  private matches: Map<string, Match>;
 
   constructor() {
     this.users = new Map();
+    this.languageStats = new Map();
+    this.matches = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -26,9 +52,6 @@ export class MemStorage implements IStorage {
       firstName: userData.firstName || null,
       lastName: userData.lastName || null,
       profileImageUrl: userData.profileImageUrl || null,
-      elo: userData.elo ?? existingUser?.elo ?? 1000,
-      wins: userData.wins ?? existingUser?.wins ?? 0,
-      losses: userData.losses ?? existingUser?.losses ?? 0,
       createdAt: existingUser?.createdAt || new Date(),
       updatedAt: new Date(),
     };
@@ -38,6 +61,89 @@ export class MemStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return Array.from(this.users.values());
+  }
+
+  async getUserLanguageStats(userId: string, language: string): Promise<UserLanguageStats | undefined> {
+    return this.languageStats.get(`${userId}-${language}`);
+  }
+
+  async upsertUserLanguageStats(statsData: InsertUserLanguageStats): Promise<UserLanguageStats> {
+    const key = `${statsData.userId}-${statsData.language}`;
+    const existing = this.languageStats.get(key);
+    const stats: UserLanguageStats = {
+      id: existing?.id || crypto.randomUUID(),
+      userId: statsData.userId!,
+      language: statsData.language!,
+      elo: statsData.elo ?? existing?.elo ?? 1000,
+      wins: statsData.wins ?? existing?.wins ?? 0,
+      losses: statsData.losses ?? existing?.losses ?? 0,
+      createdAt: existing?.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
+    this.languageStats.set(key, stats);
+    return stats;
+  }
+
+  async getAllLanguageStats(language: string): Promise<UserLanguageStats[]> {
+    return Array.from(this.languageStats.values()).filter(stats => stats.language === language);
+  }
+
+  async createMatch(matchData: InsertMatch): Promise<Match> {
+    const match: Match = {
+      id: crypto.randomUUID(),
+      userId: matchData.userId!,
+      opponent: matchData.opponent!,
+      result: matchData.result!,
+      eloChange: matchData.eloChange!,
+      language: matchData.language!,
+      difficulty: matchData.difficulty!,
+      grammarScore: matchData.grammarScore!,
+      fluencyScore: matchData.fluencyScore!,
+      vocabularyScore: matchData.vocabularyScore!,
+      naturalnessScore: matchData.naturalnessScore!,
+      overallScore: matchData.overallScore!,
+      createdAt: new Date(),
+    };
+    this.matches.set(match.id, match);
+    return match;
+  }
+
+  async getUserMatches(userId: string, language?: string, limit: number = 10): Promise<Match[]> {
+    const userMatches = Array.from(this.matches.values())
+      .filter(match => match.userId === userId && (!language || match.language === language))
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+      .slice(0, limit);
+    return userMatches;
+  }
+
+  async getUserSkillProgress(userId: string, language?: string): Promise<{
+    grammar: number;
+    fluency: number;
+    vocabulary: number;
+    naturalness: number;
+  }> {
+    const userMatches = await this.getUserMatches(userId, language, 20);
+    
+    if (userMatches.length === 0) {
+      return { grammar: 0, fluency: 0, vocabulary: 0, naturalness: 0 };
+    }
+
+    const totals = userMatches.reduce(
+      (acc, match) => ({
+        grammar: acc.grammar + match.grammarScore,
+        fluency: acc.fluency + match.fluencyScore,
+        vocabulary: acc.vocabulary + match.vocabularyScore,
+        naturalness: acc.naturalness + match.naturalnessScore,
+      }),
+      { grammar: 0, fluency: 0, vocabulary: 0, naturalness: 0 }
+    );
+
+    return {
+      grammar: Math.round(totals.grammar / userMatches.length),
+      fluency: Math.round(totals.fluency / userMatches.length),
+      vocabulary: Math.round(totals.vocabulary / userMatches.length),
+      naturalness: Math.round(totals.naturalness / userMatches.length),
+    };
   }
 }
 

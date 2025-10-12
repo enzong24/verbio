@@ -2,6 +2,13 @@ import { Swords, Trophy, User, Target, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   username?: string;
@@ -58,28 +65,52 @@ export default function Header({
               {elo} Elo
             </Badge>
           </div>
-          <Avatar className="w-9 h-9 border border-border" data-testid="avatar-user">
-            {profileImageUrl && (
-              <img 
-                src={profileImageUrl} 
-                alt={username} 
-                className="w-full h-full object-cover"
-              />
-            )}
-            <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-              {username.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => window.location.href = "/api/logout"}
-              data-testid="button-logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button 
+                className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                data-testid="button-profile-menu"
+              >
+                <Avatar className="w-9 h-9 border border-border hover-elevate" data-testid="avatar-user">
+                  {profileImageUrl && (
+                    <img 
+                      src={profileImageUrl} 
+                      alt={username} 
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                    {username.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-semibold">{username}</p>
+                <p className="text-xs text-muted-foreground">
+                  {elo} Elo
+                </p>
+              </div>
+              {isAuthenticated && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      localStorage.removeItem('guestMode');
+                      localStorage.removeItem('currentLanguage');
+                      window.location.href = "/api/logout";
+                    }}
+                    className="gap-2 text-destructive focus:text-destructive"
+                    data-testid="menu-item-logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient, apiRequest } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +12,7 @@ import DuelInterface from "@/components/DuelInterface";
 import MatchResults from "@/components/MatchResults";
 import Leaderboard from "@/components/Leaderboard";
 import ProfileStats from "@/components/ProfileStats";
-import type { GradingResult } from "@shared/schema";
+import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 
 type Page = "duel" | "leaderboard" | "profile" | "match" | "results";
@@ -36,23 +36,41 @@ function MainApp() {
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
 
-  // Get stats from user for authenticated, or localStorage for guest
-  const [guestElo, setGuestElo] = useState(() => {
-    const saved = localStorage.getItem('guestElo');
-    return saved ? parseInt(saved) : 1000;
-  });
-  const [guestWins, setGuestWins] = useState(() => {
-    const saved = localStorage.getItem('guestWins');
-    return saved ? parseInt(saved) : 0;
-  });
-  const [guestLosses, setGuestLosses] = useState(() => {
-    const saved = localStorage.getItem('guestLosses');
-    return saved ? parseInt(saved) : 0;
+  // Track current language (persisted to localStorage)
+  const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('currentLanguage');
+    return (saved as Language) || "Chinese";
   });
 
-  const userElo = isAuthenticated ? (user?.elo ?? 1000) : guestElo;
-  const userWins = isAuthenticated ? (user?.wins ?? 0) : guestWins;
-  const userLosses = isAuthenticated ? (user?.losses ?? 0) : guestLosses;
+  // Update localStorage when language changes
+  useEffect(() => {
+    localStorage.setItem('currentLanguage', currentLanguage);
+  }, [currentLanguage]);
+
+  // Fetch language-specific stats for authenticated users
+  const { data: languageStats, refetch: refetchStats } = useQuery<UserLanguageStats>({
+    queryKey: [`/api/user/stats/${currentLanguage}`, currentLanguage],
+    enabled: isAuthenticated,
+  });
+
+  // Get stats from languageStats for authenticated, or localStorage for guest
+  const getGuestStats = (language: Language) => {
+    const saved = localStorage.getItem(`guest_${language}`);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return { elo: 1000, wins: 0, losses: 0 };
+  };
+
+  const [guestStats, setGuestStats] = useState(() => getGuestStats(currentLanguage));
+
+  useEffect(() => {
+    setGuestStats(getGuestStats(currentLanguage));
+  }, [currentLanguage]);
+
+  const userElo = isAuthenticated ? (languageStats?.elo ?? 1000) : guestStats.elo;
+  const userWins = isAuthenticated ? (languageStats?.wins ?? 0) : guestStats.wins;
+  const userLosses = isAuthenticated ? (languageStats?.losses ?? 0) : guestStats.losses;
   const username = user?.firstName || user?.email?.split('@')[0] || "Guest";
 
   useEffect(() => {
@@ -134,32 +152,71 @@ function MainApp() {
       // Update database for authenticated users
       try {
         await apiRequest("POST", "/api/user/stats", {
+          language: currentLanguage,
           elo: newElo,
           wins: newWins,
           losses: newLosses
         });
-        // Refresh user data
-        window.location.reload();
+        // Refetch stats and invalidate caches
+        await refetchStats();
+        queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${currentLanguage}`, currentLanguage] });
+        queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${currentLanguage}`, currentLanguage] });
+        queryClient.invalidateQueries({ queryKey: [`/api/leaderboard?language=${currentLanguage}`, currentLanguage] });
       } catch (error) {
         console.error("Failed to update stats:", error);
       }
     } else {
       // Update localStorage for guests
-      setGuestElo(newElo);
-      setGuestWins(newWins);
-      setGuestLosses(newLosses);
-      localStorage.setItem('guestElo', newElo.toString());
-      localStorage.setItem('guestWins', newWins.toString());
-      localStorage.setItem('guestLosses', newLosses.toString());
+      const newGuestStats = { elo: newElo, wins: newWins, losses: newLosses };
+      setGuestStats(newGuestStats);
+      localStorage.setItem(`guest_${currentLanguage}`, JSON.stringify(newGuestStats));
     }
   };
 
   const handleResultsContinue = async () => {
-    // Update Elo based on result
-    if (gradingResult) {
+    // Update Elo based on result and difficulty
+    if (gradingResult && matchData) {
       const isWin = gradingResult.overall >= 70;
-      const change = isWin ? 15 : -15;
-      await updateStats(change, isWin, !isWin);
+      
+      // Calculate Elo change based on difficulty
+      const eloChanges = {
+        Easy: 8,
+        Medium: 12,
+        Hard: 16,
+      };
+      const change = isWin 
+        ? eloChanges[matchData.difficulty] 
+        : -eloChanges[matchData.difficulty];
+      
+      // Only update stats if not a bot match (practice mode)
+      if (!matchData.isBot) {
+        // Save match history for authenticated users
+        if (isAuthenticated) {
+          try {
+            await apiRequest("POST", "/api/match/save", {
+              opponent: matchData.opponent,
+              result: isWin ? "win" : "loss",
+              eloChange: change,
+              language: matchData.language,
+              difficulty: matchData.difficulty,
+              scores: {
+                grammar: gradingResult.grammar,
+                fluency: gradingResult.fluency,
+                vocabulary: gradingResult.vocabulary,
+                naturalness: gradingResult.naturalness,
+                overall: gradingResult.overall,
+              },
+            });
+            // Invalidate match history and skill progress queries
+            queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`, matchData.language] });
+            queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`, matchData.language] });
+          } catch (error) {
+            console.error("Failed to save match:", error);
+          }
+        }
+        
+        await updateStats(change, isWin, !isWin);
+      }
     }
     setMatchData(null);
     setGradingResult(null);
@@ -167,8 +224,10 @@ function MainApp() {
   };
 
   const handleForfeit = async () => {
-    // Forfeit penalty
-    await updateStats(-25, false, true);
+    // Only apply forfeit penalty if not a bot match
+    if (matchData && !matchData.isBot) {
+      await updateStats(-25, false, true);
+    }
     setMatchData(null);
     setCurrentPage("duel");
   };
@@ -189,6 +248,8 @@ function MainApp() {
         {currentPage === "duel" && (
           <MatchFinder 
             onMatchFound={handleMatchFound}
+            onLanguageChange={setCurrentLanguage}
+            currentLanguage={currentLanguage}
             userElo={userElo}
             userWins={userWins}
             userLosses={userLosses}
@@ -210,17 +271,23 @@ function MainApp() {
           />
         )}
         
-        {currentPage === "results" && gradingResult && (
+        {currentPage === "results" && gradingResult && matchData && (
           <MatchResults
             gradingResult={gradingResult}
-            eloChange={15}
+            eloChange={
+              matchData.isBot ? 0 : (
+                (gradingResult.overall >= 70 ? 1 : -1) * 
+                ({ Easy: 8, Medium: 12, Hard: 16 }[matchData.difficulty])
+              )
+            }
             newElo={userElo}
+            isBot={matchData.isBot}
             onContinue={handleResultsContinue}
           />
         )}
         
         {currentPage === "leaderboard" && (
-          <Leaderboard />
+          <Leaderboard currentLanguage={currentLanguage} />
         )}
         
         {currentPage === "profile" && (
@@ -230,6 +297,8 @@ function MainApp() {
             wins={userWins}
             losses={userLosses}
             totalMatches={userWins + userLosses}
+            currentLanguage={currentLanguage}
+            isAuthenticated={isAuthenticated}
           />
         )}
       </main>

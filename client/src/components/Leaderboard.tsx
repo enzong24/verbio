@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Trophy, Medal, Crown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LeaderboardEntry {
   rank?: number;
@@ -15,13 +17,17 @@ interface LeaderboardEntry {
 
 interface LeaderboardProps {
   currentUserId?: string;
+  currentLanguage?: string;
 }
 
 export default function Leaderboard({
-  currentUserId
+  currentUserId,
+  currentLanguage = "Chinese"
 }: LeaderboardProps) {
+  const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage);
+
   const { data: leaderboardData, isLoading } = useQuery<LeaderboardEntry[]>({
-    queryKey: ["/api/leaderboard"],
+    queryKey: [`/api/leaderboard?language=${selectedLanguage}`, selectedLanguage],
     refetchOnWindowFocus: false,
   });
 
@@ -40,13 +46,20 @@ export default function Leaderboard({
     <div className="max-w-5xl mx-auto p-6">
       <Card className="border-card-border">
         <CardHeader>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-4">
             <Trophy className="w-8 h-8 text-gold" />
             <div>
               <CardTitle className="text-2xl">Global Leaderboard</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Top Chinese learners worldwide</p>
+              <p className="text-sm text-muted-foreground mt-1">Top {selectedLanguage} learners worldwide</p>
             </div>
           </div>
+          <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="Chinese" data-testid="tab-chinese">Chinese</TabsTrigger>
+              <TabsTrigger value="Spanish" data-testid="tab-spanish">Spanish</TabsTrigger>
+              <TabsTrigger value="Italian" data-testid="tab-italian">Italian</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">

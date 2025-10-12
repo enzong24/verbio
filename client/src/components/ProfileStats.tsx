@@ -1,16 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, Trophy, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-
-interface MatchHistory {
-  id: string;
-  opponent: string;
-  result: "win" | "loss";
-  eloChange: number;
-  date: string;
-}
+import { formatDistanceToNow } from "date-fns";
+import type { Match } from "@shared/schema";
 
 interface ProfileStatsProps {
   username?: string;
@@ -18,26 +13,37 @@ interface ProfileStatsProps {
   totalMatches?: number;
   wins?: number;
   losses?: number;
-  streak?: number;
-  recentMatches?: MatchHistory[];
+  currentLanguage?: string;
+  isAuthenticated?: boolean;
 }
 
 export default function ProfileStats({
   username = "Alex",
-  elo = 1547,
-  totalMatches = 35,
-  wins = 23,
-  losses = 12,
-  streak = 5,
-  recentMatches = [
-    { id: "1", opponent: "Maria García", result: "win", eloChange: 15, date: "2 hours ago" },
-    { id: "2", opponent: "Carlos Ruiz", result: "win", eloChange: 12, date: "5 hours ago" },
-    { id: "3", opponent: "Sofia López", result: "loss", eloChange: -14, date: "1 day ago" },
-    { id: "4", opponent: "AI Bot", result: "win", eloChange: 8, date: "2 days ago" },
-    { id: "5", opponent: "Diego Fernández", result: "win", eloChange: 13, date: "3 days ago" },
-  ]
+  elo = 1000,
+  totalMatches = 0,
+  wins = 0,
+  losses = 0,
+  currentLanguage = "Chinese",
+  isAuthenticated = false,
 }: ProfileStatsProps) {
-  const winRate = Math.round((wins / totalMatches) * 100);
+  const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+  // Fetch recent matches
+  const { data: matches } = useQuery<Match[]>({
+    queryKey: [`/api/user/matches?language=${currentLanguage}`, currentLanguage],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch skill progress
+  const { data: skillProgress } = useQuery<{
+    grammar: number;
+    fluency: number;
+    vocabulary: number;
+    naturalness: number;
+  }>({
+    queryKey: [`/api/user/skill-progress?language=${currentLanguage}`, currentLanguage],
+    enabled: isAuthenticated,
+  });
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -57,7 +63,7 @@ export default function ProfileStats({
                 </Badge>
                 <Badge variant="secondary" className="gap-1">
                   <TrendingUp className="w-3 h-3" />
-                  {streak} win streak
+                  {currentLanguage}
                 </Badge>
               </div>
             </div>
@@ -128,31 +134,39 @@ export default function ProfileStats({
           <CardTitle>Recent Matches</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {recentMatches.map((match) => (
-              <div
-                key={match.id}
-                className="flex items-center gap-4 p-3 rounded-md hover-elevate"
-                data-testid={`match-history-${match.id}`}
-              >
-                <Badge
-                  variant={match.result === "win" ? "default" : "destructive"}
-                  className="w-12 justify-center font-semibold"
+          {matches && matches.length > 0 ? (
+            <div className="space-y-3">
+              {matches.map((match) => (
+                <div
+                  key={match.id}
+                  className="flex items-center gap-4 p-3 rounded-md hover-elevate"
+                  data-testid={`match-history-${match.id}`}
                 >
-                  {match.result === "win" ? "W" : "L"}
-                </Badge>
-                <div className="flex-1">
-                  <div className="font-medium">vs {match.opponent}</div>
-                  <div className="text-sm text-muted-foreground">{match.date}</div>
+                  <Badge
+                    variant={match.result === "win" ? "default" : "destructive"}
+                    className="w-12 justify-center font-semibold"
+                  >
+                    {match.result === "win" ? "W" : "L"}
+                  </Badge>
+                  <div className="flex-1">
+                    <div className="font-medium">vs {match.opponent}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
+                    </div>
+                  </div>
+                  <div className={`font-mono font-bold ${
+                    match.result === "win" ? "text-success" : "text-destructive"
+                  }`}>
+                    {match.result === "win" ? "+" : ""}{match.eloChange}
+                  </div>
                 </div>
-                <div className={`font-mono font-bold ${
-                  match.result === "win" ? "text-success" : "text-destructive"
-                }`}>
-                  {match.result === "win" ? "+" : ""}{match.eloChange}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              No matches played yet. Start a duel to see your history!
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -161,34 +175,42 @@ export default function ProfileStats({
           <CardTitle>Skill Progress</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Grammar</span>
-              <span className="font-mono font-semibold text-sm">85%</span>
-            </div>
-            <Progress value={85} className="h-2" />
-          </div>
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Fluency</span>
-              <span className="font-mono font-semibold text-sm">78%</span>
-            </div>
-            <Progress value={78} className="h-2" />
-          </div>
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Vocabulary</span>
-              <span className="font-mono font-semibold text-sm">92%</span>
-            </div>
-            <Progress value={92} className="h-2" />
-          </div>
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-muted-foreground">Naturalness</span>
-              <span className="font-mono font-semibold text-sm">81%</span>
-            </div>
-            <Progress value={81} className="h-2" />
-          </div>
+          {skillProgress ? (
+            <>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Grammar</span>
+                  <span className="font-mono font-semibold text-sm">{skillProgress.grammar}%</span>
+                </div>
+                <Progress value={skillProgress.grammar} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Fluency</span>
+                  <span className="font-mono font-semibold text-sm">{skillProgress.fluency}%</span>
+                </div>
+                <Progress value={skillProgress.fluency} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Vocabulary</span>
+                  <span className="font-mono font-semibold text-sm">{skillProgress.vocabulary}%</span>
+                </div>
+                <Progress value={skillProgress.vocabulary} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">Naturalness</span>
+                  <span className="font-mono font-semibold text-sm">{skillProgress.naturalness}%</span>
+                </div>
+                <Progress value={skillProgress.naturalness} className="h-2" />
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              No skill data yet. Complete matches to see your progress!
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

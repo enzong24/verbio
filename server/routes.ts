@@ -69,7 +69,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user stats
+  // Get user stats for a language
+  app.get("/api/user/stats/:language", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const language = req.params.language;
+      
+      const stats = await storage.getUserLanguageStats(userId, language);
+      res.json(stats || { elo: 1000, wins: 0, losses: 0 });
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
+  // Update user stats for a language
   app.post("/api/user/stats", async (req: any, res) => {
     try {
       if (!req.isAuthenticated() || !req.user?.claims?.sub) {
@@ -77,42 +95,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = req.user.claims.sub;
-      const { elo, wins, losses } = req.body;
+      const { language, elo, wins, losses } = req.body;
       
-      const existingUser = await storage.getUser(userId);
-      if (!existingUser) {
-        return res.status(404).json({ message: "User not found" });
+      if (!language) {
+        return res.status(400).json({ message: "Language is required" });
       }
 
-      const updatedUser = await storage.upsertUser({
-        ...existingUser,
-        elo: elo ?? existingUser.elo,
-        wins: wins ?? existingUser.wins,
-        losses: losses ?? existingUser.losses,
+      const updatedStats = await storage.upsertUserLanguageStats({
+        userId,
+        language,
+        elo,
+        wins,
+        losses,
       });
 
-      res.json(updatedUser);
+      res.json(updatedStats);
     } catch (error) {
       console.error("Error updating user stats:", error);
       res.status(500).json({ message: "Failed to update user stats" });
     }
   });
 
-  // Get leaderboard
+  // Save match result
+  app.post("/api/match/save", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { opponent, result, eloChange, language, difficulty, scores } = req.body;
+      
+      const match = await storage.createMatch({
+        userId,
+        opponent,
+        result,
+        eloChange,
+        language,
+        difficulty,
+        grammarScore: scores.grammar,
+        fluencyScore: scores.fluency,
+        vocabularyScore: scores.vocabulary,
+        naturalnessScore: scores.naturalness,
+        overallScore: scores.overall,
+      });
+
+      res.json(match);
+    } catch (error) {
+      console.error("Error saving match:", error);
+      res.status(500).json({ message: "Failed to save match" });
+    }
+  });
+
+  // Get user matches
+  app.get("/api/user/matches", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const language = req.query.language as string | undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      
+      const matches = await storage.getUserMatches(userId, language, limit);
+      res.json(matches);
+    } catch (error) {
+      console.error("Error fetching matches:", error);
+      res.status(500).json({ message: "Failed to fetch matches" });
+    }
+  });
+
+  // Get user skill progress
+  app.get("/api/user/skill-progress", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const language = req.query.language as string | undefined;
+      
+      const progress = await storage.getUserSkillProgress(userId, language);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching skill progress:", error);
+      res.status(500).json({ message: "Failed to fetch skill progress" });
+    }
+  });
+
+  // Get leaderboard for a specific language
   app.get("/api/leaderboard", async (req, res) => {
     try {
+      const language = (req.query.language as string) || "Chinese";
+      const allStats = await storage.getAllLanguageStats(language);
       const allUsers = await storage.getAllUsers();
       
+      // Create a map of userId to user for quick lookup
+      const userMap = new Map(allUsers.map(user => [user.id, user]));
+      
       // Sort by Elo (descending) and map to leaderboard format
-      const leaderboard = allUsers
-        .filter(user => user.wins + user.losses > 0) // Only show users with at least 1 match
+      const leaderboard = allStats
+        .filter(stats => stats.wins + stats.losses > 0) // Only show users with at least 1 match
         .sort((a, b) => b.elo - a.elo)
-        .map(user => ({
-          username: user.firstName || user.email?.split('@')[0] || "Unknown",
-          elo: user.elo,
-          wins: user.wins,
-          losses: user.losses,
-        }));
+        .map(stats => {
+          const user = userMap.get(stats.userId);
+          return {
+            username: user?.firstName || user?.email?.split('@')[0] || "Unknown",
+            elo: stats.elo,
+            wins: stats.wins,
+            losses: stats.losses,
+          };
+        });
       
       res.json(leaderboard);
     } catch (error) {

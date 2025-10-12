@@ -9,6 +9,7 @@ interface MatchResultsProps {
   gradingResult: GradingResult;
   eloChange?: number;
   newElo?: number;
+  isBot?: boolean;
   onContinue?: () => void;
 }
 
@@ -16,6 +17,7 @@ export default function MatchResults({
   gradingResult,
   eloChange = 15,
   newElo = 1562,
+  isBot = false,
   onContinue
 }: MatchResultsProps) {
   const isWinner = gradingResult.overall >= 70;
@@ -43,21 +45,25 @@ export default function MatchResults({
             <CardTitle className="text-4xl font-bold mb-2" data-testid="text-result">
               {isWinner ? "Victory!" : "Good Effort!"}
             </CardTitle>
-            <div className="flex items-center justify-center gap-2 text-2xl font-mono font-bold">
-              {actualEloChange > 0 ? (
-                <>
-                  <TrendingUp className="w-6 h-6 text-success" />
-                  <span className="text-success">+{actualEloChange}</span>
-                </>
-              ) : (
-                <>
-                  <TrendingDown className="w-6 h-6 text-destructive" />
-                  <span className="text-destructive">{actualEloChange}</span>
-                </>
-              )}
-              <span className="text-muted-foreground mx-2">→</span>
-              <span data-testid="text-new-elo">{newElo + actualEloChange} Elo</span>
-            </div>
+            {isBot ? (
+              <p className="text-muted-foreground">Practice Mode - No Elo Change</p>
+            ) : (
+              <div className="flex items-center justify-center gap-2 text-2xl font-mono font-bold">
+                {actualEloChange > 0 ? (
+                  <>
+                    <TrendingUp className="w-6 h-6 text-success" />
+                    <span className="text-success">+{actualEloChange}</span>
+                  </>
+                ) : (
+                  <>
+                    <TrendingDown className="w-6 h-6 text-destructive" />
+                    <span className="text-destructive">{actualEloChange}</span>
+                  </>
+                )}
+                <span className="text-muted-foreground mx-2">→</span>
+                <span data-testid="text-new-elo">{newElo + actualEloChange} Elo</span>
+              </div>
+            )}
           </CardHeader>
 
           <CardContent className="space-y-6">

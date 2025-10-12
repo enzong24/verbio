@@ -21,6 +21,18 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type UpsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
+
+// Language-specific stats for each user
+export const userLanguageStats = pgTable("user_language_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  language: varchar("language").notNull(), // 'Chinese', 'Spanish', 'Italian'
   elo: integer("elo").notNull().default(1000),
   wins: integer("wins").notNull().default(0),
   losses: integer("losses").notNull().default(0),
@@ -28,8 +40,28 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export type UpsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
+export type UserLanguageStats = typeof userLanguageStats.$inferSelect;
+export type InsertUserLanguageStats = typeof userLanguageStats.$inferInsert;
+
+// Match history for tracking individual matches
+export const matches = pgTable("matches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  opponent: varchar("opponent").notNull(),
+  result: varchar("result").notNull(), // 'win' or 'loss'
+  eloChange: integer("elo_change").notNull(),
+  language: varchar("language").notNull(),
+  difficulty: varchar("difficulty").notNull(),
+  grammarScore: integer("grammar_score").notNull(),
+  fluencyScore: integer("fluency_score").notNull(),
+  vocabularyScore: integer("vocabulary_score").notNull(),
+  naturalnessScore: integer("naturalness_score").notNull(),
+  overallScore: integer("overall_score").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Match = typeof matches.$inferSelect;
+export type InsertMatch = typeof matches.$inferInsert;
 
 // Match/Duel schemas
 export const messageSchema = z.object({
