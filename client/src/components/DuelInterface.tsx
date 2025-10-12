@@ -48,9 +48,19 @@ export default function DuelInterface({
   onComplete,
   onForfeit
 }: DuelInterfaceProps) {
+  // Get timer duration based on difficulty
+  const getTimerDuration = () => {
+    switch (difficulty) {
+      case "Easy": return 90;    // 1.5 minutes
+      case "Medium": return 60;  // 1 minute
+      case "Hard": return 30;    // 30 seconds
+      default: return 60;
+    }
+  };
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(getTimerDuration());
   const [round, setRound] = useState(1);
   const [turnPhase, setTurnPhase] = useState<TurnPhase>("bot-question");
   const [isGrading, setIsGrading] = useState(false);
@@ -120,7 +130,7 @@ export default function DuelInterface({
               // Skip to user question phase if user didn't answer
               handleDontKnow();
             }
-            return 30;
+            return getTimerDuration();
           } else {
             clearInterval(timer);
             handleComplete();
@@ -148,7 +158,7 @@ export default function DuelInterface({
         setMessages(prev => [...prev, botMessage]);
         setBotQuestions(prev => [...prev, response.question]);
         setTurnPhase("user-answer");
-        setTimeLeft(30);
+        setTimeLeft(getTimerDuration());
       } else {
         // If no question, reset to user-answer state
         setTurnPhase("user-answer");
@@ -175,7 +185,7 @@ export default function DuelInterface({
     };
     setMessages(prev => [...prev, skipMessage]);
     setTurnPhase("user-question");
-    setTimeLeft(30);
+    setTimeLeft(getTimerDuration());
   };
 
   const handleUserAnswer = async () => {
@@ -190,7 +200,7 @@ export default function DuelInterface({
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setTurnPhase("user-question");
-    setTimeLeft(30);
+    setTimeLeft(getTimerDuration());
   };
 
   const handleUserQuestion = async () => {
