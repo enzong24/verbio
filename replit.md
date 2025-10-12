@@ -4,6 +4,30 @@
 
 LangDuel is an AI-powered, competitive language learning platform that gamifies language acquisition through Elo-ranked duels. Users engage in themed conversations with opponents or AI bots, receive instant AI feedback on their performance, and track their progress through a competitive ranking system. The platform transforms language learning from passive study into an engaging, measurable experience similar to competitive gaming platforms like Chess.com.
 
+## Recent Updates (October 12, 2025)
+
+**Authentication & Guest Mode**
+- Implemented Replit Auth integration for user sign-in/sign-out with Google, GitHub, X, Apple, and email/password
+- Added guest mode allowing users to play without signing in, persisted via localStorage
+- Landing page for logged-out users with "Sign In" and "Play as Guest" options
+- Auth endpoint returns `null` for unauthenticated users (no 401 blocking)
+- Profile images displayed in header for authenticated users
+- Logout button appears for authenticated users
+
+**Difficulty Level System**
+- Added difficulty selection (Easy, Medium, Hard) to match finder
+- Difficulty affects both AI bot response complexity and grading standards
+- Easy: Simple vocabulary, basic structures, encouraging grading
+- Medium: Conversational flow, balanced grading expectations
+- Hard: Advanced vocabulary, idioms, complex structures, strict grading
+- Difficulty parameter integrated into both `/api/grade` and `/api/bot-response` endpoints
+
+**AI Integration**
+- Restored OpenAI GPT-4o for all grading and bot responses
+- Context-aware grading prompts adjust expectations based on difficulty level
+- Bot responses adapt complexity and vocabulary richness to selected difficulty
+- Maintained JSON-structured responses for reliable parsing
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -28,7 +52,9 @@ Preferred communication style: Simple, everyday language.
 **State Management**
 - Local component state using React hooks
 - Server state managed through TanStack Query with configured stale times and refetch policies
-- In-memory mock data for prototyping (user Elo, match history)
+- Guest mode state persisted in localStorage
+- In-memory mock data for prototyping (user Elo, match history for guests)
+- Authenticated user data retrieved from database via `/api/auth/user` endpoint
 
 **Key UI Patterns**
 - Real-time conversation interface with message threading
@@ -46,8 +72,12 @@ Preferred communication style: Simple, everyday language.
 
 **API Design**
 - RESTful endpoints for grading and bot interactions
-- POST `/api/grade` - Receives conversation data and returns AI-generated performance scores
-- POST `/api/bot-response` - Generates contextual AI opponent responses
+- GET `/api/auth/user` - Returns authenticated user or `null` for unauthenticated/guest users
+- GET `/api/login` - Initiates Replit Auth OIDC login flow
+- GET `/api/logout` - Logs out user and redirects to Replit end-session URL
+- GET `/api/callback` - OAuth callback handler for Replit Auth
+- POST `/api/grade` - Receives conversation data with difficulty level and returns AI-generated performance scores
+- POST `/api/bot-response` - Generates contextual AI opponent responses based on difficulty level
 - JSON request/response format with Zod schema validation
 
 **In-Memory Data Storage**
@@ -67,14 +97,17 @@ Preferred communication style: Simple, everyday language.
 **AI Services**
 - **OpenAI API** (GPT-4o model) - Primary AI service for conversation evaluation and bot responses
   - Grading rubric: Grammar (0-100), Fluency (0-100), Vocabulary (0-100), Naturalness (0-100)
-  - Contextual response generation based on topic and target vocabulary
+  - Difficulty-aware grading with adjusted expectations (Easy: encouraging, Medium: balanced, Hard: strict)
+  - Contextual response generation based on topic, target vocabulary, and difficulty level
+  - Bot responses adapt complexity, vocabulary richness, and sentence structures to difficulty
 
-**Database (Configured but Optional)**
+**Database**
 - **Neon Postgres** via `@neondatabase/serverless` - Serverless PostgreSQL with connection pooling
 - **Drizzle ORM** - Type-safe SQL query builder with schema migrations
-- Schema defines users table with username/password authentication
+- **Sessions table** - Stores Replit Auth session data for authenticated users
+- **Users table** - Stores user profiles (id, email, firstName, lastName, profileImageUrl, timestamps)
 - Migration system configured via `drizzle-kit` with PostgreSQL dialect
-- Note: Currently using in-memory storage; database integration is prepared but not active
+- In-memory storage (`MemStorage`) used for guest mode and development; implements same `IStorage` interface as database storage
 
 **UI Component Libraries**
 - **Radix UI** - Headless, accessible component primitives (dialogs, popovers, dropdowns, etc.)
@@ -87,6 +120,14 @@ Preferred communication style: Simple, everyday language.
 - **React Hook Form** with `@hookform/resolvers` for form state management
 - **Zod** - Runtime type validation and schema definition
 - **drizzle-zod** - Database schema to Zod schema conversion
+
+**Authentication & Session Management**
+- **Replit Auth (OpenID Connect)** - OAuth provider supporting Google, GitHub, X, Apple, email/password
+- **openid-client** - OpenID Connect client library for Passport.js integration
+- **Passport.js** - Authentication middleware for Express with OIDC strategy
+- **express-session** - Session management with PostgreSQL store via `connect-pg-simple`
+- **memoizee** - Caching OIDC configuration to reduce discovery calls
+- Session TTL: 1 week with automatic token refresh
 
 **Development Tools**
 - **Replit-specific plugins** - Runtime error overlay, cartographer, dev banner for Replit environment
