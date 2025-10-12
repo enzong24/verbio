@@ -18,7 +18,7 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 **Expanded Theme System**
 - Added 13 comprehensive themes: Travel, Food, Business, Family, Technology, Health, Education, Entertainment, Nature, Shopping, Sports, Weather, Social
 - Each theme has difficulty-specific vocabulary (Easy, Medium, Hard)
-- Vocabulary varies significantly between difficulty levels (7 words for Easy, 7 for Medium, 6 for Hard)
+- Vocabulary counts optimized by difficulty: 3 words for Easy, 5 words for Medium, 7 words for Hard
 - Full language support for Chinese (with pinyin), Spanish, and Italian
 - Random theme selection for each match with appropriate vocabulary
 
