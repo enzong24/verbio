@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import VocabularyBadge from "@/components/VocabularyBadge";
 import TextWithPinyin from "@/components/TextWithPinyin";
+import AccentKeyboard from "@/components/AccentKeyboard";
 import type { Message, GradingResult } from "@shared/schema";
 
 interface VocabWord {
@@ -71,6 +72,7 @@ export default function DuelInterface({
   const shouldCountRef = useRef(false);
   const currentRoundRef = useRef(1);
   const currentTurnPhaseRef = useRef<TurnPhase>("bot-question");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const botQuestionMutation = useMutation({
     mutationFn: async () => {
@@ -284,6 +286,20 @@ export default function DuelInterface({
     }
   };
 
+  const handleAccentClick = (accent: string) => {
+    if (!inputRef.current) return;
+    
+    const cursorPosition = inputRef.current.selectionStart ?? input.length;
+    const newText = input.slice(0, cursorPosition) + accent + input.slice(cursorPosition);
+    setInput(newText);
+    
+    // Focus input and set cursor position after the inserted accent
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(cursorPosition + accent.length, cursorPosition + accent.length);
+    }, 0);
+  };
+
   const progress = (round / maxRounds) * 100;
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
@@ -388,8 +404,10 @@ export default function DuelInterface({
             </div>
 
             <div className="p-4 border-t border-card-border bg-card">
+              <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
               <div className="flex gap-2">
                 <Input
+                  ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
