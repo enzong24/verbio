@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { gradingRequestSchema } from "@shared/schema";
-import { gradeConversation, generateBotResponse } from "./openai";
+import { gradeConversation, generateBotQuestion, generateBotAnswer } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -39,16 +39,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate bot response
-  app.post("/api/bot-response", async (req, res) => {
+  // Generate bot question
+  app.post("/api/bot-question", async (req, res) => {
     try {
-      const { conversationHistory, topic, vocabulary, language = "Chinese", difficulty = "Medium" } = req.body;
-      const response = await generateBotResponse(conversationHistory, topic, vocabulary, language, difficulty);
-      res.json({ response });
+      const { topic, vocabulary, language = "Chinese", difficulty = "Medium", previousQuestions = [] } = req.body;
+      const question = await generateBotQuestion(topic, vocabulary, language, difficulty, previousQuestions);
+      res.json({ question });
     } catch (error: any) {
-      console.error("Bot response error:", error);
+      console.error("Bot question error:", error);
       res.status(500).json({ 
-        error: "Failed to generate response",
+        error: "Failed to generate question",
+        message: error.message 
+      });
+    }
+  });
+
+  // Generate bot answer
+  app.post("/api/bot-answer", async (req, res) => {
+    try {
+      const { userQuestion, topic, vocabulary, language = "Chinese", difficulty = "Medium" } = req.body;
+      const answer = await generateBotAnswer(userQuestion, topic, vocabulary, language, difficulty);
+      res.json({ answer });
+    } catch (error: any) {
+      console.error("Bot answer error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate answer",
         message: error.message 
       });
     }

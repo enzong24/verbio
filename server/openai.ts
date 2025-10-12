@@ -85,40 +85,35 @@ Respond with JSON in this exact format:
   }
 }
 
-export async function generateBotResponse(
-  conversationHistory: Array<{ sender: string; text: string }>,
+export async function generateBotQuestion(
   topic: string,
   vocabulary: string[],
   language: string = "Chinese",
-  difficulty: string = "Medium"
+  difficulty: string = "Medium",
+  previousQuestions: string[] = []
 ): Promise<string> {
-  // Build conversation context
-  const conversationContext = conversationHistory
-    .map(msg => `${msg.sender === "user" ? "Learner" : "You"}: ${msg.text}`)
-    .join("\n");
-
   const difficultyInstructions: Record<string, string> = {
-    Easy: "Use simple vocabulary and basic sentence structures. Be encouraging and patient.",
-    Medium: "Use moderate vocabulary and natural sentence structures. Be conversational and engaging.",
-    Hard: "Use advanced vocabulary, idioms, and complex sentence structures. Challenge the learner."
+    Easy: "Use simple vocabulary and basic sentence structures.",
+    Medium: "Use moderate vocabulary and natural sentence structures.",
+    Hard: "Use advanced vocabulary, idioms, and complex sentence structures."
   };
 
-  const prompt = `You are having a natural conversation in ${language} about ${topic}. 
+  const prompt = `You are a ${language} language teacher conducting a Q&A session about ${topic}.
 
 Difficulty level: ${difficulty}
 ${difficultyInstructions[difficulty] || difficultyInstructions.Medium}
 
-Previous conversation:
-${conversationContext}
+Target vocabulary to incorporate: ${vocabulary.join(", ")}
+${previousQuestions.length > 0 ? `\nPrevious questions asked:\n${previousQuestions.join("\n")}\n\nMake sure to ask a DIFFERENT question.` : ""}
 
-Continue the conversation naturally in ${language}. Respond with 1-2 sentences that:
-- Directly relate to what the learner just said
-- Ask follow-up questions or share relevant thoughts
-- Naturally incorporate vocabulary words when appropriate: ${vocabulary.join(", ")}
-- Sound like a real person having a genuine conversation
-- Match the ${difficulty} difficulty level
+Generate ONE question in ${language} that:
+- Uses at least one vocabulary word from the list
+- Is relevant to the topic "${topic}"
+- Matches the ${difficulty} difficulty level
+- Is clear and natural
+- Encourages the learner to use vocabulary words in their answer
 
-Keep your response engaging and conversational.`;
+Respond with ONLY the question in ${language}, nothing else.`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -126,7 +121,60 @@ Keep your response engaging and conversational.`;
       messages: [
         {
           role: "system",
-          content: `You are a native ${language} speaker having a natural, flowing conversation at ${difficulty} difficulty level. Be engaging, ask questions, share thoughts, and respond authentically to what the learner says. Avoid repetitive patterns.`
+          content: `You are a ${language} language teacher at ${difficulty} level. Ask clear, engaging questions that encourage learners to practice vocabulary.`
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_tokens: 150,
+    });
+
+    return response.choices[0].message.content?.trim() || "你好吗？";
+  } catch (error: any) {
+    console.error("Error generating bot question:", error);
+    throw new Error("Failed to generate bot question");
+  }
+}
+
+export async function generateBotAnswer(
+  userQuestion: string,
+  topic: string,
+  vocabulary: string[],
+  language: string = "Chinese",
+  difficulty: string = "Medium"
+): Promise<string> {
+  const difficultyInstructions: Record<string, string> = {
+    Easy: "Use simple vocabulary and basic sentence structures.",
+    Medium: "Use moderate vocabulary and natural sentence structures.",
+    Hard: "Use advanced vocabulary, idioms, and complex sentence structures."
+  };
+
+  const prompt = `You are answering a learner's question in ${language} about ${topic}.
+
+Difficulty level: ${difficulty}
+${difficultyInstructions[difficulty] || difficultyInstructions.Medium}
+
+Learner's question: ${userQuestion}
+
+Target vocabulary to incorporate: ${vocabulary.join(", ")}
+
+Answer the question in ${language} with 1-2 sentences that:
+- Directly answer the learner's question
+- Naturally incorporate at least one vocabulary word from the list
+- Match the ${difficulty} difficulty level
+- Sound natural and conversational
+
+Respond with ONLY the answer in ${language}, nothing else.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a ${language} speaker at ${difficulty} level answering questions naturally and helpfully.`
         },
         {
           role: "user",

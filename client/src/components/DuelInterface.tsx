@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Send, Flag, Clock } from "lucide-react";
+import { Send, Flag, Clock, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +30,8 @@ interface DuelInterfaceProps {
   onForfeit?: () => void;
 }
 
+type TurnPhase = "bot-question" | "user-answer" | "user-question" | "bot-answer";
+
 export default function DuelInterface({
   topic = "Travel & Tourism",
   vocabulary = [
@@ -37,10 +39,10 @@ export default function DuelInterface({
     { word: "目的地", romanization: "mùdìdì" },
     { word: "探索", romanization: "tànsuǒ" }
   ],
-  opponentName = "Maria García",
+  opponentName = "AI Bot",
   opponentElo = 1520,
-  userElo = 1547,
-  isBot = false,
+  userElo = 1000,
+  isBot = true,
   language = "Chinese",
   difficulty = "Medium",
   onComplete,
@@ -50,15 +52,30 @@ export default function DuelInterface({
   const [input, setInput] = useState("");
   const [timeLeft, setTimeLeft] = useState(30);
   const [round, setRound] = useState(1);
+  const [turnPhase, setTurnPhase] = useState<TurnPhase>("bot-question");
   const [isGrading, setIsGrading] = useState(false);
+  const [botQuestions, setBotQuestions] = useState<string[]>([]);
   const maxRounds = 5;
-  const userMessageCount = messages.filter(m => m.sender === "user").length;
 
-  const botResponseMutation = useMutation({
-    mutationFn: async (conversationHistory: Message[]) => {
+  const botQuestionMutation = useMutation({
+    mutationFn: async () => {
       const vocabStrings = vocabulary.map(v => v.word);
-      const response = await apiRequest("POST", "/api/bot-response", {
-        conversationHistory,
+      const response = await apiRequest("POST", "/api/bot-question", {
+        topic,
+        vocabulary: vocabStrings,
+        language,
+        difficulty,
+        previousQuestions: botQuestions
+      });
+      return await response.json();
+    },
+  });
+
+  const botAnswerMutation = useMutation({
+    mutationFn: async (userQuestion: string) => {
+      const vocabStrings = vocabulary.map(v => v.word);
+      const response = await apiRequest("POST", "/api/bot-answer", {
+        userQuestion,
         topic,
         vocabulary: vocabStrings,
         language,
@@ -85,12 +102,24 @@ export default function DuelInterface({
     },
   });
 
+  // Bot asks first question when component mounts
+  useEffect(() => {
+    if (isBot && messages.length === 0) {
+      askBotQuestion();
+    }
+  }, []);
+
+  // Timer
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          if (userMessageCount < maxRounds) {
-            setRound(r => r + 1);
+          if (round < maxRounds) {
+            // Move to next round
+            if (turnPhase === "user-answer" || turnPhase === "bot-question") {
+              // Skip to user question phase if user didn't answer
+              handleDontKnow();
+            }
             return 30;
           } else {
             clearInterval(timer);
@@ -103,7 +132,22 @@ export default function DuelInterface({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [userMessageCount]);
+  }, [round, turnPhase]);
+
+  const askBotQuestion = async () => {
+    const response = await botQuestionMutation.mutateAsync();
+    if (response?.question) {
+      const botMessage: Message = {
+        sender: "opponent",
+        text: response.question,
+        timestamp: Date.now()
+      };
+      setMessages(prev => [...prev, botMessage]);
+      setBotQuestions(prev => [...prev, response.question]);
+      setTurnPhase("user-answer");
+      setTimeLeft(30);
+    }
+  };
 
   const handleComplete = async () => {
     if (isGrading || messages.length === 0) return;
@@ -111,68 +155,74 @@ export default function DuelInterface({
     await gradingMutation.mutateAsync(messages);
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || userMessageCount >= maxRounds) return;
+  const handleDontKnow = () => {
+    // User skips answering - add a placeholder message
+    const skipMessage: Message = {
+      sender: "user",
+      text: "(Skipped)",
+      timestamp: Date.now()
+    };
+    setMessages(prev => [...prev, skipMessage]);
+    setTurnPhase("user-question");
+    setTimeLeft(30);
+  };
+
+  const handleUserAnswer = async () => {
+    if (!input.trim()) return;
     
-    const newMessage: Message = {
+    const userMessage: Message = {
       sender: "user",
       text: input,
       timestamp: Date.now()
     };
     
-    const updatedMessages = [...messages, newMessage];
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+    setTurnPhase("user-question");
+    setTimeLeft(30);
+  };
+
+  const handleUserQuestion = async () => {
+    if (!input.trim()) return;
+    
+    const userMessage: Message = {
+      sender: "user",
+      text: input,
+      timestamp: Date.now()
+    };
+    
+    const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput("");
+    setTurnPhase("bot-answer");
 
-    // If it's a bot match, generate response
+    // Bot answers the question
     if (isBot) {
-      const response = await botResponseMutation.mutateAsync(updatedMessages);
-      if (response?.response) {
-        setMessages([...updatedMessages, {
+      const response = await botAnswerMutation.mutateAsync(userMessage.text);
+      if (response?.answer) {
+        const botAnswerMsg: Message = {
           sender: "opponent",
-          text: response.response,
+          text: response.answer,
           timestamp: Date.now()
-        }]);
-      }
-    } else {
-      // Simulate opponent response for human matches (would be WebSocket in real app)
-      setTimeout(() => {
-        const responsesByLanguage: Record<string, string[]> = {
-          Chinese: [
-            "我很喜欢旅行！我最近去了北京。",
-            "中国文化真的很迷人，特别是美食。",
-            "探索新地方总是一个令人兴奋的冒险。",
-            "你去过中国吗？",
-            "旅行是了解其他文化的最好方式。"
-          ],
-          Spanish: [
-            "¡Me encanta viajar! Recientemente fui a Madrid.",
-            "La cultura española es fascinante, especialmente la comida.",
-            "Explorar nuevos lugares siempre es una aventura emocionante.",
-            "¿Has estado en España?",
-            "Viajar es la mejor manera de conocer otras culturas."
-          ],
-          Italian: [
-            "Adoro viaggiare! Recentemente sono stato a Roma.",
-            "La cultura italiana è affascinante, soprattutto il cibo.",
-            "Esplorare nuovi luoghi è sempre un'avventura emozionante.",
-            "Sei mai stato in Italia?",
-            "Viaggiare è il modo migliore per conoscere altre culture."
-          ]
         };
+        setMessages(prev => [...prev, botAnswerMsg]);
         
-        const responses = responsesByLanguage[language] || responsesByLanguage.Chinese;
-        setMessages(prev => [...prev, {
-          sender: "opponent",
-          text: responses[Math.floor(Math.random() * responses.length)],
-          timestamp: Date.now()
-        }]);
-      }, 1500);
+        // Move to next round or complete
+        if (round < maxRounds) {
+          setRound(r => r + 1);
+          setTimeout(() => askBotQuestion(), 1000);
+        } else {
+          setTimeout(() => handleComplete(), 2000);
+        }
+      }
     }
+  };
 
-    // Check if this was the last message
-    if (userMessageCount + 1 >= maxRounds) {
-      setTimeout(() => handleComplete(), 2000);
+  const handleSend = () => {
+    if (turnPhase === "user-answer") {
+      handleUserAnswer();
+    } else if (turnPhase === "user-question") {
+      handleUserQuestion();
     }
   };
 
@@ -182,7 +232,8 @@ export default function DuelInterface({
     }
   };
 
-  const progress = (userMessageCount / maxRounds) * 100;
+  const progress = (round / maxRounds) * 100;
+  const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -210,7 +261,9 @@ export default function DuelInterface({
                 {timeLeft}s
               </span>
             </div>
-            <div className="text-xs text-muted-foreground">Messages: {userMessageCount}/{maxRounds}</div>
+            <div className="text-xs text-muted-foreground">
+              Round: {round}/{maxRounds}
+            </div>
           </div>
 
           <Button 
@@ -245,6 +298,12 @@ export default function DuelInterface({
                   />
                 ))}
               </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                {turnPhase === "user-answer" && "⏳ Your turn to answer the question"}
+                {turnPhase === "user-question" && "❓ Your turn to ask a question using vocabulary"}
+                {turnPhase === "bot-question" && "🤖 Bot is thinking..."}
+                {turnPhase === "bot-answer" && "🤖 Bot is answering..."}
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4" data-testid="chat-messages">
@@ -260,7 +319,11 @@ export default function DuelInterface({
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    <TextWithPinyin text={msg.text} language={language} />
+                    {msg.text === "(Skipped)" ? (
+                      <span className="italic opacity-60">Skipped question</span>
+                    ) : (
+                      <TextWithPinyin text={msg.text} language={language} />
+                    )}
                   </div>
                 </div>
               ))}
@@ -279,14 +342,29 @@ export default function DuelInterface({
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder={`Type your message in ${language}...`}
+                  placeholder={
+                    turnPhase === "user-answer" 
+                      ? `Answer in ${language}...` 
+                      : `Ask a question in ${language}...`
+                  }
                   className="flex-1"
-                  disabled={userMessageCount >= maxRounds || isGrading}
+                  disabled={!isUserTurn || isGrading}
                   data-testid="input-message"
                 />
+                {turnPhase === "user-answer" && (
+                  <Button 
+                    variant="outline"
+                    onClick={handleDontKnow} 
+                    disabled={isGrading}
+                    data-testid="button-dont-know"
+                  >
+                    <HelpCircle className="w-4 h-4 mr-2" />
+                    Don't Know
+                  </Button>
+                )}
                 <Button 
                   onClick={handleSend} 
-                  disabled={userMessageCount >= maxRounds || isGrading || !input.trim()}
+                  disabled={!isUserTurn || isGrading || !input.trim()}
                   data-testid="button-send"
                 >
                   <Send className="w-4 h-4" />
@@ -319,9 +397,18 @@ export default function DuelInterface({
                     <span className="font-mono font-semibold">{opponentElo}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Messages Sent</span>
+                    <span className="text-muted-foreground">Current Round</span>
                     <span className="font-mono font-semibold">
-                      {userMessageCount}/{maxRounds}
+                      {round}/{maxRounds}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Turn Phase</span>
+                    <span className="font-mono font-semibold text-xs">
+                      {turnPhase === "user-answer" && "Answer"}
+                      {turnPhase === "user-question" && "Ask"}
+                      {turnPhase === "bot-question" && "Bot Asks"}
+                      {turnPhase === "bot-answer" && "Bot Answers"}
                     </span>
                   </div>
                 </div>
