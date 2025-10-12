@@ -53,6 +53,7 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 - Updated initial player Elo from 1547 to 1000
 - Initial match history set to 0 wins/losses
 - Turn phase indicators show current action (answer/ask/bot thinking)
+- **Accent Keyboard for Spanish and Italian**: Clickable accent buttons (á, é, í, ó, ú, ñ, ü, ¿, ¡ for Spanish; à, è, é, ì, ò, ù for Italian) appear above text input to help users type correctly and avoid score penalties
 
 **Timer System**
 - Difficulty-based timer durations: Easy=90s, Medium=60s, Hard=30s
