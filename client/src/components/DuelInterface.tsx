@@ -137,9 +137,6 @@ export default function DuelInterface({
   const askBotQuestion = async () => {
     setTurnPhase("bot-question"); // Show "Bot is thinking..." state
     
-    // Add delay to simulate bot typing (1 second)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
     const response = await botQuestionMutation.mutateAsync();
     if (response?.question) {
       const botMessage: Message = {
@@ -203,9 +200,6 @@ export default function DuelInterface({
 
     // Bot answers the question
     if (isBot) {
-      // Add delay to simulate bot typing (1 second)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       const response = await botAnswerMutation.mutateAsync(userMessage.text);
       if (response?.answer) {
         const botAnswerMsg: Message = {

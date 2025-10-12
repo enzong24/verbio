@@ -65,6 +65,21 @@ export default function Header({
               {elo} Elo
             </Badge>
           </div>
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                localStorage.clear();
+                window.location.href = "/api/logout";
+              }}
+              className="gap-2"
+              data-testid="button-sign-out"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden md:inline">Sign Out</span>
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
@@ -92,24 +107,6 @@ export default function Header({
                   {elo} Elo
                 </p>
               </div>
-              {isAuthenticated && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => {
-                      // Clear all localStorage data
-                      localStorage.clear();
-                      // Navigate to logout endpoint which will destroy session and redirect back
-                      window.location.href = "/api/logout";
-                    }}
-                    className="gap-2 text-destructive focus:text-destructive"
-                    data-testid="menu-item-logout"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </>
-              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
