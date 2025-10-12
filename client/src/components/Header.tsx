@@ -97,8 +97,9 @@ export default function Header({
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => {
-                      localStorage.removeItem('guestMode');
-                      localStorage.removeItem('currentLanguage');
+                      // Clear all localStorage data
+                      localStorage.clear();
+                      // Navigate to logout endpoint which will destroy session and redirect back
                       window.location.href = "/api/logout";
                     }}
                     className="gap-2 text-destructive focus:text-destructive"
