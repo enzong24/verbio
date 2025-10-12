@@ -1,4 +1,4 @@
-import { Swords, Trophy, User, Target } from "lucide-react";
+import { Swords, Trophy, User, Target, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,9 +8,18 @@ interface HeaderProps {
   elo?: number;
   onNavigate?: (page: string) => void;
   currentPage?: string;
+  isAuthenticated?: boolean;
+  profileImageUrl?: string | null;
 }
 
-export default function Header({ username = "Player", elo = 1200, onNavigate, currentPage = "duel" }: HeaderProps) {
+export default function Header({ 
+  username = "Player", 
+  elo = 1200, 
+  onNavigate, 
+  currentPage = "duel",
+  isAuthenticated = false,
+  profileImageUrl
+}: HeaderProps) {
   const navItems = [
     { id: "duel", label: "Duel", icon: Swords },
     { id: "practice", label: "Practice", icon: Target },
@@ -55,6 +64,16 @@ export default function Header({ username = "Player", elo = 1200, onNavigate, cu
               {username.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => window.location.href = "/api/logout"}
+              data-testid="button-logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
     </header>

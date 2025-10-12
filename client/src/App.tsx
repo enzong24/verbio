@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
+import Landing from "@/pages/Landing";
 import MatchFinder, { type Language, type Difficulty } from "@/components/MatchFinder";
 import DuelInterface from "@/components/DuelInterface";
 import MatchResults from "@/components/MatchResults";
@@ -21,7 +23,9 @@ interface VocabWord {
 }
 
 function MainApp() {
+  const { user, isLoading, isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState<Page>("duel");
+  const [isGuestMode, setIsGuestMode] = useState(false);
   const [matchData, setMatchData] = useState<{
     opponent: string;
     isBot: boolean;
@@ -32,9 +36,26 @@ function MainApp() {
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
 
-  //todo: remove mock functionality - This is prototype data
+  //todo: remove mock functionality - This is prototype data for guest mode
   const [userElo, setUserElo] = useState(1547);
-  const username = "Alex";
+  const username = user?.firstName || user?.email?.split('@')[0] || "Guest";
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('guest') === 'true') {
+      setIsGuestMode(true);
+    }
+  }, []);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>;
+  }
+
+  if (!isAuthenticated && !isGuestMode) {
+    return <Landing />;
+  }
 
   const handleMatchFound = (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty) => {
     // todo: remove mock functionality - Simulated match setup
@@ -187,6 +208,8 @@ function MainApp() {
         elo={userElo} 
         onNavigate={(page) => setCurrentPage(page as Page)}
         currentPage={currentPage}
+        isAuthenticated={isAuthenticated}
+        profileImageUrl={user?.profileImageUrl}
       />
       
       <main className="pt-16">
