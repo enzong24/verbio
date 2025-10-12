@@ -263,7 +263,6 @@ export default function DuelInterface({
                 {opponentName}
                 {isBot && <Badge variant="secondary" className="text-xs">AI Bot</Badge>}
               </div>
-              <div className="text-sm text-muted-foreground font-mono">{opponentElo} Elo</div>
             </div>
           </div>
 
@@ -404,10 +403,6 @@ export default function DuelInterface({
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Your Elo</span>
                     <span className="font-mono font-semibold">{userElo}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Opponent Elo</span>
-                    <span className="font-mono font-semibold">{opponentElo}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Current Round</span>
