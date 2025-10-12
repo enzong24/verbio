@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Send, Flag, Clock, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,11 @@ export default function DuelInterface({
   const [isGrading, setIsGrading] = useState(false);
   const [botQuestions, setBotQuestions] = useState<string[]>([]);
   const maxRounds = 5;
+  
+  // Refs to avoid recreating timer interval
+  const shouldCountRef = useRef(false);
+  const currentRoundRef = useRef(1);
+  const currentTurnPhaseRef = useRef<TurnPhase>("bot-question");
 
   const botQuestionMutation = useMutation({
     mutationFn: async () => {
@@ -119,30 +124,52 @@ export default function DuelInterface({
     }
   }, []);
 
-  // Timer
+  // Update refs when state changes
   useEffect(() => {
+    currentRoundRef.current = round;
+  }, [round]);
+
+  useEffect(() => {
+    currentTurnPhaseRef.current = turnPhase;
+    const isUserPhase = turnPhase === "user-answer" || turnPhase === "user-question";
+    shouldCountRef.current = isUserPhase;
+    console.log(`Turn phase changed to ${turnPhase}, timer ${isUserPhase ? 'active' : 'paused'}`);
+  }, [turnPhase]);
+
+  // Timer - runs once, controlled by shouldCountRef
+  useEffect(() => {
+    console.log('Creating timer interval (should only happen once)');
     const timer = setInterval(() => {
+      // Only countdown if it's the user's turn
+      if (!shouldCountRef.current) {
+        return; // Skip this tick
+      }
+
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          if (round < maxRounds) {
-            // Move to next round
-            if (turnPhase === "user-answer" || turnPhase === "bot-question") {
-              // Skip to user question phase if user didn't answer
-              handleDontKnow();
-            }
-            return getTimerDuration();
-          } else {
+          // Check if match should end
+          if (currentRoundRef.current >= maxRounds) {
             clearInterval(timer);
             handleComplete();
             return 0;
           }
+          
+          // Time's up - auto-skip if in answer phase
+          if (currentTurnPhaseRef.current === "user-answer") {
+            handleDontKnow();
+          }
+          return getTimerDuration();
         }
+        console.log(`Timer counting: ${prev} -> ${prev - 1}`);
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [round, turnPhase]);
+    return () => {
+      console.log('Cleaning up timer interval');
+      clearInterval(timer);
+    };
+  }, []); // Empty deps - timer created once and never recreated
 
   const askBotQuestion = async () => {
     try {
@@ -157,10 +184,12 @@ export default function DuelInterface({
         };
         setMessages(prev => [...prev, botMessage]);
         setBotQuestions(prev => [...prev, response.question]);
-        setTurnPhase("user-answer");
+        // Set timer value BEFORE enabling countdown
         setTimeLeft(getTimerDuration());
+        setTurnPhase("user-answer");
       } else {
         // If no question, reset to user-answer state
+        setTimeLeft(getTimerDuration());
         setTurnPhase("user-answer");
       }
     } catch (error) {
