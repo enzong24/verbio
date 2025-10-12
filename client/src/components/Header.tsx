@@ -65,21 +65,23 @@ export default function Header({
               {elo} Elo
             </Badge>
           </div>
-          {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                localStorage.clear();
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              localStorage.clear();
+              if (isAuthenticated) {
                 window.location.href = "/api/logout";
-              }}
-              className="gap-2"
-              data-testid="button-sign-out"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden md:inline">Sign Out</span>
-            </Button>
-          )}
+              } else {
+                window.location.href = "/";
+              }
+            }}
+            className="gap-2"
+            data-testid="button-sign-out"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden md:inline">Sign Out</span>
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 

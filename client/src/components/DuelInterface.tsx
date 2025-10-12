@@ -135,19 +135,28 @@ export default function DuelInterface({
   }, [round, turnPhase]);
 
   const askBotQuestion = async () => {
-    setTurnPhase("bot-question"); // Show "Bot is thinking..." state
-    
-    const response = await botQuestionMutation.mutateAsync();
-    if (response?.question) {
-      const botMessage: Message = {
-        sender: "opponent",
-        text: response.question,
-        timestamp: Date.now()
-      };
-      setMessages(prev => [...prev, botMessage]);
-      setBotQuestions(prev => [...prev, response.question]);
+    try {
+      setTurnPhase("bot-question"); // Show "Bot is thinking..." state
+      
+      const response = await botQuestionMutation.mutateAsync();
+      if (response?.question) {
+        const botMessage: Message = {
+          sender: "opponent",
+          text: response.question,
+          timestamp: Date.now()
+        };
+        setMessages(prev => [...prev, botMessage]);
+        setBotQuestions(prev => [...prev, response.question]);
+        setTurnPhase("user-answer");
+        setTimeLeft(30);
+      } else {
+        // If no question, reset to user-answer state
+        setTurnPhase("user-answer");
+      }
+    } catch (error) {
+      console.error("Error getting bot question:", error);
+      // Reset to user-answer state on error
       setTurnPhase("user-answer");
-      setTimeLeft(30);
     }
   };
 
