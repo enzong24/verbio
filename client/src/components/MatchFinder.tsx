@@ -53,7 +53,7 @@ export default function MatchFinder({
 
   const handleFindMatch = () => {
     setSearching(true);
-    // Simulate matchmaking
+    // Simulate matchmaking - competitive mode (affects Elo)
     setTimeout(() => {
       setSearching(false);
       onMatchFound?.("Maria García", false, selectedLanguage, selectedDifficulty);
@@ -135,7 +135,7 @@ export default function MatchFinder({
               data-testid="button-practice"
             >
               <Bot className="w-5 h-5 mr-2" />
-              Practice with AI Bot
+              AI
             </Button>
 
             <div className="grid grid-cols-3 gap-4 pt-4 text-center">

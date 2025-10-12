@@ -102,9 +102,9 @@ export default function DuelInterface({
     },
   });
 
-  // Bot asks first question when component mounts
+  // Bot asks first question when component mounts (always use bot since no real multiplayer)
   useEffect(() => {
-    if (isBot && messages.length === 0) {
+    if (messages.length === 0) {
       askBotQuestion();
     }
   }, []);
@@ -207,24 +207,22 @@ export default function DuelInterface({
     setInput("");
     setTurnPhase("bot-answer");
 
-    // Bot answers the question
-    if (isBot) {
-      const response = await botAnswerMutation.mutateAsync(userMessage.text);
-      if (response?.answer) {
-        const botAnswerMsg: Message = {
-          sender: "opponent",
-          text: response.answer,
-          timestamp: Date.now()
-        };
-        setMessages(prev => [...prev, botAnswerMsg]);
-        
-        // Move to next round or complete
-        if (round < maxRounds) {
-          setRound(r => r + 1);
-          setTimeout(() => askBotQuestion(), 1000);
-        } else {
-          setTimeout(() => handleComplete(), 2000);
-        }
+    // Bot always answers (no real multiplayer yet)
+    const response = await botAnswerMutation.mutateAsync(userMessage.text);
+    if (response?.answer) {
+      const botAnswerMsg: Message = {
+        sender: "opponent",
+        text: response.answer,
+        timestamp: Date.now()
+      };
+      setMessages(prev => [...prev, botAnswerMsg]);
+      
+      // Move to next round or complete
+      if (round < maxRounds) {
+        setRound(r => r + 1);
+        setTimeout(() => askBotQuestion(), 1000);
+      } else {
+        setTimeout(() => handleComplete(), 2000);
       }
     }
   };
