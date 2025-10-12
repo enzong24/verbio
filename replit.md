@@ -6,6 +6,22 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 
 ## Recent Updates (October 12, 2025)
 
+**Turn-Based Q&A System**
+- Completely refactored conversation system to structured turn-based Q&A format
+- Bot asks the first question using vocabulary words
+- User answers OR clicks "Don't Know" button to skip
+- User then asks a question using vocabulary words
+- Bot answers the user's question
+- Alternating pattern continues for 5 rounds
+- Turn phase indicators guide users through each step
+
+**Expanded Theme System**
+- Added 13 comprehensive themes: Travel, Food, Business, Family, Technology, Health, Education, Entertainment, Nature, Shopping, Sports, Weather, Social
+- Each theme has difficulty-specific vocabulary (Easy, Medium, Hard)
+- Vocabulary varies significantly between difficulty levels (7 words for Easy, 7 for Medium, 6 for Hard)
+- Full language support for Chinese (with pinyin), Spanish, and Italian
+- Random theme selection for each match with appropriate vocabulary
+
 **Authentication & Guest Mode**
 - Implemented Replit Auth integration for user sign-in/sign-out with Google, GitHub, X, Apple, and email/password
 - Added guest mode allowing users to play without signing in, persisted via localStorage
@@ -16,17 +32,27 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 
 **Difficulty Level System**
 - Added difficulty selection (Easy, Medium, Hard) to match finder
-- Difficulty affects both AI bot response complexity and grading standards
+- Difficulty affects vocabulary complexity, bot question/answer complexity, and grading standards
 - Easy: Simple vocabulary, basic structures, encouraging grading
 - Medium: Conversational flow, balanced grading expectations
 - Hard: Advanced vocabulary, idioms, complex structures, strict grading
-- Difficulty parameter integrated into both `/api/grade` and `/api/bot-response` endpoints
+- Difficulty parameter integrated into all AI endpoints
 
-**AI Integration**
-- Restored OpenAI GPT-4o for all grading and bot responses
+**AI Integration & Prompts**
+- Restored OpenAI GPT-4o for all grading, questions, and answers
+- Created dedicated endpoints for Q&A format:
+  - POST `/api/bot-question` - Generates questions using vocabulary
+  - POST `/api/bot-answer` - Generates answers to user questions
 - Context-aware grading prompts adjust expectations based on difficulty level
-- Bot responses adapt complexity and vocabulary richness to selected difficulty
+- Bot questions and answers adapt to difficulty and incorporate target vocabulary
 - Maintained JSON-structured responses for reliable parsing
+
+**UI & Navigation Changes**
+- Removed practice mode from navigation (focus on competitive duels only)
+- Added "Don't Know" button to skip difficult questions during answer phase
+- Updated initial player Elo from 1547 to 1000
+- Initial match history set to 0 wins/losses
+- Turn phase indicators show current action (answer/ask/bot thinking)
 
 ## User Preferences
 
