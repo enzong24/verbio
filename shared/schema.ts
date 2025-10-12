@@ -40,6 +40,7 @@ export const gradingRequestSchema = z.object({
   topic: z.string(),
   vocabulary: z.array(z.string()),
   language: z.string().default("Chinese"),
+  difficulty: z.string().default("Medium"),
 });
 
 export const gradingResultSchema = z.object({

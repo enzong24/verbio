@@ -42,10 +42,23 @@ function MainApp() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    const storedGuestMode = localStorage.getItem('guestMode') === 'true';
+    
     if (urlParams.get('guest') === 'true') {
+      setIsGuestMode(true);
+      localStorage.setItem('guestMode', 'true');
+      window.history.replaceState({}, '', '/');
+    } else if (storedGuestMode) {
       setIsGuestMode(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.removeItem('guestMode');
+      setIsGuestMode(false);
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">

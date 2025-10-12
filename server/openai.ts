@@ -10,10 +10,19 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     .map(m => m.text)
     .join("\n");
 
-  const prompt = `You are an expert ${request.language} language teacher evaluating a student's conversation performance.
+  const difficultyGuidelines: Record<string, string> = {
+    Easy: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success.",
+    Medium: "Grade with balanced standards. Expect correct grammar and appropriate vocabulary for the level.",
+    Hard: "Grade with high standards. Expect advanced grammar, sophisticated vocabulary, and native-like expressions."
+  };
+
+  const prompt = `You are an expert ${request.language} language teacher evaluating a student's conversation performance at ${request.difficulty} difficulty level.
 
 Topic: ${request.topic}
 Target vocabulary: ${request.vocabulary.join(", ")}
+Difficulty level: ${request.difficulty}
+
+${difficultyGuidelines[request.difficulty] || difficultyGuidelines.Medium}
 
 Student's messages:
 ${userMessages}

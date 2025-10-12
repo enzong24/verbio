@@ -75,7 +75,8 @@ export default function DuelInterface({
         messages: msgs,
         topic,
         vocabulary: vocabStrings,
-        language
+        language,
+        difficulty
       });
       return await response.json() as GradingResult;
     },

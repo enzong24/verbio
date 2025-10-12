@@ -60,6 +60,13 @@ export default function Header({
             </Badge>
           </div>
           <Avatar className="w-9 h-9 border border-border" data-testid="avatar-user">
+            {profileImageUrl && (
+              <img 
+                src={profileImageUrl} 
+                alt={username} 
+                className="w-full h-full object-cover"
+              />
+            )}
             <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
               {username.slice(0, 2).toUpperCase()}
             </AvatarFallback>
