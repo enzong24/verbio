@@ -6,41 +6,48 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 
 ## Recent Updates (October 13, 2025)
 
-**Game Progression Changes**
-- Reduced match rounds from 5 to 3 for faster, more engaging gameplay
-- Question deduplication system ensures bot never asks the same question twice in a match
+**Latest Changes - Difficulty & Penalty System Overhaul**
+- Completely restructured difficulty levels with new absolute beginner Easy level
+- Restored original timer durations: Easy=90s, Medium=60s, Hard=30s
+- Variable round counts by difficulty: Easy=3 rounds, Medium=4 rounds, Hard=5 rounds
+- Removed -5 point penalty for viewing definitions completely
+- Vocabulary definitions now show English translations on click with no penalties
+- Only skip penalty remains: -20 points per "Don't Know" button click
 
 **Penalty System**
 - 20-point penalty for clicking "Don't Know" button to skip questions
-- 5-point penalty per vocabulary definition viewed (clickable tooltip)
+- NO penalty for viewing vocabulary definitions (removed -5 point deduction)
 - Penalties automatically deducted from final score before win/loss determination
-- Grading tracks skippedQuestions and viewedDefinitions counts
+- Grading tracks only skippedQuestions count
 
 **Difficulty Restructuring**
-- New Easy difficulty: 120s timer, +6 Elo reward, very simple vocabulary and encouraging grading
-- Medium difficulty (formerly Easy): 90s timer, +8 Elo reward, conversational vocabulary and balanced grading
-- Hard difficulty (formerly Medium): 60s timer, +12 Elo reward, advanced vocabulary and strict grading
-- All AI prompts updated to match new difficulty expectations
+- New Easy difficulty: 90s timer, 3 rounds, +6 Elo reward, extremely basic vocabulary (go/eat/water) with maximum encouragement grading
+- Medium difficulty (formerly Easy): 60s timer, 4 rounds, +8 Elo reward, conversational vocabulary with balanced grading
+- Hard difficulty (formerly Medium): 30s timer, 5 rounds, +12 Elo reward, advanced vocabulary with strict grading
+- All AI prompts updated to match new difficulty expectations and vocabulary levels
 
 **Vocabulary Definition System**
-- Clickable vocabulary badges show definitions in tooltip
-- Definitions provide cross-language translations (Chinese↔Spanish/Italian, Spanish↔Italian)
-- Visual indication of -5 point penalty when viewing definitions
+- Clickable vocabulary badges show English definitions on click
+- All 195+ vocabulary words across 13 themes include English translations
+- Click badge to toggle definition visibility (no hover tooltip)
+- No penalties applied for viewing definitions
 - Hover and active elevate interactions on clickable vocabulary badges
 
 **Turn-Based Q&A System**
-- Structured turn-based Q&A format with 3 rounds (reduced from 5)
+- Structured turn-based Q&A format with variable rounds (3 for Easy, 4 for Medium, 5 for Hard)
 - Bot asks the first question using vocabulary words
 - User answers OR clicks "Don't Know" button to skip (-20 points)
 - User then asks a question using vocabulary words
 - Bot answers the user's question
 - Turn phase indicators guide users through each step
+- Question deduplication system ensures bot never asks the same question twice in a match
 
 **Expanded Theme System**
 - 13 comprehensive themes: Travel, Food, Business, Family, Technology, Health, Education, Entertainment, Nature, Shopping, Sports, Weather, Social
 - Each theme has difficulty-specific vocabulary (Easy, Medium, Hard)
-- Vocabulary counts optimized by difficulty: 3 words for Easy, 5 words for Medium, 7 words for Hard
+- Vocabulary counts optimized by difficulty: 3 words for Easy, 5-6 words for Medium, 7-12 words for Hard
 - Full language support for Chinese (with pinyin), Spanish, and Italian
+- All vocabulary includes English definitions for universal accessibility
 - Random theme selection for each match with appropriate vocabulary
 
 **Authentication & Guest Mode**
@@ -66,7 +73,7 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 - Initial player Elo: 1000 (changed from 1547)
 
 **Timer System**
-- Difficulty-based timer durations: Easy=120s, Medium=90s, Hard=60s
+- Difficulty-based timer durations: Easy=90s, Medium=60s, Hard=30s
 - Timer pauses during bot phases, only counts during user phases
 - Single interval implementation using refs to prevent multiple timers
 - Timer resets to full duration at the start of each user turn
