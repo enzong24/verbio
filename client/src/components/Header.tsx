@@ -79,12 +79,17 @@ export default function Header({
     <>
       <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-card-border z-50">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h1 
-              className="text-xl font-bold tracking-tight md:cursor-default cursor-pointer hover-elevate md:hover:bg-transparent px-3 py-1.5 rounded-md md:px-0 md:py-0" 
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden"
               data-testid="button-mobile-menu"
             >
+              <Menu className="w-5 h-5" />
+            </Button>
+            <h1 className="text-xl font-bold tracking-tight">
               LangDuel
             </h1>
           <nav className="hidden md:flex items-center gap-1">
