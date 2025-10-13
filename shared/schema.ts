@@ -61,6 +61,7 @@ export const matches = pgTable("matches", {
   vocabularyScore: integer("vocabulary_score").notNull(),
   naturalnessScore: integer("naturalness_score").notNull(),
   overallScore: integer("overall_score").notNull(),
+  isForfeit: integer("is_forfeit").notNull().default(0), // 0 = false, 1 = true (SQLite boolean)
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -245,8 +245,8 @@ function MainApp() {
       
       // Only update stats if not in practice mode
       if (!matchData.isPracticeMode) {
-        // Save match history for authenticated users (but not forfeits)
-        if (isAuthenticated && !isForfeit) {
+        // Save match history for authenticated users (including forfeits)
+        if (isAuthenticated) {
           try {
             await apiRequest("POST", "/api/match/save", {
               opponent: matchData.opponent,
@@ -261,6 +261,7 @@ function MainApp() {
                 naturalness: gradingResult.naturalness,
                 overall: gradingResult.overall,
               },
+              isForfeit: isForfeit,
             });
             // Invalidate match history and skill progress queries
             queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });

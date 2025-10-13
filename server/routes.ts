@@ -155,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = req.user.claims.sub;
-      const { opponent, result, eloChange, language, difficulty, scores } = req.body;
+      const { opponent, result, eloChange, language, difficulty, scores, isForfeit } = req.body;
       
       const match = await storage.createMatch({
         userId,
@@ -169,6 +169,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         vocabularyScore: scores.vocabulary,
         naturalnessScore: scores.naturalness,
         overallScore: scores.overall,
+        isForfeit: isForfeit ? 1 : 0, // Convert boolean to integer for SQLite-style storage
       });
 
       res.json(match);
