@@ -10,21 +10,21 @@ export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
 const BOT_NAMES = [
-  "AI Bot",
-  "Language Master",
-  "Fluent Helper",
-  "Smart Partner",
-  "Language Coach",
-  "Study Buddy",
-  "Conversation Expert",
-  "Polyglot Pro",
-  "AI Language Partner",
-  "Wise Tutor",
-  "Practice Assistant",
-  "Grammar Expert",
-  "Pronunciation Coach",
-  "Vocabulary Master",
-  "Culture Guide",
+  "Emma Chen",
+  "Lucas Rodriguez",
+  "Sofia Rossi",
+  "James Wang",
+  "Maria Garcia",
+  "Alex Zhang",
+  "Isabella Martinez",
+  "Noah Li",
+  "Olivia Romano",
+  "Ethan Liu",
+  "Mia Fernandez",
+  "Liam Zhang",
+  "Ava Moretti",
+  "Oliver Wang",
+  "Charlotte Hu",
 ];
 
 interface MatchFinderProps {

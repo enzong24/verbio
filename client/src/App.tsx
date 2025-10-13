@@ -274,6 +274,13 @@ function MainApp() {
   const handleForfeit = async () => {
     if (!matchData) return;
     
+    // Generate varied bot stats (70-95 range for realistic variation)
+    const botGrammar = 70 + Math.floor(Math.random() * 26);
+    const botFluency = 70 + Math.floor(Math.random() * 26);
+    const botVocabulary = 70 + Math.floor(Math.random() * 26);
+    const botNaturalness = 70 + Math.floor(Math.random() * 26);
+    const botOverall = Math.round((botGrammar + botFluency + botVocabulary + botNaturalness) / 4);
+    
     // Create a forfeit result (all scores 0)
     const forfeitResult: GradingResult = {
       grammar: 0,
@@ -281,12 +288,12 @@ function MainApp() {
       vocabulary: 0,
       naturalness: 0,
       overall: 0,
-      botGrammar: 85,
-      botFluency: 85,
-      botVocabulary: 85,
-      botNaturalness: 85,
-      botOverall: 85,
-      botElo: 1000,
+      botGrammar,
+      botFluency,
+      botVocabulary,
+      botNaturalness,
+      botOverall,
+      botElo: matchData.opponentElo || 1000,
       feedback: matchData.isBot 
         ? ["Practice session ended. Try again to improve your skills!"]
         : ["Match forfeited due to inactivity or manual forfeit."]
@@ -334,7 +341,7 @@ function MainApp() {
             topic={matchData.topic}
             vocabulary={matchData.vocabulary}
             opponentName={matchData.opponent}
-            opponentElo={matchData.isBot ? 1200 : 1520}
+            opponentElo={matchData.opponentElo}
             userElo={userElo}
             isBot={matchData.isBot}
             language={matchData.language}
