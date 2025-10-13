@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { gradingRequestSchema } from "@shared/schema";
-import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion } from "./openai";
+import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -79,6 +79,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Question validation error:", error);
       res.status(500).json({ 
         error: "Failed to validate question",
+        message: error.message 
+      });
+    }
+  });
+
+  // Generate vocabulary words with AI
+  app.post("/api/generate-vocabulary", async (req, res) => {
+    try {
+      const { topic, language, difficulty = "Medium" } = req.body;
+      const vocabulary = await generateVocabulary(topic, language, difficulty);
+      res.json({ vocabulary });
+    } catch (error: any) {
+      console.error("Vocabulary generation error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate vocabulary",
         message: error.message 
       });
     }

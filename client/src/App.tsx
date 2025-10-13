@@ -104,46 +104,72 @@ function MainApp() {
     return <Landing />;
   }
 
-  const handleMatchFound = (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string) => {
+  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string) => {
     // Use selected topic or random if not specified
     const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
-    // Get vocabulary for the selected difficulty and language
-    const vocabStrings = getThemeVocabulary(theme.id, difficulty, language);
-    const themeVocab = theme.vocabulary[difficulty];
-    
-    // Convert to VocabWord format with definitions
-    const vocabulary: VocabWord[] = vocabStrings.map((word, i) => {
-      const matchingWord = themeVocab[i];
-      let definition = "";
-      let romanization = language === "Chinese" ? "" : word;
+    try {
+      // Generate vocabulary using AI
+      const response = await apiRequest("POST", "/api/generate-vocabulary", {
+        topic: getThemeTitle(theme.id),
+        language,
+        difficulty
+      });
       
-      // Get romanization for Chinese
-      if (language === "Chinese" && matchingWord?.pinyin) {
-        romanization = matchingWord.pinyin;
-      }
+      const data = await response.json();
       
-      // Get definition (English translation)
-      if (matchingWord) {
-        definition = matchingWord.english || "";
-      }
+      // Convert AI vocabulary to VocabWord format
+      const vocabulary: VocabWord[] = data.vocabulary.map((item: any) => ({
+        word: item.word,
+        romanization: item.pinyin || item.word,
+        definition: `${item.english} (${item.type})`
+      }));
       
-      return {
-        word,
-        romanization,
-        definition
-      };
-    });
-    
-    setMatchData({
-      opponent,
-      isBot,
-      topic: getThemeTitle(theme.id),
-      vocabulary,
-      language,
-      difficulty,
-    });
-    setCurrentPage("match");
+      setMatchData({
+        opponent,
+        isBot,
+        topic: getThemeTitle(theme.id),
+        vocabulary,
+        language,
+        difficulty,
+      });
+      setCurrentPage("match");
+    } catch (error) {
+      console.error("Failed to generate vocabulary:", error);
+      // Fallback to static vocabulary if API fails
+      const vocabStrings = getThemeVocabulary(theme.id, difficulty, language);
+      const themeVocab = theme.vocabulary[difficulty];
+      
+      const vocabulary: VocabWord[] = vocabStrings.map((word, i) => {
+        const matchingWord = themeVocab[i];
+        let definition = "";
+        let romanization = language === "Chinese" ? "" : word;
+        
+        if (language === "Chinese" && matchingWord?.pinyin) {
+          romanization = matchingWord.pinyin;
+        }
+        
+        if (matchingWord) {
+          definition = matchingWord.english || "";
+        }
+        
+        return {
+          word,
+          romanization,
+          definition
+        };
+      });
+      
+      setMatchData({
+        opponent,
+        isBot,
+        topic: getThemeTitle(theme.id),
+        vocabulary,
+        language,
+        difficulty,
+      });
+      setCurrentPage("match");
+    }
   };
 
   const handleDuelComplete = (result: GradingResult) => {

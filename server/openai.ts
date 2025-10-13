@@ -297,3 +297,92 @@ Respond with JSON in this exact format:
     return { isValid: true, message: "" };
   }
 }
+
+interface VocabularyWord {
+  word: string;
+  type: "noun" | "verb" | "adjective";
+  english: string;
+  pinyin?: string;
+}
+
+export async function generateVocabulary(
+  topic: string,
+  language: string,
+  difficulty: "Easy" | "Medium" | "Hard"
+): Promise<VocabularyWord[]> {
+  const wordCounts = {
+    Easy: 3,
+    Medium: 5,
+    Hard: 8
+  };
+  
+  const count = wordCounts[difficulty];
+  
+  const difficultyInstructions: Record<string, string> = {
+    Easy: "Generate EXTREMELY simple, basic vocabulary words that absolute beginners would know (like 'go', 'eat', 'water', 'yes', 'no', 'hello'). These should be the most fundamental words in the language.",
+    Medium: "Generate conversational vocabulary words that intermediate learners would use in everyday situations. Mix common verbs, adjectives, and nouns.",
+    Hard: "Generate advanced vocabulary words including nuanced verbs, descriptive adjectives, and sophisticated nouns. Include idiomatic expressions or compound words when appropriate."
+  };
+
+  const prompt = `You are a ${language} language teacher creating vocabulary for a lesson about "${topic}" at ${difficulty} difficulty level.
+
+${difficultyInstructions[difficulty]}
+
+Generate EXACTLY ${count} vocabulary words that:
+- Are relevant to the topic "${topic}"
+- Include a VARIETY of word types: verbs, adjectives, and nouns (not just nouns!)
+- Match the ${difficulty} difficulty level
+- Are useful for conversation practice
+
+${language === "Chinese" ? "Include pinyin romanization for each word." : ""}
+
+Respond with JSON in this exact format:
+{
+  "words": [
+    {
+      "word": "word in ${language}",
+      "type": "noun" | "verb" | "adjective",
+      "english": "English translation"${language === "Chinese" ? ',\n      "pinyin": "pinyin romanization"' : ''}
+    }
+  ]
+}
+
+Make sure to return EXACTLY ${count} words.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a ${language} language teacher creating diverse, practical vocabulary lists. Always include varied word types (verbs, adjectives, nouns).`
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 500,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    
+    if (!result.words || !Array.isArray(result.words)) {
+      throw new Error("Invalid response format from AI");
+    }
+    
+    // Ensure we have exactly the right number of words
+    const words = result.words.slice(0, count);
+    
+    return words.map((w: any) => ({
+      word: w.word || "",
+      type: w.type || "noun",
+      english: w.english || "",
+      ...(language === "Chinese" && { pinyin: w.pinyin || "" })
+    }));
+  } catch (error: any) {
+    console.error("Error generating vocabulary:", error);
+    throw new Error("Failed to generate vocabulary");
+  }
+}
