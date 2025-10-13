@@ -250,23 +250,25 @@ export async function validateQuestion(
   vocabulary: string[],
   language: string
 ): Promise<{ isValid: boolean; message: string }> {
-  const prompt = `You are a language learning assistant validating a student's question in ${language}.
+  const prompt = `You are a language learning assistant validating if a student's question is related to the conversation topic.
 
 Topic: ${topic}
-Required vocabulary words: ${vocabulary.join(", ")}
 
 Student's question: "${question}"
 
-Validate that the question:
-1. Is written in ${language} (not English or other languages)
-2. Is related to the topic "${topic}"
-3. Uses at least one word from the vocabulary list
-4. Is a complete, coherent question
+Your ONLY job is to check if the question is related to the topic "${topic}". 
+DO NOT check:
+- Grammar or spelling
+- Language correctness
+- Question structure
+- Vocabulary usage
+
+Simply determine: Is this question asking about something related to "${topic}"?
 
 Respond with JSON in this exact format:
 {
   "isValid": boolean,
-  "message": "Brief explanation if invalid (empty string if valid)"
+  "message": "Brief explanation if not related to topic (empty string if related)"
 }`;
 
   try {
@@ -275,7 +277,7 @@ Respond with JSON in this exact format:
       messages: [
         {
           role: "system",
-          content: "You are a language learning assistant that validates student questions."
+          content: "You validate if questions are topically relevant, ignoring all grammar, spelling, and structure issues."
         },
         {
           role: "user",
