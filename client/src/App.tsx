@@ -12,10 +12,11 @@ import DuelInterface from "@/components/DuelInterface";
 import MatchResults from "@/components/MatchResults";
 import Leaderboard from "@/components/Leaderboard";
 import ProfileStats from "@/components/ProfileStats";
+import AIReview from "@/components/AIReview";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 
-type Page = "duel" | "leaderboard" | "profile" | "match" | "results";
+type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review";
 
 interface VocabWord {
   word: string;
@@ -36,6 +37,7 @@ function MainApp() {
     difficulty: Difficulty;
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
+  const [matchMessages, setMatchMessages] = useState<any[]>([]);
 
   // Track current language (persisted to localStorage)
   const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
@@ -172,9 +174,16 @@ function MainApp() {
     }
   };
 
-  const handleDuelComplete = (result: GradingResult) => {
+  const handleDuelComplete = (result: GradingResult, messages?: any[]) => {
     setGradingResult(result);
+    if (messages) {
+      setMatchMessages(messages);
+    }
     setCurrentPage("results");
+  };
+
+  const handleAIReview = () => {
+    setCurrentPage("ai-review");
   };
 
   const updateStats = async (eloChange: number, isWin: boolean, isLoss: boolean) => {
@@ -260,12 +269,33 @@ function MainApp() {
   };
 
   const handleForfeit = async () => {
-    // Only apply forfeit penalty if not a bot match
-    if (matchData && !matchData.isBot) {
+    if (!matchData) return;
+    
+    // Create a forfeit result (all scores 0)
+    const forfeitResult: GradingResult = {
+      grammar: 0,
+      fluency: 0,
+      vocabulary: 0,
+      naturalness: 0,
+      overall: 0,
+      botGrammar: 85,
+      botFluency: 85,
+      botVocabulary: 85,
+      botNaturalness: 85,
+      botOverall: 85,
+      botElo: 1000,
+      feedback: matchData.isBot 
+        ? "Practice session ended. Try again to improve your skills!"
+        : "Match forfeited due to inactivity or manual forfeit."
+    };
+    
+    setGradingResult(forfeitResult);
+    setCurrentPage("results");
+    
+    // Apply forfeit penalty for competitive matches
+    if (!matchData.isBot) {
       await updateStats(-25, false, true);
     }
-    setMatchData(null);
-    setCurrentPage("duel");
   };
 
 
@@ -323,6 +353,7 @@ function MainApp() {
             newElo={userElo}
             isBot={matchData.isBot}
             onContinue={handleResultsContinue}
+            onAIReview={handleAIReview}
           />
         )}
         
@@ -339,6 +370,16 @@ function MainApp() {
             totalMatches={userWins + userLosses}
             currentLanguage={currentLanguage}
             isAuthenticated={isAuthenticated}
+          />
+        )}
+        
+        {currentPage === "ai-review" && matchData && (
+          <AIReview
+            messages={matchMessages}
+            gradingResult={gradingResult || undefined}
+            topic={matchData.topic}
+            language={matchData.language}
+            onBack={() => setCurrentPage("results")}
           />
         )}
       </main>

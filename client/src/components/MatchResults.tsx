@@ -1,4 +1,4 @@
-import { Trophy, TrendingUp, TrendingDown, ArrowRight, Bot, User } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, ArrowRight, Bot, User, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ interface MatchResultsProps {
   newElo?: number;
   isBot?: boolean;
   onContinue?: () => void;
+  onAIReview?: () => void;
 }
 
 export default function MatchResults({
@@ -18,7 +19,8 @@ export default function MatchResults({
   eloChange = 15,
   newElo = 1562,
   isBot = false,
-  onContinue
+  onContinue,
+  onAIReview
 }: MatchResultsProps) {
   const userScore = gradingResult.overall;
   const botScore = gradingResult.botOverall || 0;
@@ -163,13 +165,24 @@ export default function MatchResults({
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button className="flex-1" onClick={onContinue} data-testid="button-continue">
-                Continue
+            <div className="flex flex-col gap-3 pt-4">
+              <Button 
+                variant="secondary" 
+                className="w-full gap-2" 
+                onClick={onAIReview} 
+                data-testid="button-ai-review"
+              >
+                <Brain className="w-4 h-4" />
+                AI Review & Analysis
               </Button>
-              <Button variant="outline" className="flex-1" data-testid="button-rematch">
-                New Match
-              </Button>
+              <div className="flex gap-3">
+                <Button className="flex-1" onClick={onContinue} data-testid="button-continue">
+                  Continue
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={onContinue} data-testid="button-new-match">
+                  New Match
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -1,4 +1,9 @@
 import { useState } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface VocabularyBadgeProps {
   chinese: string;
@@ -17,7 +22,7 @@ export default function VocabularyBadge({
   className = "",
   definition
 }: VocabularyBadgeProps) {
-  const [showDefinition, setShowDefinition] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const variantClasses = {
     default: "bg-primary text-primary-foreground",
@@ -28,27 +33,39 @@ export default function VocabularyBadge({
   // Only show pinyin/romanization for Chinese
   const showPinyin = language === "Chinese";
 
-  const handleClick = () => {
-    if (definition) {
-      setShowDefinition(!showDefinition);
-    }
-  };
+  if (definition) {
+    return (
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-md text-xs font-semibold ${variantClasses[variant]} ${className} cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
+            data-testid={`vocab-badge-${chinese}`}
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+            aria-label={`${chinese} - ${definition}`}
+          >
+            {showPinyin && <span className="text-[10px] opacity-70 leading-none">{pinyin}</span>}
+            <span className="leading-none">{chinese}</span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-auto max-w-xs p-2"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <p className="text-xs">{definition}</p>
+        </PopoverContent>
+      </Popover>
+    );
+  }
 
   return (
-    <div className="inline-flex flex-col gap-1">
-      <div 
-        className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-md text-xs font-semibold ${variantClasses[variant]} ${className} ${definition ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
-        onClick={handleClick}
-        data-testid={`vocab-badge-${chinese}`}
-      >
-        {showPinyin && <span className="text-[10px] opacity-70 leading-none">{pinyin}</span>}
-        <span className="leading-none">{chinese}</span>
-      </div>
-      {showDefinition && definition && (
-        <div className="text-xs text-muted-foreground text-center px-1">
-          {definition}
-        </div>
-      )}
+    <div 
+      className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-md text-xs font-semibold ${variantClasses[variant]} ${className}`}
+      data-testid={`vocab-badge-${chinese}`}
+    >
+      {showPinyin && <span className="text-[10px] opacity-70 leading-none">{pinyin}</span>}
+      <span className="leading-none">{chinese}</span>
     </div>
   );
 }

@@ -48,8 +48,6 @@ export default function Header({
   
   const navItems = [
     { id: "duel", label: "Duel", icon: Swords },
-    { id: "leaderboard", label: "Leaderboard", icon: Trophy },
-    { id: "profile", label: "Profile", icon: User },
   ];
 
   const totalMatches = wins + losses;
@@ -88,18 +86,18 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2">
-            <Select value={currentLanguage} onValueChange={onLanguageChange}>
-              <SelectTrigger className="w-[140px] h-9" data-testid="select-language-header">
-                <Languages className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Chinese" data-testid="option-chinese-header">中文</SelectItem>
-                <SelectItem value="Spanish" data-testid="option-spanish-header">Español</SelectItem>
-                <SelectItem value="Italian" data-testid="option-italian-header">Italiano</SelectItem>
-              </SelectContent>
-            </Select>
+          <Select value={currentLanguage} onValueChange={onLanguageChange}>
+            <SelectTrigger className="w-[120px] md:w-[140px] h-9" data-testid="select-language-header">
+              <Languages className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Chinese" data-testid="option-chinese-header">中文</SelectItem>
+              <SelectItem value="Spanish" data-testid="option-spanish-header">Español</SelectItem>
+              <SelectItem value="Italian" data-testid="option-italian-header">Italiano</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="hidden sm:flex">
             <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
               {elo} Elo
             </Badge>
@@ -173,7 +171,7 @@ export default function Header({
                     {profileImageUrl && <img src={profileImageUrl} alt={username} />}
                     <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold">{username}</p>
                     <p className="text-sm text-muted-foreground">{currentLanguage}</p>
                   </div>

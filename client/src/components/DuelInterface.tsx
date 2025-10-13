@@ -28,7 +28,7 @@ interface DuelInterfaceProps {
   isBot?: boolean;
   language?: string;
   difficulty?: string;
-  onComplete?: (result: GradingResult) => void;
+  onComplete?: (result: GradingResult, messages?: Message[]) => void;
   onForfeit?: () => void;
 }
 
@@ -144,7 +144,7 @@ export default function DuelInterface({
       return await response.json() as GradingResult;
     },
     onSuccess: (result) => {
-      onComplete?.(result);
+      onComplete?.(result, messages);
     },
   });
 
