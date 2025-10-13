@@ -17,17 +17,18 @@ The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules
 ### System Design Choices
 - **Practice vs Competitive Modes**: 
   - **Practice Mode** (via "Practice with AI Bot" button): No Elo changes, opponent Elo hidden, risk-free learning
-  - **Competitive Mode** (via "Find Match" button): Full Elo changes apply (even for bot opponents), opponent Elo visible, forfeit penalty of -25 Elo
+  - **Competitive Mode** (via "Find Match" button): Full Elo changes apply (even for bot opponents), opponent Elo visible
   - The `isPracticeMode` flag distinguishes modes independent of opponent type (bot or human)
 - **Real Multiplayer Matchmaking**: WebSocket-based matchmaking pairs players by Elo, language, and difficulty, with AI bot fallback.
 - **AI-Generated Vocabulary**: OpenAI GPT-4o dynamically generates vocabulary based on topic and difficulty for each match, enhancing replayability.
-- **Elo Ranking System**: Implements a Chess.com-style Elo system with dynamic K-factors and specific rules for large rating differences (300+ points).
+- **Elo Ranking System**: Implements a standard Elo calculation (K-factor=32) with proper expected score formula: `1 / (1 + 10^((opponentElo - userElo)/400))`. Elo changes are calculated once in `handleResultsContinue` to prevent double updates.
 - **Competitive Bot Matches**: Bot opponents from "Find Match" are treated as competitive with full Elo changes, human-like names (Emma Chen, Lucas Rodriguez), and varied stats (70-95% per category).
-- **Difficulty & Penalty System**: Features Easy, Medium, and Hard difficulties with varying timers, round counts, and Elo rewards. A 20-point penalty for skipping questions is applied; viewing vocabulary definitions incurs no penalty.
+- **Difficulty & Penalty System**: Features Easy, Medium, and Hard difficulties with varying timers, round counts. A 20-point penalty for skipping questions is applied; viewing vocabulary definitions incurs no penalty.
 - **Expanded Theme System**: Includes 21 comprehensive themes with difficulty-specific vocabulary and full language support (Chinese, Spanish, Italian). Competitive matches use random topics.
 - **Turn-Based Q&A**: Structured turn-based conversation flow with bot asking first, user answering, user asking, and bot answering, with question deduplication.
 - **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and scrollable slide-out navigation.
 - **Loading State Protection**: All action buttons implement loading states with disabled states to prevent duplicate actions (rapid clicking, simultaneous requests).
+- **Elo Calculation Consistency**: Both MatchResults display and handleResultsContinue use identical Elo formula to ensure displayed changes match applied changes. handleForfeit does NOT update Elo directly; all updates happen in handleResultsContinue.
 
 ## External Dependencies
 
