@@ -177,7 +177,7 @@ export default function MatchFinder({
               </CardContent>
             </Card>
 
-            <Card className="border-accent/20">
+            <Card className="border-accent/20 hidden md:block">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
