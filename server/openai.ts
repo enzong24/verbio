@@ -11,9 +11,9 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     .join("\n");
 
   const difficultyGuidelines: Record<string, string> = {
-    Easy: "Grade very gently with maximum encouragement. Accept very basic grammar, beginner vocabulary, and simple attempts. Focus only on effort and communication attempts.",
-    Medium: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success.",
-    Hard: "Grade with balanced standards. Expect correct grammar and appropriate vocabulary for the level."
+    Easy: "Grade with MAXIMUM encouragement and patience. This is absolute beginner level - accept ANY attempt at communication, even single words or very broken sentences. Focus ONLY on effort and attempting to communicate. Give high scores (70-90+) for any genuine attempt.",
+    Medium: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success. Expect simple but complete sentences.",
+    Hard: "Grade with balanced standards. Expect correct grammar, appropriate vocabulary, and natural language flow for intermediate level."
   };
 
   const prompt = `You are an expert ${request.language} language teacher evaluating a student's conversation performance at ${request.difficulty} difficulty level.
@@ -99,9 +99,9 @@ export async function generateBotQuestion(
   previousQuestions: string[] = []
 ): Promise<string> {
   const difficultyInstructions: Record<string, string> = {
-    Easy: "Use very simple vocabulary and the most basic sentence structures possible.",
-    Medium: "Use simple vocabulary and basic sentence structures.",
-    Hard: "Use moderate vocabulary and natural sentence structures."
+    Easy: "Use EXTREMELY simple vocabulary (like 'go', 'eat', 'water') and the absolute most basic sentence structures. Questions should be answerable with 1-3 words if needed.",
+    Medium: "Use simple, conversational vocabulary and straightforward sentence structures. Questions should encourage simple but complete sentences.",
+    Hard: "Use intermediate vocabulary and natural, varied sentence structures. Questions should encourage detailed, nuanced responses."
   };
 
   const prompt = `You are a ${language} language teacher conducting a Q&A session about ${topic}.
@@ -152,9 +152,9 @@ export async function generateBotAnswer(
   difficulty: string = "Medium"
 ): Promise<string> {
   const difficultyInstructions: Record<string, string> = {
-    Easy: "Use very simple vocabulary and the most basic sentence structures possible.",
-    Medium: "Use simple vocabulary and basic sentence structures.",
-    Hard: "Use moderate vocabulary and natural sentence structures."
+    Easy: "Use EXTREMELY simple vocabulary (like 'go', 'eat', 'water') and the absolute most basic sentence structures. Keep answers very short (1-2 simple sentences).",
+    Medium: "Use simple, conversational vocabulary and straightforward sentence structures. Provide clear, natural answers.",
+    Hard: "Use intermediate vocabulary and natural, varied sentence structures. Provide detailed, nuanced responses."
   };
 
   const prompt = `You are answering a learner's question in ${language} about ${topic}.

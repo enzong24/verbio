@@ -20,6 +20,7 @@ type Page = "duel" | "leaderboard" | "profile" | "match" | "results";
 interface VocabWord {
   word: string;
   romanization: string;
+  definition?: string;
 }
 
 function MainApp() {
