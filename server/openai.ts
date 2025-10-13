@@ -72,11 +72,9 @@ Respond with JSON in this exact format:
 
     // Apply penalties
     const skipPenalty = request.skippedQuestions * 20;
-    const definitionPenalty = request.viewedDefinitions * 5;
-    const totalPenalty = skipPenalty + definitionPenalty;
     
     // Adjust overall score with penalties
-    const adjustedOverall = Math.max(0, result.overall - totalPenalty);
+    const adjustedOverall = Math.max(0, result.overall - skipPenalty);
 
     return {
       grammar: Math.max(0, Math.min(100, result.grammar || 0)),

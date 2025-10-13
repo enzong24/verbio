@@ -7,7 +7,6 @@ interface VocabularyBadgeProps {
   variant?: "default" | "secondary" | "outline";
   className?: string;
   definition?: string;
-  onDefinitionView?: () => void;
 }
 
 export default function VocabularyBadge({ 
@@ -16,8 +15,7 @@ export default function VocabularyBadge({
   language = "Chinese", 
   variant = "secondary", 
   className = "",
-  definition,
-  onDefinitionView
+  definition
 }: VocabularyBadgeProps) {
   const [showDefinition, setShowDefinition] = useState(false);
 
@@ -33,9 +31,6 @@ export default function VocabularyBadge({
   const handleClick = () => {
     if (definition) {
       setShowDefinition(!showDefinition);
-      if (!showDefinition && onDefinitionView) {
-        onDefinitionView();
-      }
     }
   };
 

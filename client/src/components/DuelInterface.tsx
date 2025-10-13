@@ -78,7 +78,6 @@ export default function DuelInterface({
   const [isGrading, setIsGrading] = useState(false);
   const [botQuestions, setBotQuestions] = useState<string[]>([]);
   const [skippedQuestions, setSkippedQuestions] = useState(0);
-  const [viewedDefinitions, setViewedDefinitions] = useState(0);
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -124,8 +123,7 @@ export default function DuelInterface({
         vocabulary: vocabStrings,
         language,
         difficulty,
-        skippedQuestions,
-        viewedDefinitions
+        skippedQuestions
       });
       return await response.json() as GradingResult;
     },
@@ -379,7 +377,6 @@ export default function DuelInterface({
                     language={language}
                     className="text-xs"
                     definition={vocabItem.definition}
-                    onDefinitionView={() => setViewedDefinitions(prev => prev + 1)}
                   />
                 ))}
               </div>

@@ -77,7 +77,6 @@ export const gradingRequestSchema = z.object({
   language: z.string().default("Chinese"),
   difficulty: z.string().default("Medium"),
   skippedQuestions: z.number().default(0),
-  viewedDefinitions: z.number().default(0),
 });
 
 export const gradingResultSchema = z.object({
