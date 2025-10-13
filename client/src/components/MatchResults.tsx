@@ -24,11 +24,18 @@ export default function MatchResults({
 }: MatchResultsProps) {
   const userScore = gradingResult.overall;
   const botScore = gradingResult.botOverall || 0;
+  const botElo = gradingResult.botElo || 1000;
   const hasBot = botScore > 0;
   
   // Win/loss determined by comparative scoring
   const isWinner = hasBot ? userScore > botScore : userScore >= 70;
-  const actualEloChange = eloChange; // Already calculated correctly from backend
+  const isDraw = userScore === botScore;
+  
+  // Calculate Elo change using standard Elo formula (same as backend)
+  const K_FACTOR = 32;
+  const expectedScore = 1 / (1 + Math.pow(10, (botElo - newElo) / 400));
+  const actualScore = isWinner ? 1 : (isDraw ? 0.5 : 0);
+  const actualEloChange = eloChange === 0 ? 0 : Math.round(K_FACTOR * (actualScore - expectedScore));
 
   const userScores = {
     grammar: gradingResult.grammar,

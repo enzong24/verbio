@@ -309,10 +309,8 @@ function MainApp() {
     setGradingResult(forfeitResult);
     setCurrentPage("results");
     
-    // Apply forfeit penalty ONLY for competitive matches (not practice mode)
-    if (!isPracticeMode) {
-      await updateStats(-25, false, true);
-    }
+    // Don't update stats here - let handleResultsContinue handle it
+    // This prevents double Elo updates (once here, once on Continue)
   };
 
 
@@ -362,12 +360,7 @@ function MainApp() {
         {currentPage === "results" && gradingResult && matchData && (
           <MatchResults
             gradingResult={gradingResult}
-            eloChange={
-              matchData.isPracticeMode ? 0 : (
-                (gradingResult.overall >= 70 ? 1 : -1) * 
-                ({ Easy: 8, Medium: 12, Hard: 16 }[matchData.difficulty])
-              )
-            }
+            eloChange={matchData.isPracticeMode ? 0 : undefined}
             newElo={userElo}
             isBot={matchData.isBot}
             onContinue={handleResultsContinue}
