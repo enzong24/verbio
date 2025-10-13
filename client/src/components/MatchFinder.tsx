@@ -187,8 +187,8 @@ export default function MatchFinder({
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• Practice mode doesn't affect Elo</li>
-                  <li>• Use vocabulary hints strategically</li>
-                  <li>• Answer quickly for bonus points</li>
+                  <li>• Use vocabulary hints freely - no penalties!</li>
+                  <li>• Avoid skipping questions (-20 pts each)</li>
                 </ul>
               </CardContent>
             </Card>
