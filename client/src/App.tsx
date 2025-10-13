@@ -122,15 +122,9 @@ function MainApp() {
         romanization = matchingWord.pinyin;
       }
       
-      // Get definition (translation to help understand the word)
+      // Get definition (English translation)
       if (matchingWord) {
-        if (language === "Chinese") {
-          definition = matchingWord.spanish || matchingWord.italian || "";
-        } else if (language === "Spanish") {
-          definition = matchingWord.italian || matchingWord.chinese || "";
-        } else if (language === "Italian") {
-          definition = matchingWord.spanish || matchingWord.chinese || "";
-        }
+        definition = matchingWord.english || "";
       }
       
       return {

@@ -410,3 +410,25 @@ export const THEMES: Theme[] = [
     },
   },
 ];
+
+export function getThemeVocabulary(themeId: string, difficulty: "Easy" | "Medium" | "Hard", language: "Chinese" | "Spanish" | "Italian"): string[] {
+  const theme = THEMES.find(t => t.id === themeId);
+  if (!theme) return [];
+
+  const vocabWords = theme.vocabulary[difficulty];
+  
+  if (language === "Chinese") {
+    return vocabWords.map(w => w.chinese || "").filter(Boolean);
+  } else if (language === "Spanish") {
+    return vocabWords.map(w => w.spanish || "").filter(Boolean);
+  } else if (language === "Italian") {
+    return vocabWords.map(w => w.italian || "").filter(Boolean);
+  }
+  
+  return [];
+}
+
+export function getThemeTitle(themeId: string): string {
+  const theme = THEMES.find(t => t.id === themeId);
+  return theme?.title || "General Conversation";
+}
