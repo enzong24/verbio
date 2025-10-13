@@ -78,6 +78,8 @@ export default function DuelInterface({
   const [isGrading, setIsGrading] = useState(false);
   const [botQuestions, setBotQuestions] = useState<string[]>([]);
   const [skippedQuestions, setSkippedQuestions] = useState(0);
+  const [inactivityTimeLeft, setInactivityTimeLeft] = useState(60);
+  const [validationError, setValidationError] = useState("");
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -85,6 +87,7 @@ export default function DuelInterface({
   const currentRoundRef = useRef(1);
   const currentTurnPhaseRef = useRef<TurnPhase>("bot-question");
   const inputRef = useRef<HTMLInputElement>(null);
+  const inactivityCountRef = useRef(false);
 
   const botQuestionMutation = useMutation({
     mutationFn: async () => {
@@ -111,6 +114,19 @@ export default function DuelInterface({
         difficulty
       });
       return await response.json();
+    },
+  });
+
+  const validateQuestionMutation = useMutation({
+    mutationFn: async (question: string) => {
+      const vocabStrings = vocabulary.map(v => v.word);
+      const response = await apiRequest("POST", "/api/validate-question", {
+        question,
+        topic,
+        vocabulary: vocabStrings,
+        language
+      });
+      return await response.json() as { isValid: boolean; message: string };
     },
   });
 
@@ -148,8 +164,14 @@ export default function DuelInterface({
     currentTurnPhaseRef.current = turnPhase;
     const isUserPhase = turnPhase === "user-answer" || turnPhase === "user-question";
     shouldCountRef.current = isUserPhase;
+    inactivityCountRef.current = isUserPhase;
     console.log(`Turn phase changed to ${turnPhase}, timer ${isUserPhase ? 'active' : 'paused'}`);
   }, [turnPhase]);
+
+  // Reset inactivity timer on user interaction
+  const resetInactivity = () => {
+    setInactivityTimeLeft(60);
+  };
 
   // Timer - runs once, controlled by shouldCountRef
   useEffect(() => {
@@ -185,6 +207,29 @@ export default function DuelInterface({
       clearInterval(timer);
     };
   }, []); // Empty deps - timer created once and never recreated
+
+  // Inactivity timer - auto-forfeit after 60 seconds of no user interaction
+  useEffect(() => {
+    const inactivityTimer = setInterval(() => {
+      if (!inactivityCountRef.current) {
+        return; // Skip if not user's turn
+      }
+
+      setInactivityTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Auto-forfeit due to inactivity
+          clearInterval(inactivityTimer);
+          onForfeit?.();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(inactivityTimer);
+    };
+  }, []);
 
   const askBotQuestion = async () => {
     try {
@@ -222,6 +267,7 @@ export default function DuelInterface({
 
   const handleDontKnow = () => {
     // User skips answering - add a placeholder message and increment skip count
+    resetInactivity();
     const skipMessage: Message = {
       sender: "user",
       text: "(Skipped)",
@@ -236,6 +282,7 @@ export default function DuelInterface({
   const handleUserAnswer = async () => {
     if (!input.trim()) return;
     
+    resetInactivity();
     const userMessage: Message = {
       sender: "user",
       text: input,
@@ -250,6 +297,22 @@ export default function DuelInterface({
 
   const handleUserQuestion = async () => {
     if (!input.trim()) return;
+    
+    resetInactivity();
+    setValidationError("");
+    
+    // Validate the question with AI
+    try {
+      const validation = await validateQuestionMutation.mutateAsync(input);
+      if (!validation.isValid) {
+        // Show validation error and don't submit
+        setValidationError(validation.message || "Invalid question. Please try again.");
+        return;
+      }
+    } catch (error) {
+      console.error("Validation error:", error);
+      // If validation fails, proceed anyway
+    }
     
     const userMessage: Message = {
       sender: "user",
@@ -420,11 +483,20 @@ export default function DuelInterface({
 
             <div className="p-4 border-t border-card-border bg-card">
               <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
+              {validationError && (
+                <div className="mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm" data-testid="validation-error">
+                  {validationError}
+                </div>
+              )}
               <div className="flex gap-2">
                 <Input
                   ref={inputRef}
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    resetInactivity();
+                    if (validationError) setValidationError("");
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={
                     turnPhase === "user-answer" 

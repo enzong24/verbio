@@ -243,3 +243,57 @@ function getFallbackResponse(language: string): string {
   };
   return fallbacks[language] || "Please continue.";
 }
+
+export async function validateQuestion(
+  question: string,
+  topic: string,
+  vocabulary: string[],
+  language: string
+): Promise<{ isValid: boolean; message: string }> {
+  const prompt = `You are a language learning assistant validating a student's question in ${language}.
+
+Topic: ${topic}
+Required vocabulary words: ${vocabulary.join(", ")}
+
+Student's question: "${question}"
+
+Validate that the question:
+1. Is written in ${language} (not English or other languages)
+2. Is related to the topic "${topic}"
+3. Uses at least one word from the vocabulary list
+4. Is a complete, coherent question
+
+Respond with JSON in this exact format:
+{
+  "isValid": boolean,
+  "message": "Brief explanation if invalid (empty string if valid)"
+}`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are a language learning assistant that validates student questions."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 100,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || "{}");
+    return {
+      isValid: result.isValid ?? true,
+      message: result.message || ""
+    };
+  } catch (error: any) {
+    console.error("Error validating question:", error);
+    // On error, allow the question through
+    return { isValid: true, message: "" };
+  }
+}

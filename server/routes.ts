@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { gradingRequestSchema } from "@shared/schema";
-import { gradeConversation, generateBotQuestion, generateBotAnswer } from "./openai";
+import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -64,6 +64,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Bot answer error:", error);
       res.status(500).json({ 
         error: "Failed to generate answer",
+        message: error.message 
+      });
+    }
+  });
+
+  // Validate user question with AI
+  app.post("/api/validate-question", async (req, res) => {
+    try {
+      const { question, topic, vocabulary, language = "Chinese" } = req.body;
+      const result = await validateQuestion(question, topic, vocabulary, language);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Question validation error:", error);
+      res.status(500).json({ 
+        error: "Failed to validate question",
         message: error.message 
       });
     }
