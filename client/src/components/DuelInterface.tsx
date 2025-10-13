@@ -26,6 +26,7 @@ interface DuelInterfaceProps {
   opponentElo?: number;
   userElo?: number;
   isBot?: boolean;
+  isPracticeMode?: boolean;
   language?: string;
   difficulty?: string;
   onComplete?: (result: GradingResult, messages?: Message[]) => void;
@@ -45,6 +46,7 @@ export default function DuelInterface({
   opponentElo = 1520,
   userElo = 1000,
   isBot = true,
+  isPracticeMode = false,
   language = "Chinese",
   difficulty = "Medium",
   onComplete,
@@ -354,7 +356,7 @@ export default function DuelInterface({
   };
 
   const handleForfeit = () => {
-    const message = isBot 
+    const message = isPracticeMode
       ? "Are you sure you want to end this practice session?" 
       : "Are you sure you want to forfeit this match? You will lose Elo points.";
     
@@ -395,6 +397,9 @@ export default function DuelInterface({
                 <span className="truncate">{opponentName}</span>
                 {isBot && <Badge variant="secondary" className="text-xs flex-shrink-0">Bot</Badge>}
               </div>
+              {!isPracticeMode && (
+                <div className="text-xs text-muted-foreground font-mono">{opponentElo} Elo</div>
+              )}
             </div>
           </div>
 

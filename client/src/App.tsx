@@ -32,6 +32,7 @@ function MainApp() {
     opponent: string;
     opponentElo: number;
     isBot: boolean;
+    isPracticeMode: boolean;
     topic: string;
     vocabulary: VocabWord[];
     language: Language;
@@ -107,7 +108,7 @@ function MainApp() {
     return <Landing />;
   }
 
-  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number) => {
+  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false) => {
     // Use selected topic or random if not specified
     const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
@@ -132,6 +133,7 @@ function MainApp() {
         opponent,
         opponentElo: opponentElo || (isBot ? 1000 : 1200),
         isBot,
+        isPracticeMode,
         topic: getThemeTitle(theme.id),
         vocabulary,
         language,
@@ -168,6 +170,7 @@ function MainApp() {
         opponent,
         opponentElo: opponentElo || (isBot ? 1000 : 1200),
         isBot,
+        isPracticeMode,
         topic: getThemeTitle(theme.id),
         vocabulary,
         language,
@@ -236,8 +239,8 @@ function MainApp() {
       const actualScore = isWin ? 1 : (isDraw ? 0.5 : 0);
       const change = Math.round(K_FACTOR * (actualScore - expectedScore));
       
-      // Only update stats if not a bot match (practice mode) - for bot matches it's always practice
-      if (!matchData.isBot) {
+      // Only update stats if not in practice mode
+      if (!matchData.isPracticeMode) {
         // Save match history for authenticated users
         if (isAuthenticated) {
           try {
@@ -274,6 +277,9 @@ function MainApp() {
   const handleForfeit = async () => {
     if (!matchData) return;
     
+    // Capture isPracticeMode before any state changes
+    const isPracticeMode = matchData.isPracticeMode;
+    
     // Generate varied bot stats (70-95 range for realistic variation)
     const botGrammar = 70 + Math.floor(Math.random() * 26);
     const botFluency = 70 + Math.floor(Math.random() * 26);
@@ -294,16 +300,16 @@ function MainApp() {
       botNaturalness,
       botOverall,
       botElo: matchData.opponentElo || 1000,
-      feedback: matchData.isBot 
+      feedback: isPracticeMode
         ? ["Practice session ended. Try again to improve your skills!"]
-        : ["Match forfeited due to inactivity or manual forfeit."]
+        : ["Match forfeited. You have lost Elo points."]
     };
     
     setGradingResult(forfeitResult);
     setCurrentPage("results");
     
-    // Apply forfeit penalty for competitive matches
-    if (!matchData.isBot) {
+    // Apply forfeit penalty ONLY for competitive matches (not practice mode)
+    if (!isPracticeMode) {
       await updateStats(-25, false, true);
     }
   };
@@ -344,6 +350,7 @@ function MainApp() {
             opponentElo={matchData.opponentElo}
             userElo={userElo}
             isBot={matchData.isBot}
+            isPracticeMode={matchData.isPracticeMode}
             language={matchData.language}
             difficulty={matchData.difficulty}
             onComplete={handleDuelComplete}
@@ -355,7 +362,7 @@ function MainApp() {
           <MatchResults
             gradingResult={gradingResult}
             eloChange={
-              matchData.isBot ? 0 : (
+              matchData.isPracticeMode ? 0 : (
                 (gradingResult.overall >= 70 ? 1 : -1) * 
                 ({ Easy: 8, Medium: 12, Hard: 16 }[matchData.difficulty])
               )

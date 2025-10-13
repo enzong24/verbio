@@ -28,7 +28,7 @@ const BOT_NAMES = [
 ];
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number, isPracticeMode?: boolean) => void;
   currentLanguage?: Language;
   userElo?: number;
   userWins?: number;
@@ -73,7 +73,8 @@ export default function MatchFinder({
       matchData.language as Language, // Use server-provided language
       matchData.difficulty as Difficulty, // Use server-provided difficulty
       matchData.topic, // Topic from matchmaking
-      matchData.opponent.elo // Opponent's Elo rating
+      matchData.opponent.elo, // Opponent's Elo rating
+      false // Find Match is always competitive (isPracticeMode = false)
     );
   }, [onMatchFound]);
 
@@ -96,7 +97,7 @@ export default function MatchFinder({
   const handlePractice = () => {
     const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
     const topic = selectedTopic === "random" ? undefined : selectedTopic;
-    onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic);
+    onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true); // Practice mode with bot Elo 1000
   };
 
   return (
