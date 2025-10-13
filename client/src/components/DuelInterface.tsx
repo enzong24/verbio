@@ -340,28 +340,27 @@ export default function DuelInterface({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="flex flex-col items-center">
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+            <div className="flex flex-col items-center min-w-[80px]">
               <div className="flex items-center gap-1 md:gap-2 mb-1">
-                <Clock className="w-3 h-3 md:w-4 md:h-4 text-primary" />
-                <span className={`font-mono font-bold text-base md:text-lg ${timeLeft <= 10 ? 'text-destructive' : 'text-primary'}`} data-testid="text-timer">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className={`font-mono font-bold text-lg ${timeLeft <= 10 ? 'text-destructive' : 'text-primary'}`} data-testid="text-timer">
                   {timeLeft}s
                 </span>
               </div>
-              <div className="text-xs text-muted-foreground hidden sm:block">
+              <div className="text-xs text-muted-foreground">
                 Round: {round}/{maxRounds}
               </div>
             </div>
 
             <Button 
               variant="destructive" 
-              size="sm" 
               onClick={handleForfeit}
               disabled={isGrading}
               data-testid="button-forfeit"
-              className="flex-shrink-0"
+              className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-4"
             >
-              <Flag className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+              <Flag className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Forfeit</span>
             </Button>
           </div>
@@ -410,7 +409,7 @@ export default function DuelInterface({
                   className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] md:max-w-md px-3 md:px-4 py-2 rounded-md text-sm md:text-base ${
+                    className={`max-w-[85%] md:max-w-md px-4 py-3 rounded-md text-base ${
                       msg.sender === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground"
@@ -434,14 +433,14 @@ export default function DuelInterface({
             </div>
 
             {/* Input Area */}
-            <div className="p-3 md:p-4 border-t bg-card">
+            <div className="p-3 md:p-4 border-t bg-card pb-safe-bottom">
               <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
               {validationError && (
                 <div className="mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs md:text-sm" data-testid="validation-error">
                   {validationError}
                 </div>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-end">
                 <Input
                   ref={inputRef}
                   value={input}
@@ -456,32 +455,30 @@ export default function DuelInterface({
                       ? `Answer in ${language}...` 
                       : `Ask a question in ${language}...`
                   }
-                  className="flex-1 text-sm md:text-base"
+                  className="flex-1 text-base min-h-[48px] md:min-h-[40px]"
                   disabled={!isUserTurn || isGrading}
                   data-testid="input-message"
                 />
                 {turnPhase === "user-answer" && (
                   <Button 
                     variant="outline"
-                    size="sm"
                     onClick={handleDontKnow} 
                     disabled={isGrading}
                     data-testid="button-dont-know"
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-4"
                   >
-                    <HelpCircle className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                    <HelpCircle className="w-4 h-4 md:mr-2" />
                     <span className="hidden md:inline">Skip (-20pts)</span>
                     <span className="md:hidden">Skip</span>
                   </Button>
                 )}
                 <Button 
-                  size="sm"
                   onClick={handleSend} 
                   disabled={!isUserTurn || isGrading}
                   data-testid="button-send"
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-4"
                 >
-                  <Send className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                  <Send className="w-4 h-4 md:mr-2" />
                   <span className="hidden md:inline">Send</span>
                 </Button>
               </div>

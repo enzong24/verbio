@@ -226,6 +226,11 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+  
+  /* Safe area padding for mobile devices with gesture bars */
+  .pb-safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
 }
 
 /**

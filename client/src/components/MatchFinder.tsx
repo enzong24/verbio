@@ -227,8 +227,7 @@ export default function MatchFinder({
                   </p>
                 </div>
                 <Button
-                  size="lg"
-                  className="w-full text-lg font-semibold"
+                  className="w-full text-lg font-semibold min-h-[56px] md:min-h-[48px]"
                   onClick={handleFindMatch}
                   disabled={!isConnected || !canPlay}
                   data-testid="button-find-match"
@@ -272,8 +271,7 @@ export default function MatchFinder({
                   </Select>
                 </div>
                 <Button
-                  size="lg"
-                  className="w-full text-lg"
+                  className="w-full text-lg min-h-[56px] md:min-h-[48px]"
                   variant="default"
                   style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', borderColor: 'hsl(var(--accent))' }}
                   onClick={handlePractice}
