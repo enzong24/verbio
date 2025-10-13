@@ -53,10 +53,20 @@ export default function DuelInterface({
   // Get timer duration based on difficulty
   const getTimerDuration = () => {
     switch (difficulty) {
-      case "Easy": return 120;   // 2 minutes (new easier difficulty)
-      case "Medium": return 90;  // 1.5 minutes (was Easy)
-      case "Hard": return 60;    // 1 minute (was Medium)
-      default: return 90;
+      case "Easy": return 90;    // 1.5 minutes
+      case "Medium": return 60;  // 1 minute
+      case "Hard": return 30;    // 30 seconds
+      default: return 60;
+    }
+  };
+
+  // Get max rounds based on difficulty
+  const getMaxRounds = () => {
+    switch (difficulty) {
+      case "Easy": return 3;
+      case "Medium": return 4;
+      case "Hard": return 5;
+      default: return 3;
     }
   };
 
@@ -69,7 +79,7 @@ export default function DuelInterface({
   const [botQuestions, setBotQuestions] = useState<string[]>([]);
   const [skippedQuestions, setSkippedQuestions] = useState(0);
   const [viewedDefinitions, setViewedDefinitions] = useState(0);
-  const maxRounds = 3;
+  const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
   const shouldCountRef = useRef(false);
