@@ -6,9 +6,9 @@ interface EloResult {
 }
 
 const BASE_ELO_CHANGES = {
-  Easy: 8,
-  Medium: 12,
-  Hard: 16,
+  Easy: 6,
+  Medium: 8,
+  Hard: 12,
 };
 
 export function calculateEloChange(

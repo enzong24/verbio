@@ -52,10 +52,10 @@ export default function DuelInterface({
   // Get timer duration based on difficulty
   const getTimerDuration = () => {
     switch (difficulty) {
-      case "Easy": return 90;    // 1.5 minutes
-      case "Medium": return 60;  // 1 minute
-      case "Hard": return 30;    // 30 seconds
-      default: return 60;
+      case "Easy": return 120;   // 2 minutes (new easier difficulty)
+      case "Medium": return 90;  // 1.5 minutes (was Easy)
+      case "Hard": return 60;    // 1 minute (was Medium)
+      default: return 90;
     }
   };
 
@@ -66,7 +66,9 @@ export default function DuelInterface({
   const [turnPhase, setTurnPhase] = useState<TurnPhase>("bot-question");
   const [isGrading, setIsGrading] = useState(false);
   const [botQuestions, setBotQuestions] = useState<string[]>([]);
-  const maxRounds = 5;
+  const [skippedQuestions, setSkippedQuestions] = useState(0);
+  const [viewedDefinitions, setViewedDefinitions] = useState(0);
+  const maxRounds = 3;
   
   // Refs to avoid recreating timer interval
   const shouldCountRef = useRef(false);
@@ -110,7 +112,9 @@ export default function DuelInterface({
         topic,
         vocabulary: vocabStrings,
         language,
-        difficulty
+        difficulty,
+        skippedQuestions,
+        viewedDefinitions
       });
       return await response.json() as GradingResult;
     },
@@ -208,13 +212,14 @@ export default function DuelInterface({
   };
 
   const handleDontKnow = () => {
-    // User skips answering - add a placeholder message
+    // User skips answering - add a placeholder message and increment skip count
     const skipMessage: Message = {
       sender: "user",
       text: "(Skipped)",
       timestamp: Date.now()
     };
     setMessages(prev => [...prev, skipMessage]);
+    setSkippedQuestions(prev => prev + 1);
     setTurnPhase("user-question");
     setTimeLeft(getTimerDuration());
   };

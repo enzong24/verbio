@@ -11,9 +11,9 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     .join("\n");
 
   const difficultyGuidelines: Record<string, string> = {
-    Easy: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success.",
-    Medium: "Grade with balanced standards. Expect correct grammar and appropriate vocabulary for the level.",
-    Hard: "Grade with high standards. Expect advanced grammar, sophisticated vocabulary, and native-like expressions."
+    Easy: "Grade very gently with maximum encouragement. Accept very basic grammar, beginner vocabulary, and simple attempts. Focus only on effort and communication attempts.",
+    Medium: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success.",
+    Hard: "Grade with balanced standards. Expect correct grammar and appropriate vocabulary for the level."
   };
 
   const prompt = `You are an expert ${request.language} language teacher evaluating a student's conversation performance at ${request.difficulty} difficulty level.
@@ -70,13 +70,21 @@ Respond with JSON in this exact format:
       );
     }
 
+    // Apply penalties
+    const skipPenalty = request.skippedQuestions * 20;
+    const definitionPenalty = request.viewedDefinitions * 5;
+    const totalPenalty = skipPenalty + definitionPenalty;
+    
+    // Adjust overall score with penalties
+    const adjustedOverall = Math.max(0, result.overall - totalPenalty);
+
     return {
       grammar: Math.max(0, Math.min(100, result.grammar || 0)),
       fluency: Math.max(0, Math.min(100, result.fluency || 0)),
       vocabulary: Math.max(0, Math.min(100, result.vocabulary || 0)),
       naturalness: Math.max(0, Math.min(100, result.naturalness || 0)),
       feedback: result.feedback || ["Great effort! Keep practicing."],
-      overall: Math.max(0, Math.min(100, result.overall || 0)),
+      overall: Math.max(0, Math.min(100, adjustedOverall)),
     };
   } catch (error: any) {
     console.error("Error grading conversation:", error);
@@ -93,9 +101,9 @@ export async function generateBotQuestion(
   previousQuestions: string[] = []
 ): Promise<string> {
   const difficultyInstructions: Record<string, string> = {
-    Easy: "Use simple vocabulary and basic sentence structures.",
-    Medium: "Use moderate vocabulary and natural sentence structures.",
-    Hard: "Use advanced vocabulary, idioms, and complex sentence structures."
+    Easy: "Use very simple vocabulary and the most basic sentence structures possible.",
+    Medium: "Use simple vocabulary and basic sentence structures.",
+    Hard: "Use moderate vocabulary and natural sentence structures."
   };
 
   const prompt = `You are a ${language} language teacher conducting a Q&A session about ${topic}.
@@ -146,9 +154,9 @@ export async function generateBotAnswer(
   difficulty: string = "Medium"
 ): Promise<string> {
   const difficultyInstructions: Record<string, string> = {
-    Easy: "Use simple vocabulary and basic sentence structures.",
-    Medium: "Use moderate vocabulary and natural sentence structures.",
-    Hard: "Use advanced vocabulary, idioms, and complex sentence structures."
+    Easy: "Use very simple vocabulary and the most basic sentence structures possible.",
+    Medium: "Use simple vocabulary and basic sentence structures.",
+    Hard: "Use moderate vocabulary and natural sentence structures."
   };
 
   const prompt = `You are answering a learner's question in ${language} about ${topic}.
