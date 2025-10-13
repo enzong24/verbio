@@ -273,7 +273,7 @@ export default function MatchFinder({
                 </div>
                 <Button
                   size="lg"
-                  className="w-full text-lg bg-accent/90 text-accent-foreground hover:bg-accent border-accent"
+                  className="w-full text-lg bg-accent text-accent-foreground border-accent"
                   onClick={handlePractice}
                   disabled={isPracticeLoading || isSearching || !canPlay}
                   data-testid="button-practice"

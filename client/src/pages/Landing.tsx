@@ -40,7 +40,7 @@ export default function Landing() {
               </Button>
               <Button 
                 size="lg"
-                className="text-lg font-semibold bg-accent/90 text-accent-foreground hover:bg-accent border-accent"
+                className="text-lg font-semibold bg-accent text-accent-foreground border-accent"
                 onClick={handleGuestPlay}
                 data-testid="button-guest-play"
               >
