@@ -1,17 +1,17 @@
-# Design Guidelines: Competitive Language Learning Platform
+# Design Guidelines: Modern Colorful Language Learning Platform
 
 ## Design Approach
 
-**Selected Approach:** Reference-Based (Chess.com Inspired)
+**Selected Approach:** Modern Vibrant UI with Full-Width Layouts
 
-**Justification:** The user explicitly requested a chess.com aesthetic with black/white color theme. This competitive gaming platform perfectly aligns with the Elo-based language duel concept, emphasizing skill progression, real-time matches, and competitive rankings.
+**Justification:** Evolved from the minimal Chess.com aesthetic to a more engaging, colorful design that maintains professionalism while adding visual appeal through gradients, vibrant accent colors, and modern layouts.
 
 **Key Design Principles:**
-- Professional esports aesthetic with high contrast
-- Data-driven interface highlighting stats and rankings
-- Clean, distraction-free match environment
-- Competitive gaming UI patterns (timers, score displays, leaderboards)
-- Sharp, geometric layouts with clear information hierarchy
+- Clean, modern interface with vibrant gradient accents
+- Full-width responsive layouts that utilize screen space
+- Colorful visual hierarchy with purpose-driven color coding
+- Data-driven interface with engaging visual elements
+- Split-screen layouts for optimal information architecture
 
 ---
 
@@ -19,19 +19,22 @@
 
 ### A. Color Palette
 
-**Dark Mode (Primary):**
-- Background Base: `0 0% 7%` (near black, #121212)
-- Background Elevated: `0 0% 11%` (cards/panels, #1C1C1C)
-- Background Hover: `0 0% 15%` (interactive surfaces, #262626)
-- Primary White: `0 0% 98%` (text, borders, #FAFAFA)
-- Secondary Gray: `0 0% 60%` (muted text, #999999)
-- Success Green: `142 76% 36%` (wins, positive feedback)
-- Error Red: `0 65% 51%` (losses, errors)
-- Warning Orange: `38 92% 50%` (pending actions)
+**Vibrant Color System:**
+- Purple Primary: `from-purple-500 to-purple-600` (branding, hero elements)
+- Blue Accent: `from-blue-500 to-cyan-600` (competitive mode, CTAs)
+- Green Accent: `from-green-500 to-emerald-500` (practice mode, success)
+- Cyan Accent: `from-cyan-500 to-blue-500` (highlights, interactive elements)
 
-**Accent Colors (Minimal Use):**
-- Elo Highlight: `45 100% 51%` (gold for top rankings)
-- Active State: `0 0% 25%` (button active state)
+**Background Gradients:**
+- Page Background: `bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10`
+- Card Gradients: Component-specific subtle gradients (10% opacity)
+- Border Accents: Colored borders at 20-30% opacity
+
+**Semantic Colors:**
+- Success Green: `text-green-500` (wins, positive feedback)
+- Error Red: `text-red-500` (losses, errors)
+- Info Blue: `text-blue-500` (informational alerts)
+- Warning: Maintained for alerts
 
 ---
 
@@ -58,15 +61,21 @@
 ### C. Layout System
 
 **Spacing Primitives:** Use Tailwind units of **4, 6, 8, 12, 16** for consistent rhythm
-- Component padding: `p-4`, `p-6`, `p-8`
-- Section spacing: `gap-8`, `gap-12`, `space-y-8`
-- Page margins: `px-4 md:px-8 lg:px-16`
+- Component padding: `p-6`, `p-8` for cards
+- Section spacing: `gap-6`, `gap-8`, `space-y-6`
+- Page margins: `px-4` with `container mx-auto`
 
 **Grid Structure:**
-- Main Dashboard: 3-column grid (`grid-cols-1 lg:grid-cols-3`)
-- Match View: 2-column split (chat | opponent info)
-- Leaderboard: Single column table with fixed header
-- Max container width: `max-w-7xl mx-auto`
+- Match Finder: 3-column grid (`lg:grid-cols-3`) - Stats (1 col) | Controls (2 cols)
+- Full-width backgrounds with gradient overlays
+- Cards with colored borders and gradient backgrounds
+- Container: `max-w-7xl mx-auto` for content constraint
+
+**Modern Layout Patterns:**
+- Hero sections with gradient icon containers (`w-20 h-20 rounded-2xl`)
+- Split layouts for stats vs. actions
+- Full-height backgrounds with gradient overlays
+- Colored card borders with matching background gradients
 
 ---
 

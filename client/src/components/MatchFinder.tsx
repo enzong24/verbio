@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
-import { Bot, Loader2, Target, BookOpen, AlertCircle, Mic } from "lucide-react";
+import { Bot, Loader2, Target, BookOpen, AlertCircle, Mic, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { THEMES } from "@shared/themes";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
-import { canGuestPlayMatch, incrementGuestMatches, getRemainingGuestMatches, getGuestMatchLimit } from "@/utils/guestRateLimit";
+import { canGuestPlayMatch, getRemainingGuestMatches, getGuestMatchLimit } from "@/utils/guestRateLimit";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -55,10 +55,8 @@ export default function MatchFinder({
   const canPlay = !isGuest || canGuestPlayMatch();
   const remainingMatches = isGuest ? getRemainingGuestMatches() : null;
 
-  // Generate a persistent session ID that survives remounts (SSR-safe)
   const getSessionId = () => {
     if (typeof window === 'undefined') {
-      // Fallback for SSR/test environments
       return `temp-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     }
     
@@ -72,17 +70,15 @@ export default function MatchFinder({
 
   const playerId = getSessionId();
 
-  // WebSocket matchmaking hook
   const handleWebSocketMatch = useCallback((matchData: any) => {
-    // Call onMatchFound with server-provided match details
     onMatchFound?.(
       matchData.opponent.username,
       matchData.isAI,
-      matchData.language as Language, // Use server-provided language
-      matchData.difficulty as Difficulty, // Use server-provided difficulty
-      matchData.topic, // Topic from matchmaking
-      matchData.opponent.elo, // Opponent's Elo rating
-      false // Find Match is always competitive (isPracticeMode = false)
+      matchData.language as Language,
+      matchData.difficulty as Difficulty,
+      matchData.topic,
+      matchData.opponent.elo,
+      false
     );
   }, [onMatchFound]);
 
@@ -97,167 +93,208 @@ export default function MatchFinder({
     if (isSearching) {
       cancelSearch();
     } else {
-      // Check rate limit for guests
       if (isGuest && !canGuestPlayMatch()) {
         return;
       }
-      
-      // Don't increment here - will increment in App.tsx when match is confirmed
       findMatch(currentLanguage, selectedDifficulty);
     }
   };
 
   const handlePractice = () => {
-    if (isPracticeLoading) return; // Prevent duplicate clicks
+    if (isPracticeLoading) return;
     
-    // Check rate limit for guests
     if (isGuest && !canGuestPlayMatch()) {
       return;
     }
     
     setIsPracticeLoading(true);
-    
-    // Don't increment here - will increment in App.tsx when match is confirmed
     const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
     const topic = selectedTopic === "random" ? undefined : selectedTopic;
-    onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true); // Practice mode with bot Elo 1000
-    
-    // Component will unmount when match starts, no need to reset loading state
-    // If it doesn't unmount (error case), button stays disabled which is correct
+    onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-      <div className="w-full max-w-2xl px-4">
-        <Card className="border-card-border">
-          <CardHeader className="text-center pb-8">
-            <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 rounded-md bg-primary/10 flex items-center justify-center">
-                <Mic className="w-10 h-10 text-primary" />
-              </div>
-            </div>
-            <CardTitle className="text-3xl font-bold">Ready for a Language Duel?</CardTitle>
-            <CardDescription className="text-base mt-2">
-              Challenge opponents at your skill level and improve your fluency
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pb-8">
-            {isGuest && !canPlay && (
-              <Alert variant="destructive" className="mb-4" data-testid="alert-rate-limit">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  You've reached the daily limit of {getGuestMatchLimit()} matches for guest accounts.
-                  <a href="/api/login" className="underline ml-2 font-semibold">Sign in</a> for unlimited matches!
-                </AlertDescription>
-              </Alert>
-            )}
-            {isGuest && canPlay && remainingMatches !== null && (
-              <Alert className="mb-4" data-testid="alert-remaining-matches">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Guest account: {remainingMatches} {remainingMatches === 1 ? 'match' : 'matches'} remaining today.
-                  <a href="/api/login" className="underline ml-2 font-semibold">Sign in</a> for unlimited access!
-                </AlertDescription>
-              </Alert>
-            )}
-            <div className="flex items-center gap-3 mb-2">
-              <Target className="w-5 h-5 text-muted-foreground" />
-              <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as Difficulty)} disabled={isSearching || isPracticeLoading}>
-                <SelectTrigger className="flex-1" data-testid="select-difficulty">
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Easy" data-testid="option-easy">Easy - Simple vocabulary</SelectItem>
-                  <SelectItem value="Medium" data-testid="option-medium">Medium - Conversational</SelectItem>
-                  <SelectItem value="Hard" data-testid="option-hard">Hard - Advanced & Complex</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="border-t border-card-border pt-4 mt-4">
-              <div className="text-sm text-muted-foreground mb-3">
-                Competitive matches use random topics for fair ranking
-                {!isConnected && <span className="text-destructive ml-2">(Connecting to server...)</span>}
-              </div>
-              <Button
-                size="lg"
-                className="w-full h-14 text-lg font-semibold"
-                onClick={handleFindMatch}
-                disabled={!isConnected || !canPlay}
-                data-testid="button-find-match"
-              >
-                {isSearching ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Finding opponent... (Click to cancel)
-                  </>
-                ) : (
-                  <>
-                    <Mic className="w-5 h-5 mr-2" />
-                    Find Match (Random Topic)
-                  </>
-                )}
-              </Button>
-            </div>
+    <div className="min-h-[calc(100vh-4rem)] w-full bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10">
+      <div className="container mx-auto px-4 py-12 lg:py-16">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 mb-6">
+            <Mic className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-4">
+            Ready to Duel?
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Challenge opponents at your skill level and master {currentLanguage} through competitive conversation
+          </p>
+        </div>
 
-            <div className="border-t border-card-border pt-4 mt-4">
-              <div className="text-sm text-muted-foreground mb-3">
-                Practice mode - Choose your topic
-              </div>
-              <div className="flex items-center gap-3 mb-3">
-                <BookOpen className="w-5 h-5 text-muted-foreground" />
-                <Select value={selectedTopic} onValueChange={setSelectedTopic} disabled={isSearching || isPracticeLoading}>
-                  <SelectTrigger className="flex-1" data-testid="select-topic">
-                    <SelectValue placeholder="Select topic" />
+        {/* Guest Rate Limit Alerts */}
+        {isGuest && !canPlay && (
+          <Alert variant="destructive" className="max-w-4xl mx-auto mb-8" data-testid="alert-rate-limit">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              You've reached the daily limit of {getGuestMatchLimit()} matches for guest accounts.
+              <a href="/api/login" className="underline ml-2 font-semibold">Sign in</a> for unlimited matches!
+            </AlertDescription>
+          </Alert>
+        )}
+        {isGuest && canPlay && remainingMatches !== null && (
+          <Alert className="max-w-4xl mx-auto mb-8 border-blue-500/50 bg-blue-500/10" data-testid="alert-remaining-matches">
+            <AlertCircle className="h-4 w-4 text-blue-500" />
+            <AlertDescription>
+              Guest account: {remainingMatches} {remainingMatches === 1 ? 'match' : 'matches'} remaining today.
+              <a href="/api/login" className="underline ml-2 font-semibold text-blue-600 dark:text-blue-400">Sign in</a> for unlimited access!
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Main Content - Split Layout */}
+        <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {/* Left Side - Stats */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                    <Trophy className="w-6 h-6 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Your Elo</p>
+                    <p className="text-3xl font-bold font-mono" data-testid="text-user-elo">{userElo}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-purple-500/20">
+                  <div>
+                    <p className="text-2xl font-bold text-green-500" data-testid="text-user-wins">{userWins}</p>
+                    <p className="text-sm text-muted-foreground">Wins</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-red-500" data-testid="text-user-losses">{userLosses}</p>
+                    <p className="text-sm text-muted-foreground">Losses</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <h3 className="font-semibold">Quick Tips</h3>
+                </div>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Practice mode doesn't affect Elo</li>
+                  <li>• Use vocabulary hints strategically</li>
+                  <li>• Answer quickly for bonus points</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Side - Match Controls */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Difficulty Selection */}
+            <Card className="border-card-border">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Target className="w-5 h-5 text-muted-foreground" />
+                  <h3 className="font-semibold">Select Difficulty</h3>
+                </div>
+                <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as Difficulty)} disabled={isSearching || isPracticeLoading}>
+                  <SelectTrigger className="w-full" data-testid="select-difficulty">
+                    <SelectValue placeholder="Select difficulty" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="random">Random Topic</SelectItem>
-                    {THEMES.map((theme) => (
-                      <SelectItem key={theme.id} value={theme.id}>
-                        {theme.title}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="Easy" data-testid="option-easy">🟢 Easy - Simple vocabulary</SelectItem>
+                    <SelectItem value="Medium" data-testid="option-medium">🟡 Medium - Conversational</SelectItem>
+                    <SelectItem value="Hard" data-testid="option-hard">🔴 Hard - Advanced & Complex</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full h-14 text-lg"
-                onClick={handlePractice}
-                disabled={isPracticeLoading || isSearching || !canPlay}
-                data-testid="button-practice"
-              >
-                {isPracticeLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Starting practice...
-                  </>
-                ) : (
-                  <>
-                    <Bot className="w-5 h-5 mr-2" />
-                    Practice with AI Bot
-                  </>
-                )}
-              </Button>
-            </div>
+              </CardContent>
+            </Card>
 
-            <div className="grid grid-cols-3 gap-4 pt-4 text-center">
-              <div>
-                <div className="text-2xl font-bold font-mono" data-testid="text-user-elo">{userElo}</div>
-                <div className="text-sm text-muted-foreground">Your Elo</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold font-mono" data-testid="text-user-wins">{userWins}</div>
-                <div className="text-sm text-muted-foreground">Wins</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold font-mono" data-testid="text-user-losses">{userLosses}</div>
-                <div className="text-sm text-muted-foreground">Losses</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Competitive Mode */}
+            <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/30">
+              <CardContent className="p-8">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold mb-2">Competitive Match</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Random topics • Elo changes apply
+                    {!isConnected && <span className="text-destructive ml-2">(Connecting...)</span>}
+                  </p>
+                </div>
+                <Button
+                  size="lg"
+                  className="w-full text-lg font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0"
+                  onClick={handleFindMatch}
+                  disabled={!isConnected || !canPlay}
+                  data-testid="button-find-match"
+                >
+                  {isSearching ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Finding opponent... (Click to cancel)
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-5 h-5 mr-2" />
+                      Find Match
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Practice Mode */}
+            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30">
+              <CardContent className="p-8">
+                <div className="text-center mb-6">
+                  <h3 className="text-2xl font-bold mb-2">Practice Mode</h3>
+                  <p className="text-sm text-muted-foreground">Choose your topic • No Elo changes</p>
+                </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <BookOpen className="w-5 h-5 text-muted-foreground" />
+                  <Select value={selectedTopic} onValueChange={setSelectedTopic} disabled={isSearching || isPracticeLoading}>
+                    <SelectTrigger className="flex-1" data-testid="select-topic">
+                      <SelectValue placeholder="Select topic" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="random">🎲 Random Topic</SelectItem>
+                      {THEMES.map((theme) => (
+                        <SelectItem key={theme.id} value={theme.id}>
+                          {theme.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full text-lg border-green-500/50"
+                  onClick={handlePractice}
+                  disabled={isPracticeLoading || isSearching || !canPlay}
+                  data-testid="button-practice"
+                >
+                  {isPracticeLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Starting practice...
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="w-5 h-5 mr-2" />
+                      Practice with AI Bot
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
