@@ -194,9 +194,9 @@ function MainApp() {
 
   const updateStats = async (eloChange: number, isWin: boolean, isLoss: boolean, isForfeit: boolean = false) => {
     const newElo = userElo + eloChange;
-    // Forfeits count as wins but not as losses
-    const newWins = userWins + (isWin ? 1 : 0);
-    const newLosses = userLosses + (isLoss && !isForfeit ? 1 : 0);
+    // Forfeits count as losses but not as wins
+    const newWins = userWins + (isWin && !isForfeit ? 1 : 0);
+    const newLosses = userLosses + (isLoss ? 1 : 0);
 
     if (isAuthenticated) {
       // Update database for authenticated users
@@ -291,14 +291,14 @@ function MainApp() {
     const botNaturalness = 70 + Math.floor(Math.random() * 26);
     const botOverall = Math.round((botGrammar + botFluency + botVocabulary + botNaturalness) / 4);
     
-    // Create a forfeit result - set user score higher than bot to count as win
-    // This ensures forfeit counts as a win but won't affect skill progress
+    // Create a forfeit result - set user score lower than bot to count as loss
+    // This ensures forfeit counts as a loss but won't affect skill progress
     const forfeitResult: GradingResult = {
-      grammar: 100,
-      fluency: 100,
-      vocabulary: 100,
-      naturalness: 100,
-      overall: 100,
+      grammar: 0,
+      fluency: 0,
+      vocabulary: 0,
+      naturalness: 0,
+      overall: 0,
       botGrammar,
       botFluency,
       botVocabulary,
@@ -307,7 +307,7 @@ function MainApp() {
       botElo: matchData.opponentElo || 1000,
       feedback: isPracticeMode
         ? ["Practice session ended. Try again to improve your skills!"]
-        : ["Match forfeited. Counts as a win but won't affect skill progress."],
+        : ["Match forfeited. Counts as a loss but won't affect skill progress."],
       isForfeit: true // Mark as forfeit so it doesn't show in skill progress
     };
     

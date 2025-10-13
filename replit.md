@@ -29,7 +29,7 @@ The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules
 - **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and scrollable slide-out navigation.
 - **Loading State Protection**: All action buttons implement loading states with disabled states to prevent duplicate actions (rapid clicking, simultaneous requests).
 - **Elo Calculation Consistency**: Both MatchResults display and handleResultsContinue use identical Elo formula to ensure displayed changes match applied changes. handleForfeit does NOT update Elo directly; all updates happen in handleResultsContinue.
-- **Forfeit Behavior**: Forfeiting a match counts as a WIN (user scores set to 100, higher than bot's 70-95 range), applies standard Elo changes, but does NOT contribute to skill progress. The `isForfeit` flag excludes forfeited matches from match history saves, preventing them from affecting Grammar, Fluency, Vocabulary, and Naturalness progress calculations.
+- **Forfeit Behavior**: Forfeiting a match counts as a LOSS (user scores set to 0, lower than bot's 70-95 range), applies standard Elo changes, but does NOT contribute to skill progress. The `isForfeit` flag excludes forfeited matches from match history saves, preventing them from affecting Grammar, Fluency, Vocabulary, and Naturalness progress calculations.
 - **Guest Mode Restrictions**: Guest users do not see "Recent Matches" or "Skill Progress" sections (hidden via `isAuthenticated` conditionals). Guest stats are stored in localStorage while authenticated users use PostgreSQL.
 
 ## External Dependencies
