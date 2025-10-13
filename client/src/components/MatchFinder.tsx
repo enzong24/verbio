@@ -29,7 +29,6 @@ const BOT_NAMES = [
 
 interface MatchFinderProps {
   onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string) => void;
-  onLanguageChange?: (language: Language) => void;
   currentLanguage?: Language;
   userElo?: number;
   userWins?: number;
@@ -39,14 +38,12 @@ interface MatchFinderProps {
 
 export default function MatchFinder({ 
   onMatchFound,
-  onLanguageChange,
   currentLanguage = "Chinese",
   userElo = 1000,
   userWins = 0,
   userLosses = 0,
   username = "Player"
 }: MatchFinderProps) {
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(currentLanguage);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
 
@@ -86,24 +83,19 @@ export default function MatchFinder({
     onMatchFound: handleWebSocketMatch,
   });
 
-  const handleLanguageChange = (language: Language) => {
-    setSelectedLanguage(language);
-    onLanguageChange?.(language);
-  };
-
   const handleFindMatch = () => {
     if (isSearching) {
       cancelSearch();
     } else {
       // Competitive mode - no topic selection (random topic)
-      findMatch(selectedLanguage, selectedDifficulty);
+      findMatch(currentLanguage, selectedDifficulty);
     }
   };
 
   const handlePractice = () => {
     const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
     const topic = selectedTopic === "random" ? undefined : selectedTopic;
-    onMatchFound?.(randomBotName, true, selectedLanguage, selectedDifficulty, topic);
+    onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic);
   };
 
   return (
@@ -122,19 +114,6 @@ export default function MatchFinder({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Languages className="w-5 h-5 text-muted-foreground" />
-              <Select value={selectedLanguage} onValueChange={(value) => handleLanguageChange(value as Language)}>
-                <SelectTrigger className="flex-1" data-testid="select-language">
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Chinese" data-testid="option-chinese">Chinese (中文)</SelectItem>
-                  <SelectItem value="Spanish" data-testid="option-spanish">Spanish (Español)</SelectItem>
-                  <SelectItem value="Italian" data-testid="option-italian">Italian (Italiano)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="flex items-center gap-3 mb-2">
               <Target className="w-5 h-5 text-muted-foreground" />
               <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as Difficulty)}>

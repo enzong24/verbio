@@ -1,4 +1,4 @@
-import { Swords, Trophy, User, Target, LogOut, Menu } from "lucide-react";
+import { Swords, Trophy, User, Target, LogOut, Menu, Languages } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface HeaderProps {
   username?: string;
@@ -28,6 +29,7 @@ interface HeaderProps {
   currentLanguage?: string;
   wins?: number;
   losses?: number;
+  onLanguageChange?: (language: string) => void;
 }
 
 export default function Header({ 
@@ -39,7 +41,8 @@ export default function Header({
   profileImageUrl,
   currentLanguage = "Chinese",
   wins = 0,
-  losses = 0
+  losses = 0,
+  onLanguageChange
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -86,6 +89,17 @@ export default function Header({
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex items-center gap-2">
+            <Select value={currentLanguage} onValueChange={onLanguageChange}>
+              <SelectTrigger className="w-[140px] h-9" data-testid="select-language-header">
+                <Languages className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Chinese" data-testid="option-chinese-header">中文</SelectItem>
+                <SelectItem value="Spanish" data-testid="option-spanish-header">Español</SelectItem>
+                <SelectItem value="Italian" data-testid="option-italian-header">Italiano</SelectItem>
+              </SelectContent>
+            </Select>
             <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
               {elo} Elo
             </Badge>

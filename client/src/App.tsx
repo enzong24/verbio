@@ -281,13 +281,13 @@ function MainApp() {
         currentLanguage={currentLanguage}
         wins={userWins}
         losses={userLosses}
+        onLanguageChange={setCurrentLanguage}
       />
       
       <main className="pt-16">
         {currentPage === "duel" && (
           <MatchFinder 
             onMatchFound={handleMatchFound}
-            onLanguageChange={setCurrentLanguage}
             currentLanguage={currentLanguage}
             userElo={userElo}
             userWins={userWins}
