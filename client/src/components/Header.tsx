@@ -176,7 +176,7 @@ export default function Header({
     </header>
 
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+        <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>

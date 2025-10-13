@@ -46,6 +46,7 @@ export default function MatchFinder({
 }: MatchFinderProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
+  const [isPracticeLoading, setIsPracticeLoading] = useState(false);
 
   // Generate a persistent session ID that survives remounts (SSR-safe)
   const getSessionId = () => {
@@ -95,9 +96,15 @@ export default function MatchFinder({
   };
 
   const handlePractice = () => {
+    if (isPracticeLoading) return; // Prevent duplicate clicks
+    
+    setIsPracticeLoading(true);
     const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
     const topic = selectedTopic === "random" ? undefined : selectedTopic;
     onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true); // Practice mode with bot Elo 1000
+    
+    // Component will unmount when match starts, no need to reset loading state
+    // If it doesn't unmount (error case), button stays disabled which is correct
   };
 
   return (
@@ -118,7 +125,7 @@ export default function MatchFinder({
           <CardContent className="space-y-4 pb-8">
             <div className="flex items-center gap-3 mb-2">
               <Target className="w-5 h-5 text-muted-foreground" />
-              <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as Difficulty)}>
+              <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as Difficulty)} disabled={isSearching || isPracticeLoading}>
                 <SelectTrigger className="flex-1" data-testid="select-difficulty">
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
@@ -162,7 +169,7 @@ export default function MatchFinder({
               </div>
               <div className="flex items-center gap-3 mb-3">
                 <BookOpen className="w-5 h-5 text-muted-foreground" />
-                <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                <Select value={selectedTopic} onValueChange={setSelectedTopic} disabled={isSearching || isPracticeLoading}>
                   <SelectTrigger className="flex-1" data-testid="select-topic">
                     <SelectValue placeholder="Select topic" />
                   </SelectTrigger>
@@ -181,10 +188,20 @@ export default function MatchFinder({
                 variant="outline"
                 className="w-full h-14 text-lg"
                 onClick={handlePractice}
+                disabled={isPracticeLoading || isSearching}
                 data-testid="button-practice"
               >
-                <Bot className="w-5 h-5 mr-2" />
-                Practice with AI Bot
+                {isPracticeLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Starting practice...
+                  </>
+                ) : (
+                  <>
+                    <Bot className="w-5 h-5 mr-2" />
+                    Practice with AI Bot
+                  </>
+                )}
               </Button>
             </div>
 
