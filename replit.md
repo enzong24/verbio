@@ -4,63 +4,72 @@
 
 LangDuel is an AI-powered, competitive language learning platform that gamifies language acquisition through Elo-ranked duels. Users engage in themed conversations with opponents or AI bots, receive instant AI feedback on their performance, and track their progress through a competitive ranking system. The platform transforms language learning from passive study into an engaging, measurable experience similar to competitive gaming platforms like Chess.com.
 
-## Recent Updates (October 12, 2025)
+## Recent Updates (October 13, 2025)
+
+**Game Progression Changes**
+- Reduced match rounds from 5 to 3 for faster, more engaging gameplay
+- Question deduplication system ensures bot never asks the same question twice in a match
+
+**Penalty System**
+- 20-point penalty for clicking "Don't Know" button to skip questions
+- 5-point penalty per vocabulary definition viewed (clickable tooltip)
+- Penalties automatically deducted from final score before win/loss determination
+- Grading tracks skippedQuestions and viewedDefinitions counts
+
+**Difficulty Restructuring**
+- New Easy difficulty: 120s timer, +6 Elo reward, very simple vocabulary and encouraging grading
+- Medium difficulty (formerly Easy): 90s timer, +8 Elo reward, conversational vocabulary and balanced grading
+- Hard difficulty (formerly Medium): 60s timer, +12 Elo reward, advanced vocabulary and strict grading
+- All AI prompts updated to match new difficulty expectations
+
+**Vocabulary Definition System**
+- Clickable vocabulary badges show definitions in tooltip
+- Definitions provide cross-language translations (Chinese↔Spanish/Italian, Spanish↔Italian)
+- Visual indication of -5 point penalty when viewing definitions
+- Hover and active elevate interactions on clickable vocabulary badges
 
 **Turn-Based Q&A System**
-- Completely refactored conversation system to structured turn-based Q&A format
+- Structured turn-based Q&A format with 3 rounds (reduced from 5)
 - Bot asks the first question using vocabulary words
-- User answers OR clicks "Don't Know" button to skip
+- User answers OR clicks "Don't Know" button to skip (-20 points)
 - User then asks a question using vocabulary words
 - Bot answers the user's question
-- Alternating pattern continues for 5 rounds
 - Turn phase indicators guide users through each step
 
 **Expanded Theme System**
-- Added 13 comprehensive themes: Travel, Food, Business, Family, Technology, Health, Education, Entertainment, Nature, Shopping, Sports, Weather, Social
+- 13 comprehensive themes: Travel, Food, Business, Family, Technology, Health, Education, Entertainment, Nature, Shopping, Sports, Weather, Social
 - Each theme has difficulty-specific vocabulary (Easy, Medium, Hard)
 - Vocabulary counts optimized by difficulty: 3 words for Easy, 5 words for Medium, 7 words for Hard
 - Full language support for Chinese (with pinyin), Spanish, and Italian
 - Random theme selection for each match with appropriate vocabulary
 
 **Authentication & Guest Mode**
-- Implemented Replit Auth integration for user sign-in/sign-out with Google, GitHub, X, Apple, and email/password
-- Added guest mode allowing users to play without signing in, persisted via localStorage
+- Replit Auth integration for user sign-in/sign-out with Google, GitHub, X, Apple, and email/password
+- Guest mode allowing users to play without signing in, persisted via localStorage
 - Landing page for logged-out users with "Sign In" and "Play as Guest" options
 - Auth endpoint returns `null` for unauthenticated users (no 401 blocking)
 - Profile images displayed in header for authenticated users
-- Logout button appears for authenticated users
-
-**Difficulty Level System**
-- Added difficulty selection (Easy, Medium, Hard) to match finder
-- Difficulty affects vocabulary complexity, bot question/answer complexity, and grading standards
-- Easy: Simple vocabulary, basic structures, encouraging grading
-- Medium: Conversational flow, balanced grading expectations
-- Hard: Advanced vocabulary, idioms, complex structures, strict grading
-- Difficulty parameter integrated into all AI endpoints
 
 **AI Integration & Prompts**
-- Restored OpenAI GPT-4o for all grading, questions, and answers
-- Created dedicated endpoints for Q&A format:
-  - POST `/api/bot-question` - Generates questions using vocabulary
+- OpenAI GPT-4o for all grading, questions, and answers
+- Dedicated endpoints for Q&A format:
+  - POST `/api/bot-question` - Generates questions using vocabulary with deduplication
   - POST `/api/bot-answer` - Generates answers to user questions
+  - POST `/api/grade` - Grades performance with penalty adjustments
 - Context-aware grading prompts adjust expectations based on difficulty level
 - Bot questions and answers adapt to difficulty and incorporate target vocabulary
-- Maintained JSON-structured responses for reliable parsing
 
-**UI & Navigation Changes**
-- Removed practice mode from navigation (focus on competitive duels only)
-- Added "Don't Know" button to skip difficult questions during answer phase
-- Updated initial player Elo from 1547 to 1000
-- Initial match history set to 0 wins/losses
+**UI & Navigation Features**
+- "Don't Know" button to skip difficult questions during answer phase (-20 points)
+- Accent keyboard for Spanish (á, é, í, ó, ú, ñ, ü, ¿, ¡) and Italian (à, è, é, ì, ò, ù)
 - Turn phase indicators show current action (answer/ask/bot thinking)
-- **Accent Keyboard for Spanish and Italian**: Clickable accent buttons (á, é, í, ó, ú, ñ, ü, ¿, ¡ for Spanish; à, è, é, ì, ò, ù for Italian) appear above text input to help users type correctly and avoid score penalties
+- Initial player Elo: 1000 (changed from 1547)
 
 **Timer System**
-- Difficulty-based timer durations: Easy=90s, Medium=60s, Hard=30s
-- Timer pauses during bot phases (bot-question, bot-answer) and only counts during user phases
-- Single interval implementation using refs to prevent multiple timers and stale closures
-- Countdown rate: exactly 1 second per real second
-- Timer resets to full duration at the start of each user turn (answer/question)
+- Difficulty-based timer durations: Easy=120s, Medium=90s, Hard=60s
+- Timer pauses during bot phases, only counts during user phases
+- Single interval implementation using refs to prevent multiple timers
+- Timer resets to full duration at the start of each user turn
 
 ## User Preferences
 
