@@ -1,4 +1,4 @@
-import { Trophy, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, ArrowRight, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,15 +20,27 @@ export default function MatchResults({
   isBot = false,
   onContinue
 }: MatchResultsProps) {
-  const isWinner = gradingResult.overall >= 70;
-  const actualEloChange = isWinner ? Math.abs(eloChange) : -Math.abs(eloChange);
+  const userScore = gradingResult.overall;
+  const botScore = gradingResult.botOverall || 0;
+  const hasBot = botScore > 0;
+  
+  // Win/loss determined by comparative scoring
+  const isWinner = hasBot ? userScore > botScore : userScore >= 70;
+  const actualEloChange = eloChange; // Already calculated correctly from backend
 
-  const scores = {
+  const userScores = {
     grammar: gradingResult.grammar,
     fluency: gradingResult.fluency,
     vocabulary: gradingResult.vocabulary,
     naturalness: gradingResult.naturalness,
   };
+  
+  const botScores = hasBot ? {
+    grammar: gradingResult.botGrammar || 0,
+    fluency: gradingResult.botFluency || 0,
+    vocabulary: gradingResult.botVocabulary || 0,
+    naturalness: gradingResult.botNaturalness || 0,
+  } : null;
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
@@ -67,25 +79,77 @@ export default function MatchResults({
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-4">Performance Breakdown</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(scores).map(([key, value]) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm capitalize text-muted-foreground">{key}</span>
-                      <span className="font-mono font-semibold">{value}%</span>
+            {hasBot ? (
+              <div>
+                <h3 className="font-semibold mb-4">Score Comparison</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* User Scores */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <User className="w-5 h-5" />
+                      <span className="font-semibold">You</span>
+                      <Badge variant="outline" className="ml-auto font-mono" data-testid="text-user-score">
+                        {userScore}%
+                      </Badge>
                     </div>
-                    <Progress value={value} className="h-2" />
+                    {Object.entries(userScores).map(([key, value]) => (
+                      <div key={key} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm capitalize text-muted-foreground">{key}</span>
+                          <span className="font-mono text-sm">{value}%</span>
+                        </div>
+                        <Progress value={value} className="h-2" />
+                      </div>
+                    ))}
                   </div>
-                ))}
+
+                  {/* Bot Scores */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Bot className="w-5 h-5" />
+                      <span className="font-semibold">AI Bot</span>
+                      <Badge variant="outline" className="ml-auto font-mono" data-testid="text-bot-score">
+                        {botScore}%
+                      </Badge>
+                      {gradingResult.botElo && (
+                        <Badge variant="secondary" className="font-mono">
+                          {gradingResult.botElo} Elo
+                        </Badge>
+                      )}
+                    </div>
+                    {botScores && Object.entries(botScores).map(([key, value]) => (
+                      <div key={key} className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm capitalize text-muted-foreground">{key}</span>
+                          <span className="font-mono text-sm">{value}%</span>
+                        </div>
+                        <Progress value={value} className="h-2" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="mt-4 text-center">
-                <Badge variant="outline" className="text-lg font-mono">
-                  Average: {gradingResult.overall}%
-                </Badge>
+            ) : (
+              <div>
+                <h3 className="font-semibold mb-4">Performance Breakdown</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(userScores).map(([key, value]) => (
+                    <div key={key} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm capitalize text-muted-foreground">{key}</span>
+                        <span className="font-mono font-semibold">{value}%</span>
+                      </div>
+                      <Progress value={value} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 text-center">
+                  <Badge variant="outline" className="text-lg font-mono">
+                    Average: {gradingResult.overall}%
+                  </Badge>
+                </div>
               </div>
-            </div>
+            )}
 
             <div>
               <h3 className="font-semibold mb-3">Feedback</h3>

@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Swords, Bot, Loader2, Languages, Target } from "lucide-react";
+import { Swords, Bot, Loader2, Languages, Target, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { THEMES } from "@shared/themes";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -26,7 +27,7 @@ const BOT_NAMES = [
 ];
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string) => void;
   onLanguageChange?: (language: Language) => void;
   currentLanguage?: Language;
   userElo?: number;
@@ -45,6 +46,7 @@ export default function MatchFinder({
   const [searching, setSearching] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(currentLanguage);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
+  const [selectedTopic, setSelectedTopic] = useState<string>("random");
 
   const handleLanguageChange = (language: Language) => {
     setSelectedLanguage(language);
@@ -56,13 +58,15 @@ export default function MatchFinder({
     // Simulate matchmaking - competitive mode (affects Elo)
     setTimeout(() => {
       setSearching(false);
-      onMatchFound?.("Maria García", false, selectedLanguage, selectedDifficulty);
+      const topic = selectedTopic === "random" ? undefined : selectedTopic;
+      onMatchFound?.("Maria García", false, selectedLanguage, selectedDifficulty, topic);
     }, 2000);
   };
 
   const handlePractice = () => {
     const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
-    onMatchFound?.(randomBotName, true, selectedLanguage, selectedDifficulty);
+    const topic = selectedTopic === "random" ? undefined : selectedTopic;
+    onMatchFound?.(randomBotName, true, selectedLanguage, selectedDifficulty, topic);
   };
 
   return (
@@ -104,6 +108,22 @@ export default function MatchFinder({
                   <SelectItem value="Easy" data-testid="option-easy">Easy - Simple vocabulary</SelectItem>
                   <SelectItem value="Medium" data-testid="option-medium">Medium - Conversational</SelectItem>
                   <SelectItem value="Hard" data-testid="option-hard">Hard - Advanced & Complex</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-3 mb-2">
+              <BookOpen className="w-5 h-5 text-muted-foreground" />
+              <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                <SelectTrigger className="flex-1" data-testid="select-topic">
+                  <SelectValue placeholder="Select topic" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="random">Random Topic</SelectItem>
+                  {THEMES.map((theme) => (
+                    <SelectItem key={theme.id} value={theme.id}>
+                      {theme.title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

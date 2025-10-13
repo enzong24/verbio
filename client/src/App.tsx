@@ -104,13 +104,13 @@ function MainApp() {
     return <Landing />;
   }
 
-  const handleMatchFound = (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty) => {
-    // Select a random theme
-    const randomTheme = THEMES[Math.floor(Math.random() * THEMES.length)];
+  const handleMatchFound = (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string) => {
+    // Use selected topic or random if not specified
+    const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
     // Get vocabulary for the selected difficulty and language
-    const vocabStrings = getThemeVocabulary(randomTheme.id, difficulty, language);
-    const themeVocab = randomTheme.vocabulary[difficulty];
+    const vocabStrings = getThemeVocabulary(theme.id, difficulty, language);
+    const themeVocab = theme.vocabulary[difficulty];
     
     // Convert to VocabWord format with definitions
     const vocabulary: VocabWord[] = vocabStrings.map((word, i) => {
@@ -138,7 +138,7 @@ function MainApp() {
     setMatchData({
       opponent,
       isBot,
-      topic: getThemeTitle(randomTheme.id),
+      topic: getThemeTitle(theme.id),
       vocabulary,
       language,
       difficulty,
@@ -182,21 +182,23 @@ function MainApp() {
   };
 
   const handleResultsContinue = async () => {
-    // Update Elo based on result and difficulty
+    // Update Elo based on comparative scoring (user vs bot)
     if (gradingResult && matchData) {
-      const isWin = gradingResult.overall >= 70;
+      const userScore = gradingResult.overall;
+      const botScore = gradingResult.botOverall || 0;
+      const botElo = gradingResult.botElo || 1000;
       
-      // Calculate Elo change based on difficulty
-      const eloChanges = {
-        Easy: 8,
-        Medium: 12,
-        Hard: 16,
-      };
-      const change = isWin 
-        ? eloChanges[matchData.difficulty] 
-        : -eloChanges[matchData.difficulty];
+      // Determine result based on comparative scoring
+      const isWin = userScore > botScore;
+      const isDraw = userScore === botScore;
       
-      // Only update stats if not a bot match (practice mode)
+      // Calculate Elo change using standard Elo formula
+      const K_FACTOR = 32;
+      const expectedScore = 1 / (1 + Math.pow(10, (botElo - userElo) / 400));
+      const actualScore = isWin ? 1 : (isDraw ? 0.5 : 0);
+      const change = Math.round(K_FACTOR * (actualScore - expectedScore));
+      
+      // Only update stats if not a bot match (practice mode) - for bot matches it's always practice
       if (!matchData.isBot) {
         // Save match history for authenticated users
         if (isAuthenticated) {
@@ -223,7 +225,7 @@ function MainApp() {
           }
         }
         
-        await updateStats(change, isWin, !isWin);
+        await updateStats(change, isWin, !isWin && !isDraw);
       }
     }
     setMatchData(null);

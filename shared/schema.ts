@@ -90,6 +90,13 @@ export const gradingResultSchema = z.object({
   naturalness: z.number().min(0).max(100),
   feedback: z.array(z.string()),
   overall: z.number().min(0).max(100),
+  // Bot scores
+  botGrammar: z.number().min(0).max(100).optional(),
+  botFluency: z.number().min(0).max(100).optional(),
+  botVocabulary: z.number().min(0).max(100).optional(),
+  botNaturalness: z.number().min(0).max(100).optional(),
+  botOverall: z.number().min(0).max(100).optional(),
+  botElo: z.number().optional(),
 });
 
 export type Message = z.infer<typeof messageSchema>;

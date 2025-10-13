@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { GradingRequest, GradingResult } from "@shared/schema";
+import { getBotElo, getBotTargetAccuracy } from "./botConfig";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -9,14 +10,21 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     .filter(m => m.sender === "user")
     .map(m => m.text)
     .join("\n");
+  
+  const botMessages = request.messages
+    .filter(m => m.sender === "opponent")
+    .map(m => m.text)
+    .join("\n");
 
   const difficultyGuidelines: Record<string, string> = {
     Easy: "Grade with MAXIMUM encouragement and patience. This is absolute beginner level - accept ANY attempt at communication, even single words or very broken sentences. Focus ONLY on effort and attempting to communicate. Give high scores (70-90+) for any genuine attempt.",
     Medium: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success. Expect simple but complete sentences.",
     Hard: "Grade with balanced standards. Expect correct grammar, appropriate vocabulary, and natural language flow for intermediate level."
   };
+  
+  const botTargetAccuracy = getBotTargetAccuracy(request.difficulty);
 
-  const prompt = `You are an expert ${request.language} language teacher evaluating a student's conversation performance at ${request.difficulty} difficulty level.
+  const prompt = `You are an expert ${request.language} language teacher evaluating a conversation between a student and a language bot at ${request.difficulty} difficulty level.
 
 Topic: ${request.topic}
 Target vocabulary: ${request.vocabulary.join(", ")}
@@ -27,12 +35,23 @@ ${difficultyGuidelines[request.difficulty] || difficultyGuidelines.Medium}
 Student's messages:
 ${userMessages}
 
-Evaluate the student's ${request.language} language usage and provide:
-1. Grammar score (0-100): Accuracy of grammar, verb conjugations, sentence structure
-2. Fluency score (0-100): Natural flow, coherence, and ease of expression
-3. Vocabulary score (0-100): Appropriate use of vocabulary, especially target words
-4. Naturalness score (0-100): How natural and native-like the language sounds
-5. Feedback: 3-5 specific points about what they did well or could improve
+Bot's messages:
+${botMessages}
+
+Evaluate both participants:
+
+1. STUDENT scores:
+- Grammar score (0-100): Accuracy of grammar, verb conjugations, sentence structure
+- Fluency score (0-100): Natural flow, coherence, and ease of expression
+- Vocabulary score (0-100): Appropriate use of vocabulary, especially target words
+- Naturalness score (0-100): How natural and native-like the language sounds
+- Feedback: 3-5 specific points about what they did well or could improve
+
+2. BOT scores (should target ${botTargetAccuracy}% accuracy):
+- Grammar score (0-100): Target ${botTargetAccuracy}%, include minor mistakes
+- Fluency score (0-100): Target ${botTargetAccuracy}%
+- Vocabulary score (0-100): Target ${botTargetAccuracy}%
+- Naturalness score (0-100): Target ${botTargetAccuracy}%
 
 Respond with JSON in this exact format:
 {
@@ -41,7 +60,12 @@ Respond with JSON in this exact format:
   "vocabulary": number,
   "naturalness": number,
   "feedback": ["point 1", "point 2", "point 3"],
-  "overall": number
+  "overall": number,
+  "botGrammar": number,
+  "botFluency": number,
+  "botVocabulary": number,
+  "botNaturalness": number,
+  "botOverall": number
 }`;
 
   try {
@@ -63,18 +87,25 @@ Respond with JSON in this exact format:
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
     
-    // Calculate overall if not provided
+    // Calculate overall scores if not provided
     if (!result.overall) {
       result.overall = Math.round(
         (result.grammar + result.fluency + result.vocabulary + result.naturalness) / 4
       );
     }
-
-    // Apply penalties
-    const skipPenalty = request.skippedQuestions * 20;
     
-    // Adjust overall score with penalties
+    if (!result.botOverall) {
+      result.botOverall = Math.round(
+        (result.botGrammar + result.botFluency + result.botVocabulary + result.botNaturalness) / 4
+      );
+    }
+
+    // Apply penalties to user score
+    const skipPenalty = request.skippedQuestions * 20;
     const adjustedOverall = Math.max(0, result.overall - skipPenalty);
+    
+    // Get bot Elo for this difficulty
+    const botElo = getBotElo(request.difficulty);
 
     return {
       grammar: Math.max(0, Math.min(100, result.grammar || 0)),
@@ -83,6 +114,12 @@ Respond with JSON in this exact format:
       naturalness: Math.max(0, Math.min(100, result.naturalness || 0)),
       feedback: result.feedback || ["Great effort! Keep practicing."],
       overall: Math.max(0, Math.min(100, adjustedOverall)),
+      botGrammar: Math.max(0, Math.min(100, result.botGrammar || 0)),
+      botFluency: Math.max(0, Math.min(100, result.botFluency || 0)),
+      botVocabulary: Math.max(0, Math.min(100, result.botVocabulary || 0)),
+      botNaturalness: Math.max(0, Math.min(100, result.botNaturalness || 0)),
+      botOverall: Math.max(0, Math.min(100, result.botOverall || 0)),
+      botElo,
     };
   } catch (error: any) {
     console.error("Error grading conversation:", error);
