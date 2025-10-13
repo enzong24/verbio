@@ -6,7 +6,18 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 
 ## Recent Updates (October 13, 2025)
 
-**Latest Changes - Mobile Responsiveness & Chess.com-style Elo (October 13, 2025 - Session 2)**
+**Latest Changes - Vocabulary Standardization & System Verification (October 13, 2025 - Session 3)**
+- **Vocabulary Count Standardization**: All 21 themes updated to consistent vocabulary counts
+  - Medium difficulty: exactly 5 vocabulary words per theme
+  - Hard difficulty: exactly 8 vocabulary words per theme
+  - Automated verification script confirms 100% compliance across all themes
+- **System Verification**: Comprehensive validation of all features
+  - Mobile responsiveness confirmed with breakpoints (md:, sm:, lg:) throughout DuelInterface
+  - Chess.com-style Elo calculation verified with dynamic K-factors and 300+ difference rules
+  - Topic selection for practice mode only - competitive matches use random topics
+  - All 21 themes tested and verified for correct vocabulary counts
+
+**Previous Changes - Mobile Responsiveness & Chess.com-style Elo (October 13, 2025 - Session 2)**
 - **Mobile Responsiveness**: Fully responsive UI for all screen sizes with mobile-optimized typing interface
   - DuelInterface components scale from mobile to desktop with proper breakpoints
   - Text, buttons, and inputs resize appropriately for mobile devices
