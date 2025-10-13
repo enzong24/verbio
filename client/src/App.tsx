@@ -30,6 +30,7 @@ function MainApp() {
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [matchData, setMatchData] = useState<{
     opponent: string;
+    opponentElo: number;
     isBot: boolean;
     topic: string;
     vocabulary: VocabWord[];
@@ -106,7 +107,7 @@ function MainApp() {
     return <Landing />;
   }
 
-  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string) => {
+  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number) => {
     // Use selected topic or random if not specified
     const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
@@ -129,6 +130,7 @@ function MainApp() {
       
       setMatchData({
         opponent,
+        opponentElo: opponentElo || (isBot ? 1000 : 1200),
         isBot,
         topic: getThemeTitle(theme.id),
         vocabulary,
@@ -164,6 +166,7 @@ function MainApp() {
       
       setMatchData({
         opponent,
+        opponentElo: opponentElo || (isBot ? 1000 : 1200),
         isBot,
         topic: getThemeTitle(theme.id),
         vocabulary,

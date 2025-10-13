@@ -28,7 +28,7 @@ const BOT_NAMES = [
 ];
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number) => void;
   currentLanguage?: Language;
   userElo?: number;
   userWins?: number;
@@ -72,7 +72,8 @@ export default function MatchFinder({
       matchData.isAI,
       matchData.language as Language, // Use server-provided language
       matchData.difficulty as Difficulty, // Use server-provided difficulty
-      matchData.topic // Topic from matchmaking
+      matchData.topic, // Topic from matchmaking
+      matchData.opponent.elo // Opponent's Elo rating
     );
   }, [onMatchFound]);
 
