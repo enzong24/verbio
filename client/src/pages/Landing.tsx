@@ -1,4 +1,4 @@
-import { Trophy, Users, Zap, Mic } from "lucide-react";
+import { Trophy, Users, Zap, Swords } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -12,32 +12,35 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen w-full bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10">
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12">
-        <div className="w-full max-w-5xl">
-          <div className="text-center mb-12">
-            <div className="flex justify-center mb-6">
-              <div className="w-24 h-24 rounded-md bg-primary/10 flex items-center justify-center">
-                <Mic className="w-12 h-12 text-primary" />
+        <div className="w-full max-w-6xl">
+          {/* Hero Section */}
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-8">
+              <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-xl">
+                <Swords className="w-14 h-14 text-white" />
               </div>
             </div>
-            <h1 className="text-5xl font-bold mb-4">LangDuel</h1>
-            <p className="text-xl text-muted-foreground mb-8">
-              Master languages through competitive duels. Track your progress with Elo ratings.
+            <h1 className="text-6xl lg:text-7xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-6">
+              LangDuel
+            </h1>
+            <p className="text-xl lg:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto">
+              Master languages through competitive duels. Track your progress with Elo ratings and compete against players worldwide.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="h-14 px-8 text-lg font-semibold"
+                className="text-lg font-semibold bg-gradient-to-r from-purple-500 to-blue-600 text-white border-0"
                 onClick={handleSignIn}
                 data-testid="button-sign-in"
               >
-                Sign In
+                <Swords className="w-5 h-5 mr-2" />
+                Sign In to Compete
               </Button>
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="h-14 px-8 text-lg"
+                className="text-lg font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0"
                 onClick={handleGuestPlay}
                 data-testid="button-guest-play"
               >
@@ -46,45 +49,46 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-            <Card className="border-card-border">
-              <CardContent className="pt-6 pb-6">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center">
-                    <Trophy className="w-6 h-6 text-primary" />
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
+            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/30">
+              <CardContent className="pt-8 pb-8">
+                <div className="flex justify-center mb-6">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <Trophy className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-center mb-2">Competitive Ranking</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Track your progress with Elo ratings. Compete against players at your skill level.
+                <h3 className="text-xl font-bold text-center mb-3">Competitive Ranking</h3>
+                <p className="text-muted-foreground text-center">
+                  Track your progress with Elo ratings. Compete against players at your skill level and climb the leaderboard.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-card-border">
-              <CardContent className="pt-6 pb-6">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center">
-                    <Zap className="w-6 h-6 text-primary" />
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border-blue-500/30">
+              <CardContent className="pt-8 pb-8">
+                <div className="flex justify-center mb-6">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                    <Zap className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-center mb-2">AI-Powered Feedback</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Get instant grading on grammar, fluency, vocabulary, and naturalness.
+                <h3 className="text-xl font-bold text-center mb-3">AI-Powered Feedback</h3>
+                <p className="text-muted-foreground text-center">
+                  Get instant grading on grammar, fluency, vocabulary, and naturalness from advanced AI.
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-card-border">
-              <CardContent className="pt-6 pb-6">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-primary" />
+            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30">
+              <CardContent className="pt-8 pb-8">
+                <div className="flex justify-center mb-6">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                    <Users className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-center mb-2">Multiple Languages</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Practice Chinese, Spanish, or Italian with themed conversation topics.
+                <h3 className="text-xl font-bold text-center mb-3">Multiple Languages</h3>
+                <p className="text-muted-foreground text-center">
+                  Practice Chinese, Spanish, or Italian with themed conversation topics and varied difficulty levels.
                 </p>
               </CardContent>
             </Card>

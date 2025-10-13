@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Bot, Loader2, Target, BookOpen, AlertCircle, Mic, Trophy, Zap } from "lucide-react";
+import { Bot, Loader2, Target, BookOpen, AlertCircle, Swords, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -119,7 +119,7 @@ export default function MatchFinder({
         {/* Hero Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 mb-6">
-            <Mic className="w-10 h-10 text-white" />
+            <Swords className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-4">
             Ready to Duel?
@@ -240,7 +240,7 @@ export default function MatchFinder({
                     </>
                   ) : (
                     <>
-                      <Mic className="w-5 h-5 mr-2" />
+                      <Swords className="w-5 h-5 mr-2" />
                       Find Match
                     </>
                   )}
@@ -273,8 +273,7 @@ export default function MatchFinder({
                 </div>
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="w-full text-lg border-green-500/50"
+                  className="w-full text-lg font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0"
                   onClick={handlePractice}
                   disabled={isPracticeLoading || isSearching || !canPlay}
                   data-testid="button-practice"
