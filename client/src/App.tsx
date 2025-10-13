@@ -206,7 +206,8 @@ function MainApp() {
           wins: newWins,
           losses: newLosses
         });
-        // Refetch stats and invalidate caches
+        // Invalidate and refetch stats to ensure fresh data
+        queryClient.invalidateQueries({ queryKey: [`/api/user/stats/${currentLanguage}`, currentLanguage] });
         await refetchStats();
         queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${currentLanguage}`, currentLanguage] });
         queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${currentLanguage}`, currentLanguage] });
