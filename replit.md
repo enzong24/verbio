@@ -15,9 +15,14 @@ The frontend is built with **React 18** and **TypeScript**, using **Vite** for o
 The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules). It features a middleware pipeline for logging, JSON parsing, and error handling. RESTful APIs are designed for authentication, grading, and bot interactions, using JSON for requests/responses and **Zod** for schema validation. An in-memory `MemStorage` handles user management for development and guest mode, designed to be swapped with a database. **OpenAI GPT-4o** is integrated for conversation grading and bot response generation, utilizing structured prompt engineering for consistent evaluation and JSON-formatted responses. WebSocket is implemented for real-time multiplayer matchmaking with Elo-based pairing and AI bot fallback.
 
 ### System Design Choices
+- **Practice vs Competitive Modes**: 
+  - **Practice Mode** (via "Practice with AI Bot" button): No Elo changes, opponent Elo hidden, risk-free learning
+  - **Competitive Mode** (via "Find Match" button): Full Elo changes apply (even for bot opponents), opponent Elo visible, forfeit penalty of -25 Elo
+  - The `isPracticeMode` flag distinguishes modes independent of opponent type (bot or human)
 - **Real Multiplayer Matchmaking**: WebSocket-based matchmaking pairs players by Elo, language, and difficulty, with AI bot fallback.
 - **AI-Generated Vocabulary**: OpenAI GPT-4o dynamically generates vocabulary based on topic and difficulty for each match, enhancing replayability.
 - **Elo Ranking System**: Implements a Chess.com-style Elo system with dynamic K-factors and specific rules for large rating differences (300+ points).
+- **Competitive Bot Matches**: Bot opponents from "Find Match" are treated as competitive with full Elo changes, human-like names (Emma Chen, Lucas Rodriguez), and varied stats (70-95% per category).
 - **Difficulty & Penalty System**: Features Easy, Medium, and Hard difficulties with varying timers, round counts, and Elo rewards. A 20-point penalty for skipping questions is applied; viewing vocabulary definitions incurs no penalty.
 - **Expanded Theme System**: Includes 21 comprehensive themes with difficulty-specific vocabulary and full language support (Chinese, Spanish, Italian). Competitive matches use random topics.
 - **Turn-Based Q&A**: Structured turn-based conversation flow with bot asking first, user answering, user asking, and bot answering, with question deduplication.
