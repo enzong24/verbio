@@ -314,7 +314,7 @@ function MainApp() {
         currentLanguage={currentLanguage}
         wins={userWins}
         losses={userLosses}
-        onLanguageChange={setCurrentLanguage}
+        onLanguageChange={(lang) => setCurrentLanguage(lang as Language)}
       />
       
       <main className="pt-16">
