@@ -233,6 +233,7 @@ function MainApp() {
       // Determine result based on comparative scoring
       const isWin = userScore > botScore;
       const isDraw = userScore === botScore;
+      const isLoss = !isWin && !isDraw;
       
       // Calculate Elo change using standard Elo formula
       const K_FACTOR = 32;
@@ -260,14 +261,14 @@ function MainApp() {
               },
             });
             // Invalidate match history and skill progress queries
-            queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`, matchData.language] });
-            queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`, matchData.language] });
+            queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
+            queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`] });
           } catch (error) {
             console.error("Failed to save match:", error);
           }
         }
         
-        await updateStats(change, isWin, !isWin && !isDraw);
+        await updateStats(change, isWin, isLoss);
       }
     }
     setMatchData(null);
