@@ -127,12 +127,15 @@ class MatchmakingQueue {
     // Use player's topic or random
     const topic = player.topic || this.getRandomTopic();
 
+    // Generate random bot name
+    const botName = this.getRandomBotName();
+
     // Notify player - they'll play against AI
     player.ws.send(JSON.stringify({
       type: 'match_found',
       matchId: `ai-${player.id}-${Date.now()}`,
       opponent: {
-        username: 'AI Bot',
+        username: botName,
         elo: player.elo, // AI bot matches player's Elo for balanced difficulty
       },
       topic,
@@ -141,7 +144,7 @@ class MatchmakingQueue {
       isAI: true,
     }));
 
-    console.log(`AI bot assigned to ${player.username} (${player.elo})`);
+    console.log(`AI bot (${botName}) assigned to ${player.username} (${player.elo})`);
   }
 
   private getRandomTopic(): string {
@@ -154,6 +157,19 @@ class MatchmakingQueue {
       'Holidays & Celebrations', 'Emotions & Feelings'
     ];
     return topics[Math.floor(Math.random() * topics.length)];
+  }
+
+  private getRandomBotName(): string {
+    const botNames = [
+      'Language Master', 'Fluent Helper', 'Smart Partner', 'Language Coach',
+      'Study Buddy', 'Conversation Expert', 'Polyglot Pro', 'AI Language Partner',
+      'Wise Tutor', 'Practice Assistant', 'Grammar Expert', 'Pronunciation Coach',
+      'Vocabulary Master', 'Culture Guide', 'Fluency Bot', 'Dialect Helper',
+      'Word Wizard', 'Syntax Sage', 'Lingua AI', 'Chat Mentor',
+      'Babel Bot', 'Idiom Expert', 'Phrase Master', 'Eloquent AI',
+      'Language Ninja', 'Conversation Guru', 'Fluency Coach', 'Verbal Virtuoso'
+    ];
+    return botNames[Math.floor(Math.random() * botNames.length)];
   }
 }
 
