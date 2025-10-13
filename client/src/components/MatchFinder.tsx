@@ -55,11 +55,10 @@ export default function MatchFinder({
 
   const handleFindMatch = () => {
     setSearching(true);
-    // Simulate matchmaking - competitive mode (affects Elo)
+    // Simulate matchmaking - competitive mode (affects Elo) - Random topic
     setTimeout(() => {
       setSearching(false);
-      const topic = selectedTopic === "random" ? undefined : selectedTopic;
-      onMatchFound?.("Maria García", false, selectedLanguage, selectedDifficulty, topic);
+      onMatchFound?.("Maria García", false, selectedLanguage, selectedDifficulty);
     }, 2000);
   };
 
@@ -111,52 +110,63 @@ export default function MatchFinder({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-3 mb-2">
-              <BookOpen className="w-5 h-5 text-muted-foreground" />
-              <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-                <SelectTrigger className="flex-1" data-testid="select-topic">
-                  <SelectValue placeholder="Select topic" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="random">Random Topic</SelectItem>
-                  {THEMES.map((theme) => (
-                    <SelectItem key={theme.id} value={theme.id}>
-                      {theme.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              size="lg"
-              className="w-full h-14 text-lg font-semibold"
-              onClick={handleFindMatch}
-              disabled={searching}
-              data-testid="button-find-match"
-            >
-              {searching ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Finding opponent...
-                </>
-              ) : (
-                <>
-                  <Swords className="w-5 h-5 mr-2" />
-                  Find Match
-                </>
-              )}
-            </Button>
             
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full h-14 text-lg"
-              onClick={handlePractice}
-              data-testid="button-practice"
-            >
-              <Bot className="w-5 h-5 mr-2" />
-              Practice with AI Bot
-            </Button>
+            <div className="border-t border-card-border pt-4 mt-4">
+              <div className="text-sm text-muted-foreground mb-3">
+                Competitive matches use random topics for fair ranking
+              </div>
+              <Button
+                size="lg"
+                className="w-full h-14 text-lg font-semibold"
+                onClick={handleFindMatch}
+                disabled={searching}
+                data-testid="button-find-match"
+              >
+                {searching ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Finding opponent...
+                  </>
+                ) : (
+                  <>
+                    <Swords className="w-5 h-5 mr-2" />
+                    Find Match (Random Topic)
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="border-t border-card-border pt-4 mt-4">
+              <div className="text-sm text-muted-foreground mb-3">
+                Practice mode - Choose your topic
+              </div>
+              <div className="flex items-center gap-3 mb-3">
+                <BookOpen className="w-5 h-5 text-muted-foreground" />
+                <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                  <SelectTrigger className="flex-1" data-testid="select-topic">
+                    <SelectValue placeholder="Select topic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="random">Random Topic</SelectItem>
+                    {THEMES.map((theme) => (
+                      <SelectItem key={theme.id} value={theme.id}>
+                        {theme.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full h-14 text-lg"
+                onClick={handlePractice}
+                data-testid="button-practice"
+              >
+                <Bot className="w-5 h-5 mr-2" />
+                Practice with AI Bot
+              </Button>
+            </div>
 
             <div className="grid grid-cols-3 gap-4 pt-4 text-center">
               <div>

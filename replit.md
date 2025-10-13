@@ -6,7 +6,27 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 
 ## Recent Updates (October 13, 2025)
 
-**Latest Changes - Difficulty & Penalty System Overhaul**
+**Latest Changes - Mobile Responsiveness & Chess.com-style Elo (October 13, 2025 - Session 2)**
+- **Mobile Responsiveness**: Fully responsive UI for all screen sizes with mobile-optimized typing interface
+  - DuelInterface components scale from mobile to desktop with proper breakpoints
+  - Text, buttons, and inputs resize appropriately for mobile devices
+  - Sidebar hidden on mobile for better screen space utilization
+- **Expanded Theme System**: Added 8 new conversation topics bringing total to 21 themes
+  - New themes: Music & Arts, Hobbies & Leisure, Home & Daily Life, Transportation & Commute, Animals & Pets, Clothing & Fashion, Holidays & Celebrations, Emotions & Feelings
+  - All themes support Chinese, Spanish, and Italian with full translations
+- **Topic Selection for Practice Only**: Competitive matches now use random topics for fair ranking
+  - Topic selection UI moved to Practice mode section only
+  - Competitive "Find Match" always uses random topic to ensure fair Elo comparisons
+  - Clear UI separation between competitive and practice modes
+- **Chess.com-style Elo System**: Advanced Elo calculation matching professional chess platforms
+  - Dynamic K-factor based on rating: 40 (<1200), 32 (1200-1800), 24 (1800-2400), 16 (2400+)
+  - 300+ Elo difference rule implemented:
+    - No Elo gain for winning against opponent 300+ points below
+    - Still lose points (doubled penalty) for losing to opponent 300+ points below
+    - Increased Elo gain (1.5x) for beating opponent 300+ points above
+  - Standard Elo formula: Expected Score = 1 / (1 + 10^((opponentElo - userElo) / 400))
+
+**Previous Changes - Difficulty & Penalty System Overhaul**
 - Completely restructured difficulty levels with new absolute beginner Easy level
 - Restored original timer durations: Easy=90s, Medium=60s, Hard=30s
 - Variable round counts by difficulty: Easy=3 rounds, Medium=4 rounds, Hard=5 rounds
@@ -43,12 +63,12 @@ LangDuel is an AI-powered, competitive language learning platform that gamifies 
 - Question deduplication system ensures bot never asks the same question twice in a match
 
 **Expanded Theme System**
-- 13 comprehensive themes: Travel, Food, Business, Family, Technology, Health, Education, Entertainment, Nature, Shopping, Sports, Weather, Social
+- 21 comprehensive themes: Travel, Food, Business, Family, Technology, Health, Education, Entertainment, Nature, Shopping, Sports, Weather, Social, Music & Arts, Hobbies & Leisure, Home & Daily Life, Transportation & Commute, Animals & Pets, Clothing & Fashion, Holidays & Celebrations, Emotions & Feelings
 - Each theme has difficulty-specific vocabulary (Easy, Medium, Hard)
-- Vocabulary counts optimized by difficulty: 3 words for Easy, 5-6 words for Medium, 7-12 words for Hard
+- Target vocabulary counts: 3 words for Easy, 5 words for Medium, 8 words for Hard
 - Full language support for Chinese (with pinyin), Spanish, and Italian
 - All vocabulary includes English definitions for universal accessibility
-- Random theme selection for each match with appropriate vocabulary
+- Topic selection available for practice mode; competitive matches use random topics
 
 **Authentication & Guest Mode**
 - Replit Auth integration for user sign-in/sign-out with Google, GitHub, X, Apple, and email/password
