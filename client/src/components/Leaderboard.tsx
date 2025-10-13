@@ -67,7 +67,7 @@ export default function Leaderboard({
         </div>
 
         {/* Language Tabs */}
-        <Card className="mb-6 border-primary/20 shadow-md">
+        <Card className="mb-6 border-accent/50 shadow-md">
           <CardContent className="pt-6">
             <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage} className="w-full">
               <TabsList className="grid w-full grid-cols-3">

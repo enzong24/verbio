@@ -39,9 +39,8 @@ export default function Landing() {
                 Sign In to Compete
               </Button>
               <Button 
-                size="lg" 
-                variant="outline"
-                className="text-lg font-semibold border-accent text-accent"
+                size="lg"
+                className="text-lg font-semibold bg-accent/90 text-accent-foreground hover:bg-accent border-accent"
                 onClick={handleGuestPlay}
                 data-testid="button-guest-play"
               >
@@ -66,11 +65,11 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            <Card className="border-accent/20 shadow-md">
+            <Card className="border-accent/50 shadow-md">
               <CardContent className="pt-8 pb-8">
                 <div className="flex justify-center mb-6">
                   <div className="w-16 h-16 rounded-xl bg-accent flex items-center justify-center shadow-lg">
-                    <Zap className="w-8 h-8 text-white" />
+                    <Zap className="w-8 h-8 text-accent-foreground" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3">AI-Powered Feedback</h3>

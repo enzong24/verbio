@@ -249,7 +249,7 @@ export default function MatchFinder({
             </Card>
 
             {/* Practice Mode */}
-            <Card className="border-accent/30">
+            <Card className="border-accent/50">
               <CardContent className="p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">Practice Mode</h3>
@@ -273,8 +273,7 @@ export default function MatchFinder({
                 </div>
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="w-full text-lg border-accent/50"
+                  className="w-full text-lg bg-accent/90 text-accent-foreground hover:bg-accent border-accent"
                   onClick={handlePractice}
                   disabled={isPracticeLoading || isSearching || !canPlay}
                   data-testid="button-practice"

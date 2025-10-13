@@ -29,8 +29,8 @@
   --sidebar-border: 214 32% 91%;
   --sidebar-primary: 217 81% 53%;      /* Primary blue */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 239 84% 67%;       /* Accent violet */
-  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-accent: 226 89% 82%;       /* Accent soft indigo */
+  --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-ring: 217 81% 53%;
 
   --popover: 0 0% 100%;
@@ -46,8 +46,8 @@
   --muted: 210 40% 96%;
   --muted-foreground: 215 16% 47%;     /* #64748B - soft gray */
 
-  --accent: 239 84% 67%;               /* #6366F1 - cool violet */
-  --accent-foreground: 0 0% 100%;
+  --accent: 226 89% 82%;               /* #A5B4FC - soft indigo */
+  --accent-foreground: 222 47% 11%;
 
   --destructive: 0 72% 60%;            /* #EF4444 - red */
   --destructive-foreground: 0 0% 100%;
@@ -63,7 +63,7 @@
   --ring: 217 81% 53%;
   
   --chart-1: 217 81% 53%;
-  --chart-2: 239 84% 67%;
+  --chart-2: 226 89% 82%;
   --chart-3: 160 84% 39%;
   --chart-4: 45 93% 53%;
   --chart-5: 0 72% 60%;
@@ -121,8 +121,8 @@
   --opaque-button-border-intensity: 9;  /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(99, 102, 241, .12);
-  --elevate-2: rgba(99, 102, 241, .20);
+  --elevate-1: rgba(165, 180, 252, .12);
+  --elevate-2: rgba(165, 180, 252, .20);
 
   /* Main Colors */
   --background: 222 47% 11%;            /* Dark version of text primary */
@@ -139,8 +139,8 @@
   --sidebar-border: 215 20% 25%;
   --sidebar-primary: 217 81% 53%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 239 84% 67%;
-  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-accent: 226 89% 82%;
+  --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-ring: 217 81% 53%;
 
   --popover: 215 28% 17%;
@@ -156,8 +156,8 @@
   --muted: 215 28% 17%;
   --muted-foreground: 215 16% 65%;     /* Lighter version for dark mode */
 
-  --accent: 239 84% 67%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 226 89% 82%;
+  --accent-foreground: 222 47% 11%;
 
   --destructive: 0 72% 60%;
   --destructive-foreground: 0 0% 100%;
@@ -173,7 +173,7 @@
   --ring: 217 81% 53%;
   
   --chart-1: 217 81% 60%;
-  --chart-2: 239 84% 75%;
+  --chart-2: 226 89% 85%;
   --chart-3: 160 84% 50%;
   --chart-4: 45 93% 60%;
   --chart-5: 0 72% 65%;

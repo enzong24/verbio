@@ -375,7 +375,7 @@ export default function DuelInterface({
             <div className="p-3 md:p-4 border-b bg-card">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                  <Swords className="w-4 h-4 text-white" />
+                  <Swords className="w-4 h-4 text-accent-foreground" />
                 </div>
                 <div>
                   <span className="font-semibold text-sm md:text-base">Topic:</span>
@@ -498,7 +498,7 @@ export default function DuelInterface({
               <Progress value={progress} className="h-2" />
             </div>
 
-            <Card className="border-accent/30 bg-accent/5">
+            <Card className="border-accent/30 bg-accent/5 hidden md:block">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">Difficulty</CardTitle>
               </CardHeader>
