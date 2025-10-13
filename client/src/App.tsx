@@ -285,8 +285,8 @@ function MainApp() {
       botOverall: 85,
       botElo: 1000,
       feedback: matchData.isBot 
-        ? "Practice session ended. Try again to improve your skills!"
-        : "Match forfeited due to inactivity or manual forfeit."
+        ? ["Practice session ended. Try again to improve your skills!"]
+        : ["Match forfeited due to inactivity or manual forfeit."]
     };
     
     setGradingResult(forfeitResult);
