@@ -64,11 +64,14 @@ export default function DuelInterface({
 
   // Get max rounds based on difficulty
   const getMaxRounds = () => {
+    console.log("DuelInterface difficulty prop:", difficulty);
     switch (difficulty) {
       case "Easy": return 3;
       case "Medium": return 4;
       case "Hard": return 5;
-      default: return 3;
+      default: 
+        console.log("No difficulty match, defaulting to 3 rounds");
+        return 3;
     }
   };
 
@@ -83,6 +86,8 @@ export default function DuelInterface({
   const [inactivityTimeLeft, setInactivityTimeLeft] = useState(60);
   const [validationError, setValidationError] = useState("");
   const maxRounds = getMaxRounds();
+  
+  console.log("DuelInterface maxRounds calculated:", maxRounds, "for difficulty:", difficulty);
   
   // Refs to avoid recreating timer interval
   const shouldCountRef = useRef(false);

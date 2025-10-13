@@ -54,7 +54,7 @@ function MainApp() {
 
   // Fetch language-specific stats for authenticated users
   const { data: languageStats, refetch: refetchStats } = useQuery<UserLanguageStats>({
-    queryKey: [`/api/user/stats/${currentLanguage}`, currentLanguage],
+    queryKey: [`/api/user/stats/${currentLanguage}`],
     enabled: isAuthenticated,
   });
 
@@ -207,11 +207,11 @@ function MainApp() {
           losses: newLosses
         });
         // Invalidate and refetch stats to ensure fresh data
-        queryClient.invalidateQueries({ queryKey: [`/api/user/stats/${currentLanguage}`, currentLanguage] });
+        queryClient.invalidateQueries({ queryKey: [`/api/user/stats/${currentLanguage}`] });
         await refetchStats();
-        queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${currentLanguage}`, currentLanguage] });
-        queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${currentLanguage}`, currentLanguage] });
-        queryClient.invalidateQueries({ queryKey: [`/api/leaderboard?language=${currentLanguage}`, currentLanguage] });
+        queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${currentLanguage}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${currentLanguage}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/leaderboard?language=${currentLanguage}`] });
       } catch (error) {
         console.error("Failed to update stats:", error);
       }

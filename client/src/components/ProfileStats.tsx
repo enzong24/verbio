@@ -30,7 +30,7 @@ export default function ProfileStats({
 
   // Fetch recent matches
   const { data: matches } = useQuery<Match[]>({
-    queryKey: [`/api/user/matches?language=${currentLanguage}`, currentLanguage],
+    queryKey: [`/api/user/matches?language=${currentLanguage}`],
     enabled: isAuthenticated,
   });
 
@@ -41,7 +41,7 @@ export default function ProfileStats({
     vocabulary: number;
     naturalness: number;
   }>({
-    queryKey: [`/api/user/skill-progress?language=${currentLanguage}`, currentLanguage],
+    queryKey: [`/api/user/skill-progress?language=${currentLanguage}`],
     enabled: isAuthenticated,
   });
 

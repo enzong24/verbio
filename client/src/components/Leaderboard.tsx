@@ -27,7 +27,7 @@ export default function Leaderboard({
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage);
 
   const { data: leaderboardData, isLoading } = useQuery<LeaderboardEntry[]>({
-    queryKey: [`/api/leaderboard?language=${selectedLanguage}`, selectedLanguage],
+    queryKey: [`/api/leaderboard?language=${selectedLanguage}`],
     refetchOnWindowFocus: false,
   });
 
