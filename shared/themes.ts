@@ -25,17 +25,20 @@ export const THEMES: Theme[] = [
     vocabulary: {
       Easy: [
         { chinese: "去", pinyin: "qù", spanish: "ir", italian: "andare", english: "go" },
+        { chinese: "好", pinyin: "hǎo", spanish: "bueno", italian: "buono", english: "good/OK" },
+        { chinese: "车", pinyin: "chē", spanish: "coche", italian: "macchina", english: "car/vehicle" },
+      ],
+      Medium: [
+        { chinese: "去", pinyin: "qù", spanish: "ir", italian: "andare", english: "go" },
         { chinese: "飞机", pinyin: "fēijī", spanish: "avión", italian: "aereo", english: "airplane" },
         { chinese: "酒店", pinyin: "jiǔdiàn", spanish: "hotel", italian: "hotel", english: "hotel" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "旅行", pinyin: "lǚxíng", spanish: "viajar", italian: "viaggiare", english: "travel" },
         { chinese: "目的地", pinyin: "mùdìdì", spanish: "destino", italian: "destinazione", english: "destination" },
         { chinese: "冒险", pinyin: "màoxiǎn", spanish: "aventura", italian: "avventura", english: "adventure" },
         { chinese: "文化", pinyin: "wénhuà", spanish: "cultura", italian: "cultura", english: "culture" },
         { chinese: "护照", pinyin: "hùzhào", spanish: "pasaporte", italian: "passaporto", english: "passport" },
-      ],
-      Hard: [
         { chinese: "旅游胜地", pinyin: "lǚyóu shèngdì", spanish: "destino turístico", italian: "meta turistica", english: "tourist destination" },
         { chinese: "异国情调", pinyin: "yìguó qíngdiào", spanish: "exótico", italian: "esotico", english: "exotic" },
         { chinese: "背包客", pinyin: "bēibāokè", spanish: "mochilero", italian: "zaino in spalla", english: "backpacker" },
@@ -51,18 +54,21 @@ export const THEMES: Theme[] = [
     title: "Food & Dining",
     vocabulary: {
       Easy: [
+        { chinese: "水", pinyin: "shuǐ", spanish: "agua", italian: "acqua", english: "water" },
+        { chinese: "肉", pinyin: "ròu", spanish: "carne", italian: "carne", english: "meat" },
+        { chinese: "菜", pinyin: "cài", spanish: "verdura", italian: "verdura", english: "vegetable/dish" },
+      ],
+      Medium: [
         { chinese: "吃", pinyin: "chī", spanish: "comer", italian: "mangiare", english: "eat" },
         { chinese: "喝", pinyin: "hē", spanish: "beber", italian: "bere", english: "drink" },
         { chinese: "饭", pinyin: "fàn", spanish: "arroz", italian: "riso", english: "rice/meal" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "美味", pinyin: "měiwèi", spanish: "delicioso", italian: "delizioso", english: "delicious" },
         { chinese: "餐厅", pinyin: "cāntīng", spanish: "restaurante", italian: "ristorante", english: "restaurant" },
         { chinese: "味道", pinyin: "wèidào", spanish: "sabor", italian: "sapore", english: "taste/flavor" },
         { chinese: "点菜", pinyin: "diǎncài", spanish: "ordenar", italian: "ordinare", english: "order food" },
         { chinese: "烹饪", pinyin: "pēngrèn", spanish: "cocinar", italian: "cucinare", english: "cooking" },
-      ],
-      Hard: [
         { chinese: "美食家", pinyin: "měishíjiā", spanish: "gastrónomo", italian: "buongustaio", english: "gourmet" },
         { chinese: "佳肴", pinyin: "jiāyáo", spanish: "manjar", italian: "prelibatezza", english: "delicacy" },
         { chinese: "饕餮盛宴", pinyin: "tāotiè shèngyàn", spanish: "festín", italian: "banchetto", english: "feast" },
@@ -78,18 +84,21 @@ export const THEMES: Theme[] = [
     title: "Business & Work",
     vocabulary: {
       Easy: [
+        { chinese: "人", pinyin: "rén", spanish: "persona", italian: "persona", english: "person" },
+        { chinese: "做", pinyin: "zuò", spanish: "hacer", italian: "fare", english: "do/make" },
+        { chinese: "买", pinyin: "mǎi", spanish: "comprar", italian: "comprare", english: "buy" },
+      ],
+      Medium: [
         { chinese: "工作", pinyin: "gōngzuò", spanish: "trabajo", italian: "lavoro", english: "work" },
         { chinese: "老板", pinyin: "lǎobǎn", spanish: "jefe", italian: "capo", english: "boss" },
         { chinese: "钱", pinyin: "qián", spanish: "dinero", italian: "denaro", english: "money" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "同事", pinyin: "tóngshì", spanish: "colega", italian: "collega", english: "colleague" },
         { chinese: "项目", pinyin: "xiàngmù", spanish: "proyecto", italian: "progetto", english: "project" },
         { chinese: "会议", pinyin: "huìyì", spanish: "reunión", italian: "riunione", english: "meeting" },
         { chinese: "客户", pinyin: "kèhù", spanish: "cliente", italian: "cliente", english: "client" },
         { chinese: "市场", pinyin: "shìchǎng", spanish: "mercado", italian: "mercato", english: "market" },
-      ],
-      Hard: [
         { chinese: "截止日期", pinyin: "jiézhǐ rìqī", spanish: "fecha límite", italian: "scadenza", english: "deadline" },
         { chinese: "策略", pinyin: "cèlüè", spanish: "estrategia", italian: "strategia", english: "strategy" },
         { chinese: "谈判技巧", pinyin: "tánpàn jìqiǎo", spanish: "habilidades de negociación", italian: "abilità negoziali", english: "negotiation skills" },
@@ -105,18 +114,21 @@ export const THEMES: Theme[] = [
     title: "Family & Relationships",
     vocabulary: {
       Easy: [
+        { chinese: "我", pinyin: "wǒ", spanish: "yo", italian: "io", english: "I/me" },
+        { chinese: "你", pinyin: "nǐ", spanish: "tú", italian: "tu", english: "you" },
+        { chinese: "他", pinyin: "tā", spanish: "él", italian: "lui", english: "he/him" },
+      ],
+      Medium: [
         { chinese: "爸爸", pinyin: "bàba", spanish: "papá", italian: "papà", english: "dad" },
         { chinese: "妈妈", pinyin: "māma", spanish: "mamá", italian: "mamma", english: "mom" },
         { chinese: "朋友", pinyin: "péngyou", spanish: "amigo", italian: "amico", english: "friend" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "家庭", pinyin: "jiātíng", spanish: "familia", italian: "famiglia", english: "family" },
         { chinese: "关系", pinyin: "guānxi", spanish: "relación", italian: "relazione", english: "relationship" },
         { chinese: "一起", pinyin: "yìqǐ", spanish: "juntos", italian: "insieme", english: "together" },
         { chinese: "陪伴", pinyin: "péibàn", spanish: "acompañar", italian: "accompagnare", english: "accompany" },
         { chinese: "照顾", pinyin: "zhàogù", spanish: "cuidar", italian: "prendersi cura", english: "take care of" },
-      ],
-      Hard: [
         { chinese: "血浓于水", pinyin: "xuè nóng yú shuǐ", spanish: "la sangre tira", italian: "il sangue non è acqua", english: "blood is thicker than water" },
         { chinese: "代沟", pinyin: "dàigōu", spanish: "brecha generacional", italian: "divario generazionale", english: "generation gap" },
         { chinese: "家族传统", pinyin: "jiāzú chuántǒng", spanish: "tradición familiar", italian: "tradizione familiare", english: "family tradition" },
@@ -132,18 +144,21 @@ export const THEMES: Theme[] = [
     title: "Technology & Innovation",
     vocabulary: {
       Easy: [
+        { chinese: "看", pinyin: "kàn", spanish: "ver", italian: "guardare", english: "look/watch" },
+        { chinese: "用", pinyin: "yòng", spanish: "usar", italian: "usare", english: "use" },
+        { chinese: "电脑", pinyin: "diànnǎo", spanish: "computadora", italian: "computer", english: "computer" },
+      ],
+      Medium: [
         { chinese: "手机", pinyin: "shǒujī", spanish: "móvil", italian: "cellulare", english: "phone" },
         { chinese: "网", pinyin: "wǎng", spanish: "internet", italian: "internet", english: "internet" },
         { chinese: "游戏", pinyin: "yóuxì", spanish: "juego", italian: "gioco", english: "game" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "设备", pinyin: "shèbèi", spanish: "dispositivo", italian: "dispositivo", english: "device" },
         { chinese: "软件", pinyin: "ruǎnjiàn", spanish: "software", italian: "software", english: "software" },
         { chinese: "创新", pinyin: "chuàngxīn", spanish: "innovación", italian: "innovazione", english: "innovation" },
         { chinese: "连接", pinyin: "liánjiē", spanish: "conectar", italian: "connettere", english: "connect" },
         { chinese: "科技", pinyin: "kējì", spanish: "tecnología", italian: "tecnologia", english: "technology" },
-      ],
-      Hard: [
         { chinese: "人工智能", pinyin: "réngōng zhìnéng", spanish: "inteligencia artificial", italian: "intelligenza artificiale", english: "artificial intelligence" },
         { chinese: "云计算", pinyin: "yún jìsuàn", spanish: "computación en la nube", italian: "cloud computing", english: "cloud computing" },
         { chinese: "大数据", pinyin: "dà shùjù", spanish: "big data", italian: "big data", english: "big data" },
@@ -159,18 +174,21 @@ export const THEMES: Theme[] = [
     title: "Health & Wellness",
     vocabulary: {
       Easy: [
+        { chinese: "好", pinyin: "hǎo", spanish: "bien", italian: "bene", english: "good/well" },
+        { chinese: "累", pinyin: "lèi", spanish: "cansado", italian: "stanco", english: "tired" },
+        { chinese: "疼", pinyin: "téng", spanish: "dolor", italian: "dolore", english: "pain/hurt" },
+      ],
+      Medium: [
         { chinese: "病", pinyin: "bìng", spanish: "enfermo", italian: "malato", english: "sick" },
         { chinese: "医生", pinyin: "yīshēng", spanish: "médico", italian: "medico", english: "doctor" },
         { chinese: "药", pinyin: "yào", spanish: "medicina", italian: "medicina", english: "medicine" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "锻炼", pinyin: "duànliàn", spanish: "ejercitar", italian: "esercitare", english: "exercise" },
         { chinese: "营养", pinyin: "yíngyǎng", spanish: "nutrición", italian: "nutrizione", english: "nutrition" },
         { chinese: "健康", pinyin: "jiànkāng", spanish: "salud", italian: "salute", english: "health" },
         { chinese: "健身", pinyin: "jiànshēn", spanish: "fitness", italian: "fitness", english: "fitness" },
         { chinese: "体检", pinyin: "tǐjiǎn", spanish: "chequeo médico", italian: "visita medica", english: "medical checkup" },
-      ],
-      Hard: [
         { chinese: "身心健康", pinyin: "shēnxīn jiànkāng", spanish: "salud física y mental", italian: "salute fisica e mentale", english: "physical and mental health" },
         { chinese: "预防保健", pinyin: "yùfáng bǎojiàn", spanish: "medicina preventiva", italian: "medicina preventiva", english: "preventive healthcare" },
         { chinese: "有氧运动", pinyin: "yǒuyǎng yùndòng", spanish: "ejercicio aeróbico", italian: "esercizio aerobico", english: "aerobic exercise" },
@@ -186,18 +204,21 @@ export const THEMES: Theme[] = [
     title: "Education & Learning",
     vocabulary: {
       Easy: [
+        { chinese: "写", pinyin: "xiě", spanish: "escribir", italian: "scrivere", english: "write" },
+        { chinese: "读", pinyin: "dú", spanish: "leer", italian: "leggere", english: "read" },
+        { chinese: "学", pinyin: "xué", spanish: "estudiar", italian: "studiare", english: "study" },
+      ],
+      Medium: [
         { chinese: "学", pinyin: "xué", spanish: "estudiar", italian: "studiare", english: "study" },
         { chinese: "书", pinyin: "shū", spanish: "libro", italian: "libro", english: "book" },
         { chinese: "老师", pinyin: "lǎoshī", spanish: "profesor", italian: "professore", english: "teacher" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "知识", pinyin: "zhīshi", spanish: "conocimiento", italian: "conoscenza", english: "knowledge" },
         { chinese: "学习", pinyin: "xuéxí", spanish: "aprender", italian: "imparare", english: "learn" },
         { chinese: "课程", pinyin: "kèchéng", spanish: "curso", italian: "corso", english: "course" },
         { chinese: "成绩", pinyin: "chéngjì", spanish: "calificación", italian: "voto", english: "grade" },
         { chinese: "教育", pinyin: "jiàoyù", spanish: "educación", italian: "educazione", english: "education" },
-      ],
-      Hard: [
         { chinese: "终身学习", pinyin: "zhōngshēn xuéxí", spanish: "aprendizaje permanente", italian: "apprendimento permanente", english: "lifelong learning" },
         { chinese: "批判性思维", pinyin: "pīpàn xìng sīwéi", spanish: "pensamiento crítico", italian: "pensiero critico", english: "critical thinking" },
         { chinese: "学术研究", pinyin: "xuéshù yánjiū", spanish: "investigación académica", italian: "ricerca accademica", english: "academic research" },
@@ -214,17 +235,20 @@ export const THEMES: Theme[] = [
     vocabulary: {
       Easy: [
         { chinese: "玩", pinyin: "wán", spanish: "jugar", italian: "giocare", english: "play" },
+        { chinese: "听", pinyin: "tīng", spanish: "escuchar", italian: "ascoltare", english: "listen" },
+        { chinese: "唱", pinyin: "chàng", spanish: "cantar", italian: "cantare", english: "sing" },
+      ],
+      Medium: [
+        { chinese: "玩", pinyin: "wán", spanish: "jugar", italian: "giocare", english: "play" },
         { chinese: "看", pinyin: "kàn", spanish: "ver", italian: "guardare", english: "watch" },
         { chinese: "电影", pinyin: "diànyǐng", spanish: "película", italian: "film", english: "movie" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "娱乐", pinyin: "yúlè", spanish: "entretenimiento", italian: "intrattenimento", english: "entertainment" },
         { chinese: "爱好", pinyin: "àihào", spanish: "pasatiempo", italian: "hobby", english: "hobby" },
         { chinese: "兴趣", pinyin: "xìngqù", spanish: "interés", italian: "interesse", english: "interest" },
         { chinese: "演出", pinyin: "yǎnchū", spanish: "espectáculo", italian: "spettacolo", english: "performance" },
         { chinese: "摄影", pinyin: "shèyǐng", spanish: "fotografía", italian: "fotografia", english: "photography" },
-      ],
-      Hard: [
         { chinese: "艺术鉴赏", pinyin: "yìshù jiànshǎng", spanish: "apreciación artística", italian: "apprezzamento artistico", english: "art appreciation" },
         { chinese: "文化活动", pinyin: "wénhuà huódòng", spanish: "actividad cultural", italian: "attività culturale", english: "cultural activity" },
         { chinese: "创意表达", pinyin: "chuàngyì biǎodá", spanish: "expresión creativa", italian: "espressione creativa", english: "creative expression" },
@@ -240,18 +264,21 @@ export const THEMES: Theme[] = [
     title: "Nature & Environment",
     vocabulary: {
       Easy: [
+        { chinese: "天", pinyin: "tiān", spanish: "cielo", italian: "cielo", english: "sky/day" },
+        { chinese: "水", pinyin: "shuǐ", spanish: "agua", italian: "acqua", english: "water" },
+        { chinese: "风", pinyin: "fēng", spanish: "viento", italian: "vento", english: "wind" },
+      ],
+      Medium: [
         { chinese: "花", pinyin: "huā", spanish: "flor", italian: "fiore", english: "flower" },
         { chinese: "树", pinyin: "shù", spanish: "árbol", italian: "albero", english: "tree" },
         { chinese: "山", pinyin: "shān", spanish: "montaña", italian: "montagna", english: "mountain" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "环境", pinyin: "huánjìng", spanish: "medio ambiente", italian: "ambiente", english: "environment" },
         { chinese: "自然", pinyin: "zìrán", spanish: "naturaleza", italian: "natura", english: "nature" },
         { chinese: "保护", pinyin: "bǎohù", spanish: "proteger", italian: "proteggere", english: "protect" },
         { chinese: "污染", pinyin: "wūrǎn", spanish: "contaminación", italian: "inquinamento", english: "pollution" },
         { chinese: "森林", pinyin: "sēnlín", spanish: "bosque", italian: "foresta", english: "forest" },
-      ],
-      Hard: [
         { chinese: "生态系统", pinyin: "shēngtài xìtǒng", spanish: "ecosistema", italian: "ecosistema", english: "ecosystem" },
         { chinese: "可持续发展", pinyin: "kě chíxù fāzhǎn", spanish: "desarrollo sostenible", italian: "sviluppo sostenibile", english: "sustainable development" },
         { chinese: "生物多样性", pinyin: "shēngwù duōyàng xìng", spanish: "biodiversidad", italian: "biodiversità", english: "biodiversity" },
@@ -268,17 +295,20 @@ export const THEMES: Theme[] = [
     vocabulary: {
       Easy: [
         { chinese: "买", pinyin: "mǎi", spanish: "comprar", italian: "comprare", english: "buy" },
+        { chinese: "卖", pinyin: "mài", spanish: "vender", italian: "vendere", english: "sell" },
+        { chinese: "贵", pinyin: "guì", spanish: "caro", italian: "costoso", english: "expensive" },
+      ],
+      Medium: [
+        { chinese: "买", pinyin: "mǎi", spanish: "comprar", italian: "comprare", english: "buy" },
         { chinese: "衣服", pinyin: "yīfu", spanish: "ropa", italian: "vestiti", english: "clothes" },
         { chinese: "钱", pinyin: "qián", spanish: "dinero", italian: "denaro", english: "money" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "购物", pinyin: "gòuwù", spanish: "compras", italian: "shopping", english: "shopping" },
         { chinese: "时尚", pinyin: "shíshàng", spanish: "moda", italian: "moda", english: "fashion" },
         { chinese: "品牌", pinyin: "pǐnpái", spanish: "marca", italian: "marca", english: "brand" },
         { chinese: "打折", pinyin: "dǎzhé", spanish: "descuento", italian: "sconto", english: "discount" },
         { chinese: "质量", pinyin: "zhìliàng", spanish: "calidad", italian: "qualità", english: "quality" },
-      ],
-      Hard: [
         { chinese: "消费行为", pinyin: "xiāofèi xíngwéi", spanish: "comportamiento de consumo", italian: "comportamento di consumo", english: "consumer behavior" },
         { chinese: "时尚潮流", pinyin: "shíshàng cháoliú", spanish: "tendencia de moda", italian: "tendenza della moda", english: "fashion trend" },
         { chinese: "性价比", pinyin: "xìngjiàbǐ", spanish: "relación calidad-precio", italian: "rapporto qualità-prezzo", english: "value for money" },
@@ -294,18 +324,21 @@ export const THEMES: Theme[] = [
     title: "Sports & Fitness",
     vocabulary: {
       Easy: [
+        { chinese: "跑", pinyin: "pǎo", spanish: "correr", italian: "correre", english: "run" },
+        { chinese: "跳", pinyin: "tiào", spanish: "saltar", italian: "saltare", english: "jump" },
+        { chinese: "赢", pinyin: "yíng", spanish: "ganar", italian: "vincere", english: "win" },
+      ],
+      Medium: [
         { chinese: "球", pinyin: "qiú", spanish: "pelota", italian: "palla", english: "ball" },
         { chinese: "跑", pinyin: "pǎo", spanish: "correr", italian: "correre", english: "run" },
         { chinese: "比赛", pinyin: "bǐsài", spanish: "competencia", italian: "gara", english: "competition" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "运动员", pinyin: "yùndòngyuán", spanish: "atleta", italian: "atleta", english: "athlete" },
         { chinese: "训练", pinyin: "xùnliàn", spanish: "entrenar", italian: "allenare", english: "train" },
         { chinese: "团队", pinyin: "tuánduì", spanish: "equipo", italian: "squadra", english: "team" },
         { chinese: "冠军", pinyin: "guànjūn", spanish: "campeón", italian: "campione", english: "champion" },
         { chinese: "体育", pinyin: "tǐyù", spanish: "deporte", italian: "sport", english: "sports" },
-      ],
-      Hard: [
         { chinese: "竞技精神", pinyin: "jìngjì jīngshén", spanish: "espíritu competitivo", italian: "spirito competitivo", english: "competitive spirit" },
         { chinese: "体能训练", pinyin: "tǐnéng xùnliàn", spanish: "entrenamiento físico", italian: "allenamento fisico", english: "physical training" },
         { chinese: "运动损伤", pinyin: "yùndòng sǔnshāng", spanish: "lesión deportiva", italian: "infortunio sportivo", english: "sports injury" },
@@ -321,18 +354,21 @@ export const THEMES: Theme[] = [
     title: "Weather & Seasons",
     vocabulary: {
       Easy: [
+        { chinese: "天", pinyin: "tiān", spanish: "día", italian: "giorno", english: "day/sky" },
+        { chinese: "风", pinyin: "fēng", spanish: "viento", italian: "vento", english: "wind" },
+        { chinese: "雪", pinyin: "xuě", spanish: "nieve", italian: "neve", english: "snow" },
+      ],
+      Medium: [
         { chinese: "热", pinyin: "rè", spanish: "calor", italian: "caldo", english: "hot" },
         { chinese: "冷", pinyin: "lěng", spanish: "frío", italian: "freddo", english: "cold" },
         { chinese: "雨", pinyin: "yǔ", spanish: "lluvia", italian: "pioggia", english: "rain" },
       ],
-      Medium: [
+      Hard: [
         { chinese: "季节", pinyin: "jìjié", spanish: "estación", italian: "stagione", english: "season" },
         { chinese: "温度", pinyin: "wēndù", spanish: "temperatura", italian: "temperatura", english: "temperature" },
         { chinese: "预报", pinyin: "yùbào", spanish: "pronóstico", italian: "previsione", english: "forecast" },
         { chinese: "晴朗", pinyin: "qínglǎng", spanish: "despejado", italian: "sereno", english: "clear" },
         { chinese: "潮湿", pinyin: "cháoshī", spanish: "húmedo", italian: "umido", english: "humid" },
-      ],
-      Hard: [
         { chinese: "气象变化", pinyin: "qìxiàng biànhuà", spanish: "cambios meteorológicos", italian: "cambiamenti meteorologici", english: "meteorological changes" },
         { chinese: "极端天气", pinyin: "jíduān tiānqì", spanish: "clima extremo", italian: "clima estremo", english: "extreme weather" },
         { chinese: "季节性特征", pinyin: "jìjié xìng tèzhēng", spanish: "características estacionales", italian: "caratteristiche stagionali", english: "seasonal characteristics" },
@@ -350,16 +386,19 @@ export const THEMES: Theme[] = [
       Easy: [
         { chinese: "说", pinyin: "shuō", spanish: "hablar", italian: "parlare", english: "speak" },
         { chinese: "听", pinyin: "tīng", spanish: "escuchar", italian: "ascoltare", english: "listen" },
-        { chinese: "见面", pinyin: "jiànmiàn", spanish: "encontrarse", italian: "incontrarsi", english: "meet" },
+        { chinese: "看", pinyin: "kàn", spanish: "ver", italian: "guardare", english: "see/look" },
       ],
       Medium: [
+        { chinese: "说", pinyin: "shuō", spanish: "hablar", italian: "parlare", english: "speak" },
+        { chinese: "听", pinyin: "tīng", spanish: "escuchar", italian: "ascoltare", english: "listen" },
+        { chinese: "见面", pinyin: "jiànmiàn", spanish: "encontrarse", italian: "incontrarsi", english: "meet" },
+      ],
+      Hard: [
         { chinese: "交流", pinyin: "jiāoliú", spanish: "comunicar", italian: "comunicare", english: "communicate" },
         { chinese: "社交", pinyin: "shèjiāo", spanish: "socializar", italian: "socializzare", english: "socialize" },
         { chinese: "聚会", pinyin: "jùhuì", spanish: "reunión", italian: "festa", english: "gathering" },
         { chinese: "分享", pinyin: "fēnxiǎng", spanish: "compartir", italian: "condividere", english: "share" },
         { chinese: "表达", pinyin: "biǎodá", spanish: "expresar", italian: "esprimere", english: "express" },
-      ],
-      Hard: [
         { chinese: "人际关系", pinyin: "rénjì guānxi", spanish: "relaciones interpersonales", italian: "relazioni interpersonali", english: "interpersonal relationships" },
         { chinese: "社交礼仪", pinyin: "shèjiāo lǐyí", spanish: "etiqueta social", italian: "etichetta sociale", english: "social etiquette" },
         { chinese: "沟通技巧", pinyin: "gōutōng jìqiǎo", spanish: "habilidades de comunicación", italian: "abilità comunicative", english: "communication skills" },
@@ -371,25 +410,3 @@ export const THEMES: Theme[] = [
     },
   },
 ];
-
-export function getThemeVocabulary(themeId: string, difficulty: "Easy" | "Medium" | "Hard", language: "Chinese" | "Spanish" | "Italian"): string[] {
-  const theme = THEMES.find(t => t.id === themeId);
-  if (!theme) return [];
-
-  const vocabWords = theme.vocabulary[difficulty];
-  
-  if (language === "Chinese") {
-    return vocabWords.map(w => w.chinese || "").filter(Boolean);
-  } else if (language === "Spanish") {
-    return vocabWords.map(w => w.spanish || "").filter(Boolean);
-  } else if (language === "Italian") {
-    return vocabWords.map(w => w.italian || "").filter(Boolean);
-  }
-  
-  return [];
-}
-
-export function getThemeTitle(themeId: string): string {
-  const theme = THEMES.find(t => t.id === themeId);
-  return theme?.title || "";
-}
