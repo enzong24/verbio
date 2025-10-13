@@ -109,23 +109,36 @@ function MainApp() {
     
     // Get vocabulary for the selected difficulty and language
     const vocabStrings = getThemeVocabulary(randomTheme.id, difficulty, language);
+    const themeVocab = randomTheme.vocabulary[difficulty];
     
-    // Convert to VocabWord format (for non-Chinese languages, word and romanization are the same)
-    const vocabulary: VocabWord[] = vocabStrings.map(word => ({
-      word,
-      romanization: language === "Chinese" ? "" : word // Will be populated from theme data if needed
-    }));
-    
-    // For Chinese, get the actual pinyin from theme data
-    if (language === "Chinese") {
-      const themeVocab = randomTheme.vocabulary[difficulty];
-      vocabulary.forEach((v, i) => {
-        const matchingWord = themeVocab[i];
-        if (matchingWord?.pinyin) {
-          v.romanization = matchingWord.pinyin;
+    // Convert to VocabWord format with definitions
+    const vocabulary: VocabWord[] = vocabStrings.map((word, i) => {
+      const matchingWord = themeVocab[i];
+      let definition = "";
+      let romanization = language === "Chinese" ? "" : word;
+      
+      // Get romanization for Chinese
+      if (language === "Chinese" && matchingWord?.pinyin) {
+        romanization = matchingWord.pinyin;
+      }
+      
+      // Get definition (translation to help understand the word)
+      if (matchingWord) {
+        if (language === "Chinese") {
+          definition = matchingWord.spanish || matchingWord.italian || "";
+        } else if (language === "Spanish") {
+          definition = matchingWord.italian || matchingWord.chinese || "";
+        } else if (language === "Italian") {
+          definition = matchingWord.spanish || matchingWord.chinese || "";
         }
-      });
-    }
+      }
+      
+      return {
+        word,
+        romanization,
+        definition
+      };
+    });
     
     setMatchData({
       opponent,

@@ -16,6 +16,7 @@ import type { Message, GradingResult } from "@shared/schema";
 interface VocabWord {
   word: string;
   romanization: string;
+  definition?: string;
 }
 
 interface DuelInterfaceProps {
@@ -367,6 +368,8 @@ export default function DuelInterface({
                     pinyin={vocabItem.romanization}
                     language={language}
                     className="text-xs"
+                    definition={vocabItem.definition}
+                    onDefinitionView={() => setViewedDefinitions(prev => prev + 1)}
                   />
                 ))}
               </div>
