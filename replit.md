@@ -26,7 +26,8 @@ The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules
 - **Difficulty & Penalty System**: Features Easy, Medium, and Hard difficulties with varying timers, round counts, and Elo rewards. A 20-point penalty for skipping questions is applied; viewing vocabulary definitions incurs no penalty.
 - **Expanded Theme System**: Includes 21 comprehensive themes with difficulty-specific vocabulary and full language support (Chinese, Spanish, Italian). Competitive matches use random topics.
 - **Turn-Based Q&A**: Structured turn-based conversation flow with bot asking first, user answering, user asking, and bot answering, with question deduplication.
-- **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and slide-out navigation.
+- **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and scrollable slide-out navigation.
+- **Loading State Protection**: All action buttons implement loading states with disabled states to prevent duplicate actions (rapid clicking, simultaneous requests).
 
 ## External Dependencies
 
