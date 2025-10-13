@@ -1,4 +1,4 @@
-import { Swords, Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar } from "lucide-react";
+import { Swords, Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,15 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface LeaderboardEntry {
+  rank?: number;
+  username: string;
+  elo: number;
+  wins: number;
+  losses: number;
+  isCurrentUser?: boolean;
+}
 
 interface HeaderProps {
   username?: string;
@@ -50,10 +59,6 @@ export default function Header({
   onLanguageChange
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  const navItems = [
-    { id: "duel", label: "Duel", icon: Swords },
-  ];
 
   const totalMatches = wins + losses;
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
@@ -75,6 +80,24 @@ export default function Header({
     enabled: isAuthenticated,
   });
 
+  // Fetch leaderboard data
+  const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardEntry[]>({
+    queryKey: [`/api/leaderboard?language=${currentLanguage}`],
+    refetchOnWindowFocus: false,
+  });
+
+  const leaderboardEntries = leaderboardData?.map((entry, index) => ({
+    ...entry,
+    rank: index + 1,
+  })) || [];
+
+  const getRankIcon = (rank: number) => {
+    if (rank === 1) return <Crown className="w-5 h-5 text-gold" />;
+    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
+    if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />;
+    return null;
+  };
+
   return (
     <>
       <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-card-border z-50">
@@ -84,7 +107,7 @@ export default function Header({
               variant="ghost"
               size="icon"
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden"
+              aria-label="Open menu"
               data-testid="button-mobile-menu"
             >
               <Menu className="w-5 h-5" />
@@ -92,26 +115,7 @@ export default function Header({
             <h1 className="text-xl font-bold tracking-tight">
               LangDuel
             </h1>
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPage === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onNavigate?.(item.id)}
-                  className={`gap-2 ${isActive ? 'border-b-2 border-primary rounded-none' : ''}`}
-                  data-testid={`button-nav-${item.id}`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {item.label}
-                </Button>
-              );
-            })}
-          </nav>
-        </div>
+          </div>
 
         <div className="flex items-center gap-4">
           <Select value={currentLanguage} onValueChange={onLanguageChange}>
@@ -361,9 +365,68 @@ export default function Header({
             </TabsContent>
             
             <TabsContent value="leaderboard" className="mt-4">
-              <div className="text-sm text-muted-foreground text-center py-4">
-                Leaderboard content will be shown here
-              </div>
+              <Card className="border-card-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-gold" />
+                    Top {currentLanguage} Learners
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingLeaderboard ? (
+                    <div className="text-center text-muted-foreground text-sm py-4">
+                      Loading leaderboard...
+                    </div>
+                  ) : leaderboardEntries.length > 0 ? (
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {leaderboardEntries.slice(0, 20).map((entry) => (
+                        <div
+                          key={entry.rank}
+                          className={`flex items-center gap-3 p-2 rounded-md ${
+                            entry.username === username
+                              ? 'bg-primary/10 border border-primary/20'
+                              : 'hover-elevate'
+                          }`}
+                          data-testid={`leaderboard-entry-${entry.rank}`}
+                        >
+                          <div className="w-8 text-center">
+                            {getRankIcon(entry.rank!) || (
+                              <span className="font-mono font-bold text-xs text-muted-foreground">
+                                #{entry.rank}
+                              </span>
+                            )}
+                          </div>
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className="text-xs">
+                              {entry.username.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate flex items-center gap-2">
+                              {entry.username}
+                              {entry.username === username && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
+                                  You
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {entry.wins}W - {entry.losses}L
+                            </div>
+                          </div>
+                          <div className="font-mono font-bold text-sm">
+                            {entry.elo}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground text-sm py-4">
+                      No players ranked yet
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </SheetContent>
