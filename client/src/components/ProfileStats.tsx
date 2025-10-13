@@ -151,7 +151,14 @@ export default function ProfileStats({
                         {match.result === "win" ? "W" : "L"}
                       </Badge>
                       <div className="flex-1">
-                        <div className="font-medium">vs {match.opponent}</div>
+                        <div className="font-medium flex items-center gap-2">
+                          <span>vs {match.opponent}</span>
+                          {match.isForfeit === 1 && (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
+                              Forfeit
+                            </Badge>
+                          )}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
                         </div>
