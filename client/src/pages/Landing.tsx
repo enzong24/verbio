@@ -1,4 +1,4 @@
-import { Swords, Trophy, Users, Zap } from "lucide-react";
+import { Trophy, Users, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -16,11 +16,6 @@ export default function Landing() {
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-5xl">
           <div className="text-center mb-12">
-            <div className="flex justify-center mb-6">
-              <div className="w-24 h-24 rounded-md bg-primary/10 flex items-center justify-center">
-                <Swords className="w-12 h-12 text-primary" />
-              </div>
-            </div>
             <h1 className="text-5xl font-bold mb-4">LangDuel</h1>
             <p className="text-xl text-muted-foreground mb-8">
               Master languages through competitive duels. Track your progress with Elo ratings.

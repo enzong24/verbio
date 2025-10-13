@@ -15,6 +15,7 @@ import ProfileStats from "@/components/ProfileStats";
 import AIReview from "@/components/AIReview";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
+import { incrementGuestMatches } from "@/utils/guestRateLimit";
 
 type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review";
 
@@ -129,6 +130,11 @@ function MainApp() {
         definition: `${item.english} (${item.type})`
       }));
       
+      // Increment guest match counter now that match is confirmed
+      if (isGuestMode) {
+        incrementGuestMatches();
+      }
+      
       setMatchData({
         opponent,
         opponentElo: opponentElo || (isBot ? 1000 : 1200),
@@ -165,6 +171,11 @@ function MainApp() {
           definition
         };
       });
+      
+      // Increment guest match counter now that match is confirmed (even with fallback vocab)
+      if (isGuestMode) {
+        incrementGuestMatches();
+      }
       
       setMatchData({
         opponent,
@@ -344,6 +355,7 @@ function MainApp() {
             userWins={userWins}
             userLosses={userLosses}
             username={username}
+            isGuest={isGuestMode}
           />
         )}
         

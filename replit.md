@@ -38,6 +38,7 @@ WebSocket is implemented for real-time multiplayer matchmaking with Elo-based pa
 - **Elo Calculation Consistency**: Both MatchResults display and handleResultsContinue use identical Elo formula to ensure displayed changes match applied changes. handleForfeit does NOT update Elo directly; all updates happen in handleResultsContinue.
 - **Forfeit Behavior**: Forfeiting a match counts as a LOSS (user scores set to 0, lower than bot's 70-95 range), applies standard Elo changes. Forfeits now appear in match history with a "Forfeit" indicator badge but still do NOT contribute to skill progress calculations (Grammar, Fluency, Vocabulary, Naturalness remain unaffected).
 - **Guest Mode Restrictions**: Guest users do not see "Recent Matches" or "Skill Progress" sections (hidden via `isAuthenticated` conditionals). Guest stats are stored in localStorage while authenticated users use PostgreSQL.
+- **Guest Rate Limiting**: Guest accounts are limited to 5 matches per day (resets at midnight) to prevent API cost abuse. The limit is tracked in localStorage via `guestRateLimit.ts` utility. When limit is reached, guests see a prominent alert prompting them to sign in for unlimited access. Both competitive and practice matches count toward the limit.
 
 ## External Dependencies
 

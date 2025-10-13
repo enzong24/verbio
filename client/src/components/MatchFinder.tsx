@@ -1,10 +1,12 @@
 import { useState, useCallback } from "react";
-import { Swords, Bot, Loader2, Languages, Target, BookOpen } from "lucide-react";
+import { Bot, Loader2, Target, BookOpen, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { THEMES } from "@shared/themes";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
+import { canGuestPlayMatch, incrementGuestMatches, getRemainingGuestMatches, getGuestMatchLimit } from "@/utils/guestRateLimit";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -34,6 +36,7 @@ interface MatchFinderProps {
   userWins?: number;
   userLosses?: number;
   username?: string;
+  isGuest?: boolean;
 }
 
 export default function MatchFinder({ 
@@ -42,11 +45,15 @@ export default function MatchFinder({
   userElo = 1000,
   userWins = 0,
   userLosses = 0,
-  username = "Player"
+  username = "Player",
+  isGuest = false
 }: MatchFinderProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
+  
+  const canPlay = !isGuest || canGuestPlayMatch();
+  const remainingMatches = isGuest ? getRemainingGuestMatches() : null;
 
   // Generate a persistent session ID that survives remounts (SSR-safe)
   const getSessionId = () => {
@@ -90,7 +97,12 @@ export default function MatchFinder({
     if (isSearching) {
       cancelSearch();
     } else {
-      // Competitive mode - no topic selection (random topic)
+      // Check rate limit for guests
+      if (isGuest && !canGuestPlayMatch()) {
+        return;
+      }
+      
+      // Don't increment here - will increment in App.tsx when match is confirmed
       findMatch(currentLanguage, selectedDifficulty);
     }
   };
@@ -98,7 +110,14 @@ export default function MatchFinder({
   const handlePractice = () => {
     if (isPracticeLoading) return; // Prevent duplicate clicks
     
+    // Check rate limit for guests
+    if (isGuest && !canGuestPlayMatch()) {
+      return;
+    }
+    
     setIsPracticeLoading(true);
+    
+    // Don't increment here - will increment in App.tsx when match is confirmed
     const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
     const topic = selectedTopic === "random" ? undefined : selectedTopic;
     onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true); // Practice mode with bot Elo 1000
@@ -112,17 +131,30 @@ export default function MatchFinder({
       <div className="w-full max-w-2xl px-4">
         <Card className="border-card-border">
           <CardHeader className="text-center pb-8">
-            <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 rounded-md bg-primary/10 flex items-center justify-center">
-                <Swords className="w-10 h-10 text-primary" />
-              </div>
-            </div>
             <CardTitle className="text-3xl font-bold">Ready for a Language Duel?</CardTitle>
             <CardDescription className="text-base mt-2">
               Challenge opponents at your skill level and improve your fluency
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pb-8">
+            {isGuest && !canPlay && (
+              <Alert variant="destructive" className="mb-4" data-testid="alert-rate-limit">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You've reached the daily limit of {getGuestMatchLimit()} matches for guest accounts.
+                  <a href="/api/login" className="underline ml-2 font-semibold">Sign in</a> for unlimited matches!
+                </AlertDescription>
+              </Alert>
+            )}
+            {isGuest && canPlay && remainingMatches !== null && (
+              <Alert className="mb-4" data-testid="alert-remaining-matches">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Guest account: {remainingMatches} {remainingMatches === 1 ? 'match' : 'matches'} remaining today.
+                  <a href="/api/login" className="underline ml-2 font-semibold">Sign in</a> for unlimited access!
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="flex items-center gap-3 mb-2">
               <Target className="w-5 h-5 text-muted-foreground" />
               <Select value={selectedDifficulty} onValueChange={(value) => setSelectedDifficulty(value as Difficulty)} disabled={isSearching || isPracticeLoading}>
@@ -146,7 +178,7 @@ export default function MatchFinder({
                 size="lg"
                 className="w-full h-14 text-lg font-semibold"
                 onClick={handleFindMatch}
-                disabled={!isConnected}
+                disabled={!isConnected || !canPlay}
                 data-testid="button-find-match"
               >
                 {isSearching ? (
@@ -155,10 +187,7 @@ export default function MatchFinder({
                     Finding opponent... (Click to cancel)
                   </>
                 ) : (
-                  <>
-                    <Swords className="w-5 h-5 mr-2" />
-                    Find Match (Random Topic)
-                  </>
+                  "Find Match (Random Topic)"
                 )}
               </Button>
             </div>
@@ -188,7 +217,7 @@ export default function MatchFinder({
                 variant="outline"
                 className="w-full h-14 text-lg"
                 onClick={handlePractice}
-                disabled={isPracticeLoading || isSearching}
+                disabled={isPracticeLoading || isSearching || !canPlay}
                 data-testid="button-practice"
               >
                 {isPracticeLoading ? (
