@@ -278,6 +278,9 @@ function MainApp() {
         currentPage={currentPage}
         isAuthenticated={isAuthenticated}
         profileImageUrl={user?.profileImageUrl}
+        currentLanguage={currentLanguage}
+        wins={userWins}
+        losses={userLosses}
       />
       
       <main className="pt-16">

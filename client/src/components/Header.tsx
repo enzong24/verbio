@@ -1,4 +1,5 @@
-import { Swords, Trophy, User, Target, LogOut } from "lucide-react";
+import { Swords, Trophy, User, Target, LogOut, Menu } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,6 +10,13 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface HeaderProps {
   username?: string;
@@ -17,6 +25,9 @@ interface HeaderProps {
   currentPage?: string;
   isAuthenticated?: boolean;
   profileImageUrl?: string | null;
+  currentLanguage?: string;
+  wins?: number;
+  losses?: number;
 }
 
 export default function Header({ 
@@ -25,19 +36,33 @@ export default function Header({
   onNavigate, 
   currentPage = "duel",
   isAuthenticated = false,
-  profileImageUrl
+  profileImageUrl,
+  currentLanguage = "Chinese",
+  wins = 0,
+  losses = 0
 }: HeaderProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
   const navItems = [
     { id: "duel", label: "Duel", icon: Swords },
     { id: "leaderboard", label: "Leaderboard", icon: Trophy },
     { id: "profile", label: "Profile", icon: User },
   ];
 
+  const totalMatches = wins + losses;
+
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-card-border z-50">
-      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <h1 className="text-xl font-bold tracking-tight">LangDuel</h1>
+    <>
+      <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-card-border z-50">
+        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <h1 
+              className="text-xl font-bold tracking-tight md:cursor-default cursor-pointer hover-elevate md:hover:bg-transparent px-3 py-1.5 rounded-md md:px-0 md:py-0" 
+              onClick={() => setMobileMenuOpen(true)}
+              data-testid="button-mobile-menu"
+            >
+              LangDuel
+            </h1>
           <nav className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -114,5 +139,70 @@ export default function Header({
         </div>
       </div>
     </header>
+
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+          <SheetHeader>
+            <SheetTitle>Menu</SheetTitle>
+          </SheetHeader>
+          
+          <Tabs defaultValue="profile" className="mt-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="profile" data-testid="tab-profile">Profile</TabsTrigger>
+              <TabsTrigger value="leaderboard" data-testid="tab-leaderboard">Leaderboard</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile" className="mt-4 space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-12 h-12">
+                    {profileImageUrl && <img src={profileImageUrl} alt={username} />}
+                    <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{username}</p>
+                    <p className="text-sm text-muted-foreground">{currentLanguage}</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Elo</p>
+                    <p className="text-xl font-mono font-bold">{elo}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Wins</p>
+                    <p className="text-xl font-bold">{wins}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Losses</p>
+                    <p className="text-xl font-bold">{losses}</p>
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total Matches</span>
+                    <span className="font-semibold">{totalMatches}</span>
+                  </div>
+                  {totalMatches > 0 && (
+                    <div className="flex justify-between text-sm mt-2">
+                      <span className="text-muted-foreground">Win Rate</span>
+                      <span className="font-semibold">{Math.round((wins / totalMatches) * 100)}%</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="leaderboard" className="mt-4">
+              <div className="text-sm text-muted-foreground text-center py-4">
+                Leaderboard content will be shown here
+              </div>
+            </TabsContent>
+          </Tabs>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
