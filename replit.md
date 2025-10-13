@@ -12,7 +12,14 @@ Preferred communication style: Simple, everyday language.
 The frontend is built with **React 18** and **TypeScript**, using **Vite** for optimized builds. **Wouter** handles client-side routing, and **TanStack Query** manages server state. The UI leverages **shadcn/ui** (built on Radix UI) and **Tailwind CSS** for styling, adhering to a Chess.com-inspired dark theme with high contrast and monospace fonts for a competitive aesthetic. State is managed with React hooks, localStorage for guest mode persistence, and TanStack Query for server data. Key UI patterns include a real-time conversation interface, timer-based match mechanics, AI-graded scoring, leaderboards, and practice mode with topic selection.
 
 ### Backend Architecture
-The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules). It features a middleware pipeline for logging, JSON parsing, and error handling. RESTful APIs are designed for authentication, grading, and bot interactions, using JSON for requests/responses and **Zod** for schema validation. An in-memory `MemStorage` handles user management for development and guest mode, designed to be swapped with a database. **OpenAI GPT-4o** is integrated for conversation grading and bot response generation, utilizing structured prompt engineering for consistent evaluation and JSON-formatted responses. WebSocket is implemented for real-time multiplayer matchmaking with Elo-based pairing and AI bot fallback.
+The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules). It features a middleware pipeline for logging, JSON parsing, and error handling. RESTful APIs are designed for authentication, grading, and bot interactions, using JSON for requests/responses and **Zod** for schema validation. An in-memory `MemStorage` handles user management for development and guest mode, designed to be swapped with a database. 
+
+**OpenAI API Integration** (cost-optimized):
+- **GPT-4o** for conversation grading (accuracy-critical evaluation)
+- **GPT-4o-mini** for bot question/answer generation (cost-efficient, ~80% cheaper)
+- **Vocabulary Caching System**: In-memory cache stores up to 5 different vocabulary sets per topic/language/difficulty combination. Cache entries last 24 hours and are randomly selected to provide variety while reducing API calls. When a vocabulary set is requested, the system first checks cache and only generates new vocabulary on cache miss.
+
+WebSocket is implemented for real-time multiplayer matchmaking with Elo-based pairing and AI bot fallback.
 
 ### System Design Choices
 - **Practice vs Competitive Modes**: 
@@ -20,7 +27,7 @@ The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules
   - **Competitive Mode** (via "Find Match" button): Full Elo changes apply (even for bot opponents), opponent Elo visible
   - The `isPracticeMode` flag distinguishes modes independent of opponent type (bot or human)
 - **Real Multiplayer Matchmaking**: WebSocket-based matchmaking pairs players by Elo, language, and difficulty, with AI bot fallback.
-- **AI-Generated Vocabulary**: OpenAI GPT-4o dynamically generates vocabulary based on topic and difficulty for each match, enhancing replayability.
+- **AI-Generated Vocabulary**: OpenAI GPT-4o-mini dynamically generates vocabulary based on topic and difficulty, with results cached for 24 hours to reduce costs and improve performance.
 - **Elo Ranking System**: Implements a standard Elo calculation (K-factor=32) with proper expected score formula: `1 / (1 + 10^((opponentElo - userElo)/400))`. Elo changes are calculated once in `handleResultsContinue` to prevent double updates.
 - **Competitive Bot Matches**: Bot opponents from "Find Match" are treated as competitive with full Elo changes, human-like names (Emma Chen, Lucas Rodriguez), and varied stats (70-95% per category).
 - **Difficulty & Penalty System**: Features Easy, Medium, and Hard difficulties with varying timers, round counts. A 20-point penalty for skipping questions is applied; viewing vocabulary definitions incurs no penalty.
@@ -35,7 +42,9 @@ The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules
 ## External Dependencies
 
 ### AI Services
-- **OpenAI API (GPT-4o)**: Used for conversation grading (Grammar, Fluency, Vocabulary, Naturalness), contextual bot responses, and dynamic vocabulary generation.
+- **OpenAI API**: Uses a cost-optimized dual-model approach:
+  - **GPT-4o**: Conversation grading (Grammar, Fluency, Vocabulary, Naturalness) for accuracy-critical evaluation
+  - **GPT-4o-mini**: Bot question/answer generation and vocabulary generation (80% cheaper while maintaining quality)
 
 ### Database
 - **Neon Postgres via `@neondatabase/serverless`**: Serverless PostgreSQL for persistent storage.

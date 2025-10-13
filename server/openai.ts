@@ -204,7 +204,7 @@ Respond with ONLY the question in ${language}, nothing else.`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -302,7 +302,7 @@ Respond with ONLY the answer in ${language}, nothing else.`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",

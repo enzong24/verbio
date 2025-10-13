@@ -5,6 +5,7 @@ import { gradingRequestSchema } from "@shared/schema";
 import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupMatchmaking } from "./matchmaking";
+import { vocabularyCache } from "./vocabularyCache";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth
@@ -85,12 +86,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate vocabulary words with AI
+  // Generate vocabulary words with AI (with caching)
   app.post("/api/generate-vocabulary", async (req, res) => {
     try {
       const { topic, language, difficulty = "Medium" } = req.body;
+      
+      // Check cache first
+      const cachedVocabulary = vocabularyCache.get({ topic, language, difficulty });
+      
+      if (cachedVocabulary) {
+        console.log(`Cache hit for ${topic}/${language}/${difficulty}`);
+        return res.json({ vocabulary: cachedVocabulary, cached: true });
+      }
+      
+      // Generate new vocabulary if not in cache
+      console.log(`Cache miss for ${topic}/${language}/${difficulty} - generating new vocabulary`);
       const vocabulary = await generateVocabulary(topic, language, difficulty);
-      res.json({ vocabulary });
+      
+      // Store in cache for future use
+      vocabularyCache.set({ topic, language, difficulty }, vocabulary);
+      
+      res.json({ vocabulary, cached: false });
     } catch (error: any) {
       console.error("Vocabulary generation error:", error);
       res.status(500).json({ 
