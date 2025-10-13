@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Bot, Loader2, Target, BookOpen, AlertCircle } from "lucide-react";
+import { Bot, Loader2, Target, BookOpen, AlertCircle, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -131,6 +131,11 @@ export default function MatchFinder({
       <div className="w-full max-w-2xl px-4">
         <Card className="border-card-border">
           <CardHeader className="text-center pb-8">
+            <div className="flex justify-center mb-4">
+              <div className="w-20 h-20 rounded-md bg-primary/10 flex items-center justify-center">
+                <Mic className="w-10 h-10 text-primary" />
+              </div>
+            </div>
             <CardTitle className="text-3xl font-bold">Ready for a Language Duel?</CardTitle>
             <CardDescription className="text-base mt-2">
               Challenge opponents at your skill level and improve your fluency
@@ -187,7 +192,10 @@ export default function MatchFinder({
                     Finding opponent... (Click to cancel)
                   </>
                 ) : (
-                  "Find Match (Random Topic)"
+                  <>
+                    <Mic className="w-5 h-5 mr-2" />
+                    Find Match (Random Topic)
+                  </>
                 )}
               </Button>
             </div>
