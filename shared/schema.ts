@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, jsonb, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, jsonb, timestamp, index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -29,16 +29,20 @@ export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
 // Language-specific stats for each user
-export const userLanguageStats = pgTable("user_language_stats", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  language: varchar("language").notNull(), // 'Chinese', 'Spanish', 'Italian'
-  elo: integer("elo").notNull().default(1000),
-  wins: integer("wins").notNull().default(0),
-  losses: integer("losses").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const userLanguageStats = pgTable(
+  "user_language_stats",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id").notNull().references(() => users.id),
+    language: varchar("language").notNull(), // 'Chinese', 'Spanish', 'Italian'
+    elo: integer("elo").notNull().default(1000),
+    wins: integer("wins").notNull().default(0),
+    losses: integer("losses").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [unique("unique_user_language").on(table.userId, table.language)],
+);
 
 export type UserLanguageStats = typeof userLanguageStats.$inferSelect;
 export type InsertUserLanguageStats = typeof userLanguageStats.$inferInsert;
