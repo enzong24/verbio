@@ -97,6 +97,7 @@ export const gradingResultSchema = z.object({
   botNaturalness: z.number().min(0).max(100).optional(),
   botOverall: z.number().min(0).max(100).optional(),
   botElo: z.number().optional(),
+  isForfeit: z.boolean().optional(), // Track if match was forfeited
 });
 
 export type Message = z.infer<typeof messageSchema>;

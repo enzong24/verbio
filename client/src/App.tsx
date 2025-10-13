@@ -192,10 +192,11 @@ function MainApp() {
     setCurrentPage("ai-review");
   };
 
-  const updateStats = async (eloChange: number, isWin: boolean, isLoss: boolean) => {
+  const updateStats = async (eloChange: number, isWin: boolean, isLoss: boolean, isForfeit: boolean = false) => {
     const newElo = userElo + eloChange;
-    const newWins = userWins + (isWin ? 1 : 0);
-    const newLosses = userLosses + (isLoss ? 1 : 0);
+    // Don't count forfeits as wins or losses
+    const newWins = userWins + (isWin && !isForfeit ? 1 : 0);
+    const newLosses = userLosses + (isLoss && !isForfeit ? 1 : 0);
 
     if (isAuthenticated) {
       // Update database for authenticated users
@@ -229,6 +230,7 @@ function MainApp() {
       const userScore = gradingResult.overall;
       const botScore = gradingResult.botOverall || 0;
       const botElo = gradingResult.botElo || 1000;
+      const isForfeit = gradingResult.isForfeit || false;
       
       // Determine result based on comparative scoring
       const isWin = userScore > botScore;
@@ -243,8 +245,8 @@ function MainApp() {
       
       // Only update stats if not in practice mode
       if (!matchData.isPracticeMode) {
-        // Save match history for authenticated users
-        if (isAuthenticated) {
+        // Save match history for authenticated users (but not forfeits)
+        if (isAuthenticated && !isForfeit) {
           try {
             await apiRequest("POST", "/api/match/save", {
               opponent: matchData.opponent,
@@ -268,7 +270,7 @@ function MainApp() {
           }
         }
         
-        await updateStats(change, isWin, isLoss);
+        await updateStats(change, isWin, isLoss, isForfeit);
       }
     }
     setMatchData(null);
@@ -304,7 +306,8 @@ function MainApp() {
       botElo: matchData.opponentElo || 1000,
       feedback: isPracticeMode
         ? ["Practice session ended. Try again to improve your skills!"]
-        : ["Match forfeited. You have lost Elo points."]
+        : ["Match forfeited. Elo penalty applied, but no loss recorded."],
+      isForfeit: true // Mark as forfeit so it doesn't count as a loss
     };
     
     setGradingResult(forfeitResult);

@@ -258,89 +258,93 @@ export default function Header({
                   </Card>
                 </div>
 
-                <Card className="border-card-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Recent Matches</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {matches && matches.length > 0 ? (
-                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {matches.slice(0, 5).map((match) => (
-                          <div
-                            key={match.id}
-                            className="flex items-center gap-3 p-2 rounded-md hover-elevate"
-                          >
-                            <Badge
-                              variant={match.result === "win" ? "default" : "destructive"}
-                              className="w-10 justify-center font-semibold text-xs"
-                            >
-                              {match.result === "win" ? "W" : "L"}
-                            </Badge>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm truncate">vs {match.opponent}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
+                {isAuthenticated && (
+                  <>
+                    <Card className="border-card-border">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Recent Matches</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {matches && matches.length > 0 ? (
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {matches.slice(0, 5).map((match) => (
+                              <div
+                                key={match.id}
+                                className="flex items-center gap-3 p-2 rounded-md hover-elevate"
+                              >
+                                <Badge
+                                  variant={match.result === "win" ? "default" : "destructive"}
+                                  className="w-10 justify-center font-semibold text-xs"
+                                >
+                                  {match.result === "win" ? "W" : "L"}
+                                </Badge>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-sm truncate">vs {match.opponent}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
+                                  </div>
+                                </div>
+                                <div className={`font-mono font-bold text-sm ${
+                                  match.result === "win" ? "text-success" : "text-destructive"
+                                }`}>
+                                  {match.result === "win" ? "+" : ""}{match.eloChange}
+                                </div>
                               </div>
-                            </div>
-                            <div className={`font-mono font-bold text-sm ${
-                              match.result === "win" ? "text-success" : "text-destructive"
-                            }`}>
-                              {match.result === "win" ? "+" : ""}{match.eloChange}
-                            </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-center text-muted-foreground text-sm py-4">
-                        No matches yet
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                        ) : (
+                          <p className="text-center text-muted-foreground text-sm py-4">
+                            No matches yet
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
 
-                <Card className="border-card-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Skill Progress</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {skillProgress ? (
-                      <>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Grammar</span>
-                            <span className="font-semibold">{skillProgress.grammar}%</span>
-                          </div>
-                          <Progress value={skillProgress.grammar} className="h-1.5" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Fluency</span>
-                            <span className="font-semibold">{skillProgress.fluency}%</span>
-                          </div>
-                          <Progress value={skillProgress.fluency} className="h-1.5" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Vocabulary</span>
-                            <span className="font-semibold">{skillProgress.vocabulary}%</span>
-                          </div>
-                          <Progress value={skillProgress.vocabulary} className="h-1.5" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span className="text-muted-foreground">Naturalness</span>
-                            <span className="font-semibold">{skillProgress.naturalness}%</span>
-                          </div>
-                          <Progress value={skillProgress.naturalness} className="h-1.5" />
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-center text-muted-foreground text-sm py-2">
-                        Complete matches to see progress
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                    <Card className="border-card-border">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Skill Progress</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {skillProgress ? (
+                          <>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">Grammar</span>
+                                <span className="font-semibold">{skillProgress.grammar}%</span>
+                              </div>
+                              <Progress value={skillProgress.grammar} className="h-1.5" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">Fluency</span>
+                                <span className="font-semibold">{skillProgress.fluency}%</span>
+                              </div>
+                              <Progress value={skillProgress.fluency} className="h-1.5" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">Vocabulary</span>
+                                <span className="font-semibold">{skillProgress.vocabulary}%</span>
+                              </div>
+                              <Progress value={skillProgress.vocabulary} className="h-1.5" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">Naturalness</span>
+                                <span className="font-semibold">{skillProgress.naturalness}%</span>
+                              </div>
+                              <Progress value={skillProgress.naturalness} className="h-1.5" />
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-center text-muted-foreground text-sm py-2">
+                            Complete matches to see progress
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
               </div>
             </TabsContent>
             
