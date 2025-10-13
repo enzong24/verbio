@@ -114,14 +114,14 @@ export default function MatchFinder({
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] w-full bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10">
+    <div className="min-h-[calc(100vh-4rem)] w-full">
       <div className="container mx-auto px-4 py-12 lg:py-16">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 mb-6">
-            <Swords className="w-10 h-10 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary mb-6">
+            <Swords className="w-10 h-10 text-primary-foreground" />
           </div>
-          <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-4">
             Ready to Duel?
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -140,11 +140,11 @@ export default function MatchFinder({
           </Alert>
         )}
         {isGuest && canPlay && remainingMatches !== null && (
-          <Alert className="max-w-4xl mx-auto mb-8 border-blue-500/50 bg-blue-500/10" data-testid="alert-remaining-matches">
-            <AlertCircle className="h-4 w-4 text-blue-500" />
+          <Alert className="max-w-4xl mx-auto mb-8 border-primary/50 bg-primary/10" data-testid="alert-remaining-matches">
+            <AlertCircle className="h-4 w-4 text-primary" />
             <AlertDescription>
               Guest account: {remainingMatches} {remainingMatches === 1 ? 'match' : 'matches'} remaining today.
-              <a href="/api/login" className="underline ml-2 font-semibold text-blue-600 dark:text-blue-400">Sign in</a> for unlimited access!
+              <a href="/api/login" className="underline ml-2 font-semibold text-primary">Sign in</a> for unlimited access!
             </AlertDescription>
           </Alert>
         )}
@@ -153,35 +153,35 @@ export default function MatchFinder({
         <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {/* Left Side - Stats */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+            <Card className="border-primary/20 shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                    <Trophy className="w-6 h-6 text-purple-500" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Trophy className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Your Elo</p>
-                    <p className="text-3xl font-bold font-mono" data-testid="text-user-elo">{userElo}</p>
+                    <p className="text-3xl font-bold font-mono text-primary" data-testid="text-user-elo">{userElo}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-purple-500/20">
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                   <div>
-                    <p className="text-2xl font-bold text-green-500" data-testid="text-user-wins">{userWins}</p>
+                    <p className="text-2xl font-bold text-success" data-testid="text-user-wins">{userWins}</p>
                     <p className="text-sm text-muted-foreground">Wins</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-red-500" data-testid="text-user-losses">{userLosses}</p>
+                    <p className="text-2xl font-bold text-destructive" data-testid="text-user-losses">{userLosses}</p>
                     <p className="text-sm text-muted-foreground">Losses</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+            <Card className="border-accent/20">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <Zap className="w-5 h-5 text-blue-500" />
+                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <Zap className="w-5 h-5 text-accent" />
                   </div>
                   <h3 className="font-semibold">Quick Tips</h3>
                 </div>
@@ -197,7 +197,7 @@ export default function MatchFinder({
           {/* Right Side - Match Controls */}
           <div className="lg:col-span-2 space-y-6">
             {/* Difficulty Selection */}
-            <Card className="border-card-border">
+            <Card>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <Target className="w-5 h-5 text-muted-foreground" />
@@ -217,7 +217,7 @@ export default function MatchFinder({
             </Card>
 
             {/* Competitive Mode */}
-            <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/30">
+            <Card className="border-primary/30 shadow-lg">
               <CardContent className="p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">Competitive Match</h3>
@@ -228,7 +228,7 @@ export default function MatchFinder({
                 </div>
                 <Button
                   size="lg"
-                  className="w-full text-lg font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0"
+                  className="w-full text-lg font-semibold"
                   onClick={handleFindMatch}
                   disabled={!isConnected || !canPlay}
                   data-testid="button-find-match"
@@ -249,7 +249,7 @@ export default function MatchFinder({
             </Card>
 
             {/* Practice Mode */}
-            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30">
+            <Card className="border-accent/30">
               <CardContent className="p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">Practice Mode</h3>
@@ -273,7 +273,8 @@ export default function MatchFinder({
                 </div>
                 <Button
                   size="lg"
-                  className="w-full text-lg font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0"
+                  variant="outline"
+                  className="w-full text-lg border-accent/50"
                   onClick={handlePractice}
                   disabled={isPracticeLoading || isSearching || !canPlay}
                   data-testid="button-practice"

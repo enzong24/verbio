@@ -319,20 +319,20 @@ export default function DuelInterface({
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-cyan-500/5">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Header */}
-      <div className="border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-3 md:p-4">
+      <div className="border-b bg-card p-3 md:p-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
           <div className="flex items-center gap-2 md:gap-3 min-w-0">
-            <Avatar className="w-8 h-8 md:w-10 md:h-10 border-2 border-purple-500/30 flex-shrink-0">
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white font-semibold text-xs md:text-sm">
+            <Avatar className="w-8 h-8 md:w-10 md:h-10 border-2 border-primary flex-shrink-0">
+              <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs md:text-sm">
                 {opponentName.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <div className="font-semibold flex items-center gap-1 md:gap-2 text-sm md:text-base truncate" data-testid="text-opponent-name">
                 <span className="truncate">{opponentName}</span>
-                {isBot && <Badge className="text-xs flex-shrink-0 bg-blue-500/20 text-blue-600 border-blue-500/30">Bot</Badge>}
+                {isBot && <Badge className="text-xs flex-shrink-0 bg-accent/20 text-accent border-accent/30">Bot</Badge>}
               </div>
               {!isPracticeMode && (
                 <div className="text-xs text-muted-foreground font-mono">{opponentElo} Elo</div>
@@ -343,8 +343,8 @@ export default function DuelInterface({
           <div className="flex items-center gap-3 flex-shrink-0">
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-1 md:gap-2 mb-1">
-                <Clock className="w-3 h-3 md:w-4 md:h-4 text-cyan-500" />
-                <span className={`font-mono font-bold text-base md:text-lg ${timeLeft <= 10 ? 'text-red-500' : 'text-cyan-600'}`} data-testid="text-timer">
+                <Clock className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+                <span className={`font-mono font-bold text-base md:text-lg ${timeLeft <= 10 ? 'text-destructive' : 'text-primary'}`} data-testid="text-timer">
                   {timeLeft}s
                 </span>
               </div>
@@ -359,7 +359,7 @@ export default function DuelInterface({
               onClick={handleForfeit}
               disabled={isGrading}
               data-testid="button-forfeit"
-              className="flex-shrink-0 bg-gradient-to-r from-red-500 to-red-600"
+              className="flex-shrink-0"
             >
               <Flag className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
               <span className="hidden md:inline">Forfeit</span>
@@ -372,14 +372,14 @@ export default function DuelInterface({
         <div className="max-w-7xl mx-auto h-full flex flex-col md:flex-row">
           <div className="flex-1 flex flex-col min-h-0">
             {/* Topic Header */}
-            <div className="p-3 md:p-4 border-b border-card-border bg-gradient-to-r from-green-500/10 to-emerald-500/10">
+            <div className="p-3 md:p-4 border-b bg-card">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
                   <Swords className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <span className="font-semibold text-sm md:text-base">Topic:</span>
-                  <Badge className="ml-2 text-xs md:text-sm bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30">{topic}</Badge>
+                  <Badge className="ml-2 text-xs md:text-sm bg-accent/20 text-accent border-accent/30">{topic}</Badge>
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5 md:gap-2">
@@ -395,10 +395,10 @@ export default function DuelInterface({
                 ))}
               </div>
               <div className="mt-3 text-xs md:text-sm font-medium">
-                {turnPhase === "user-answer" && <span className="text-cyan-600">⏳ Your turn to answer the question</span>}
-                {turnPhase === "user-question" && <span className="text-purple-600">❓ Your turn to ask a question using vocabulary</span>}
-                {turnPhase === "bot-question" && <span className="text-blue-600">🤖 Bot is thinking...</span>}
-                {turnPhase === "bot-answer" && <span className="text-green-600">🤖 Bot is answering...</span>}
+                {turnPhase === "user-answer" && <span className="text-primary">⏳ Your turn to answer the question</span>}
+                {turnPhase === "user-question" && <span className="text-accent">❓ Your turn to ask a question using vocabulary</span>}
+                {turnPhase === "bot-question" && <span className="text-muted-foreground">🤖 Bot is thinking...</span>}
+                {turnPhase === "bot-answer" && <span className="text-success">🤖 Bot is answering...</span>}
               </div>
             </div>
 
@@ -412,8 +412,8 @@ export default function DuelInterface({
                   <div
                     className={`max-w-[85%] md:max-w-md px-3 md:px-4 py-2 rounded-md text-sm md:text-base ${
                       msg.sender === "user"
-                        ? "bg-gradient-to-r from-purple-500 to-blue-600 text-white"
-                        : "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 text-foreground"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {msg.text === "(Skipped)" ? (
@@ -426,7 +426,7 @@ export default function DuelInterface({
               ))}
               {isGrading && (
                 <div className="flex justify-center">
-                  <Badge className="animate-pulse text-xs md:text-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30">
+                  <Badge className="animate-pulse text-xs md:text-sm bg-accent/20 text-accent border-accent/30">
                     AI is grading your performance...
                   </Badge>
                 </div>
@@ -434,10 +434,10 @@ export default function DuelInterface({
             </div>
 
             {/* Input Area */}
-            <div className="p-3 md:p-4 border-t border-card-border bg-card">
+            <div className="p-3 md:p-4 border-t bg-card">
               <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
               {validationError && (
-                <div className="mb-2 p-2 rounded-md bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs md:text-sm" data-testid="validation-error">
+                <div className="mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs md:text-sm" data-testid="validation-error">
                   {validationError}
                 </div>
               )}
@@ -479,7 +479,7 @@ export default function DuelInterface({
                   onClick={handleSend} 
                   disabled={!isUserTurn || isGrading}
                   data-testid="button-send"
-                  className="flex-shrink-0 bg-gradient-to-r from-cyan-500 to-blue-600"
+                  className="flex-shrink-0"
                 >
                   <Send className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
                   <span className="hidden md:inline">Send</span>
@@ -489,7 +489,7 @@ export default function DuelInterface({
           </div>
 
           {/* Side Panel - Progress */}
-          <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-card-border bg-card/50 p-3 md:p-4">
+          <div className="w-full md:w-64 border-t md:border-t-0 md:border-l bg-card p-3 md:p-4">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold">Match Progress</span>
@@ -498,15 +498,15 @@ export default function DuelInterface({
               <Progress value={progress} className="h-2" />
             </div>
 
-            <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30">
+            <Card className="border-accent/30 bg-accent/5">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm">Difficulty</CardTitle>
               </CardHeader>
               <CardContent>
                 <Badge className={`
-                  ${difficulty === 'Easy' ? 'bg-green-500/20 text-green-600 border-green-500/30' : ''}
-                  ${difficulty === 'Medium' ? 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30' : ''}
-                  ${difficulty === 'Hard' ? 'bg-red-500/20 text-red-600 border-red-500/30' : ''}
+                  ${difficulty === 'Easy' ? 'bg-success/20 text-success border-success/30' : ''}
+                  ${difficulty === 'Medium' ? 'bg-highlight/20 text-highlight-foreground border-highlight/30' : ''}
+                  ${difficulty === 'Hard' ? 'bg-destructive/20 text-destructive border-destructive/30' : ''}
                 `}>
                   {difficulty}
                 </Badge>
@@ -519,12 +519,12 @@ export default function DuelInterface({
             </Card>
 
             {!isPracticeMode && (
-              <Card className="mt-3 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/30">
+              <Card className="mt-3 border-primary/30 bg-primary/5">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm">Your Elo</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold font-mono text-cyan-600">{userElo}</div>
+                  <div className="text-2xl font-bold font-mono text-primary">{userElo}</div>
                 </CardContent>
               </Card>
             )}

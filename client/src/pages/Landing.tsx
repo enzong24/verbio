@@ -12,17 +12,17 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10">
+    <div className="min-h-screen w-full">
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-6xl">
           {/* Hero Section */}
           <div className="text-center mb-16">
             <div className="flex justify-center mb-8">
-              <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-xl">
-                <Swords className="w-14 h-14 text-white" />
+              <div className="w-28 h-28 rounded-3xl bg-primary flex items-center justify-center shadow-xl">
+                <Swords className="w-14 h-14 text-primary-foreground" />
               </div>
             </div>
-            <h1 className="text-6xl lg:text-7xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-6">
+            <h1 className="text-6xl lg:text-7xl font-bold text-foreground mb-6">
               LangDuel
             </h1>
             <p className="text-xl lg:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto">
@@ -31,7 +31,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                className="text-lg font-semibold bg-gradient-to-r from-purple-500 to-blue-600 text-white border-0"
+                className="text-lg font-semibold"
                 onClick={handleSignIn}
                 data-testid="button-sign-in"
               >
@@ -40,7 +40,8 @@ export default function Landing() {
               </Button>
               <Button 
                 size="lg" 
-                className="text-lg font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-0"
+                variant="outline"
+                className="text-lg font-semibold border-accent text-accent"
                 onClick={handleGuestPlay}
                 data-testid="button-guest-play"
               >
@@ -51,11 +52,11 @@ export default function Landing() {
 
           {/* Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
-            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/30">
+            <Card className="border-primary/20 shadow-md">
               <CardContent className="pt-8 pb-8">
                 <div className="flex justify-center mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
-                    <Trophy className="w-8 h-8 text-white" />
+                  <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+                    <Trophy className="w-8 h-8 text-primary-foreground" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3">Competitive Ranking</h3>
@@ -65,10 +66,10 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border-blue-500/30">
+            <Card className="border-accent/20 shadow-md">
               <CardContent className="pt-8 pb-8">
                 <div className="flex justify-center mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                  <div className="w-16 h-16 rounded-xl bg-accent flex items-center justify-center shadow-lg">
                     <Zap className="w-8 h-8 text-white" />
                   </div>
                 </div>
@@ -79,10 +80,10 @@ export default function Landing() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30">
+            <Card className="border-success/20 shadow-md">
               <CardContent className="pt-8 pb-8">
                 <div className="flex justify-center mb-6">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                  <div className="w-16 h-16 rounded-xl bg-success flex items-center justify-center shadow-lg">
                     <Users className="w-8 h-8 text-white" />
                   </div>
                 </div>

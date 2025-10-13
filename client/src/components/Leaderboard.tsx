@@ -37,28 +37,28 @@ export default function Leaderboard({
   })) || [];
   
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
+    if (rank === 1) return <Crown className="w-5 h-5 text-highlight" />;
+    if (rank === 2) return <Medal className="w-5 h-5 text-muted-foreground" />;
     if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />;
     return null;
   };
 
   const getRankBadgeColor = (rank: number) => {
-    if (rank === 1) return "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border-0";
-    if (rank === 2) return "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0";
-    if (rank === 3) return "bg-gradient-to-r from-amber-500 to-amber-600 text-white border-0";
+    if (rank === 1) return "bg-highlight text-highlight-foreground border-0";
+    if (rank === 2) return "bg-muted text-muted-foreground border-0";
+    if (rank === 3) return "bg-amber-500 text-white border-0";
     return "";
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] w-full bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10 p-6">
+    <div className="min-h-[calc(100vh-4rem)] w-full p-6">
       <div className="max-w-5xl mx-auto">
         {/* Hero Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500 to-yellow-600 mb-6">
-            <Trophy className="w-10 h-10 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-highlight mb-6">
+            <Trophy className="w-10 h-10 text-highlight-foreground" />
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-yellow-500 via-yellow-600 to-amber-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Global Leaderboard
           </h1>
           <p className="text-lg text-muted-foreground">
@@ -67,7 +67,7 @@ export default function Leaderboard({
         </div>
 
         {/* Language Tabs */}
-        <Card className="mb-6 border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+        <Card className="mb-6 border-primary/20 shadow-md">
           <CardContent className="pt-6">
             <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage} className="w-full">
               <TabsList className="grid w-full grid-cols-3">
@@ -80,7 +80,7 @@ export default function Leaderboard({
         </Card>
 
         {/* Leaderboard Entries */}
-        <Card className="border-card-border bg-card/80 backdrop-blur-sm">
+        <Card className="shadow-lg">
           <CardContent className="pt-6">
             <div className="space-y-3">
               {entries.map((entry) => (
@@ -88,11 +88,11 @@ export default function Leaderboard({
                   key={entry.rank}
                   className={`flex items-center gap-4 p-4 rounded-lg transition-all ${
                     entry.isCurrentUser
-                      ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 border-2 border-purple-500/40'
-                      : 'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 hover-elevate'
+                      ? 'bg-primary/10 border-2 border-primary/40'
+                      : 'bg-card hover-elevate'
                   } ${entry.rank <= 3 ? 'ring-2 ring-offset-2 ' + (
-                    entry.rank === 1 ? 'ring-yellow-500/50' :
-                    entry.rank === 2 ? 'ring-gray-400/50' :
+                    entry.rank === 1 ? 'ring-highlight/50' :
+                    entry.rank === 2 ? 'ring-muted/50' :
                     'ring-amber-500/50'
                   ) : ''}`}
                   data-testid={`leaderboard-entry-${entry.rank}`}
@@ -104,8 +104,8 @@ export default function Leaderboard({
                   </div>
 
                   <Avatar className={`w-12 h-12 border-2 ${
-                    entry.rank === 1 ? 'border-yellow-500' :
-                    entry.rank === 2 ? 'border-gray-400' :
+                    entry.rank === 1 ? 'border-highlight' :
+                    entry.rank === 2 ? 'border-muted' :
                     entry.rank === 3 ? 'border-amber-500' :
                     'border-border'
                   }`}>
@@ -120,23 +120,23 @@ export default function Leaderboard({
                     <div className="font-semibold text-base flex items-center gap-2">
                       {entry.username}
                       {entry.isCurrentUser && (
-                        <Badge className="text-xs bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">You</Badge>
+                        <Badge className="text-xs bg-primary/20 text-primary border-primary/30">You</Badge>
                       )}
                       {entry.rank <= 3 && !entry.isCurrentUser && (
-                        <Swords className="w-4 h-4 text-yellow-500" />
+                        <Swords className="w-4 h-4 text-highlight" />
                       )}
                     </div>
                     <div className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span className="text-green-600 dark:text-green-400 font-semibold">{entry.wins}W</span>
+                      <span className="text-success font-semibold">{entry.wins}W</span>
                       <span className="text-muted-foreground">-</span>
-                      <span className="text-red-600 dark:text-red-400 font-semibold">{entry.losses}L</span>
+                      <span className="text-destructive font-semibold">{entry.losses}L</span>
                     </div>
                   </div>
 
                   <div className="text-right">
                     <div className={`font-mono font-bold text-2xl ${
-                      entry.rank === 1 ? 'text-yellow-600' :
-                      entry.rank === 2 ? 'text-gray-600 dark:text-gray-400' :
+                      entry.rank === 1 ? 'text-highlight' :
+                      entry.rank === 2 ? 'text-muted-foreground' :
                       entry.rank === 3 ? 'text-amber-600' :
                       ''
                     }`}>{entry.elo}</div>

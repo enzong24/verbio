@@ -1,17 +1,17 @@
-# Design Guidelines: Modern Colorful Language Learning Platform
+# Design Guidelines: Blue/Violet Tech Theme
 
 ## Design Approach
 
-**Selected Approach:** Modern Vibrant UI with Full-Width Layouts
+**Selected Approach:** Modern Tech Blue/Violet Color Scheme
 
-**Justification:** Evolved from the minimal Chess.com aesthetic to a more engaging, colorful design that maintains professionalism while adding visual appeal through gradients, vibrant accent colors, and modern layouts.
+**Justification:** A crisp, professional tech aesthetic with blue as the primary color and violet accents. This creates a modern, trustworthy appearance suitable for a language learning platform focused on competitive progression and AI-powered feedback.
 
 **Key Design Principles:**
-- Clean, modern interface with vibrant gradient accents
-- Full-width responsive layouts that utilize screen space
-- Colorful visual hierarchy with purpose-driven color coding
-- Data-driven interface with engaging visual elements
-- Split-screen layouts for optimal information architecture
+- Clean, modern interface with blue/violet accents
+- High contrast typography for readability
+- Semantic color usage (success green, error red, highlight gold)
+- Professional tech aesthetic
+- Consistent shadcn component usage
 
 ---
 
@@ -19,170 +19,193 @@
 
 ### A. Color Palette
 
-**Vibrant Color System:**
-- Purple Primary: `from-purple-500 to-purple-600` (branding, hero elements)
-- Blue Accent: `from-blue-500 to-cyan-600` (competitive mode, CTAs)
-- Green Accent: `from-green-500 to-emerald-500` (practice mode, success)
-- Cyan Accent: `from-cyan-500 to-blue-500` (highlights, interactive elements)
+**Primary Colors:**
+- **Primary Blue** (`#2563EB` / HSL: 217 81% 53%): Main brand color for buttons, links, primary actions
+- **Accent Violet** (`#6366F1` / HSL: 239 84% 67%): Secondary accent for highlights and gradients
+- **Background** (`#F8FAFC` / HSL: 210 40% 98%): Very light gray, airy background
+- **Surface/Cards** (`#FFFFFF` / HSL: 0 0% 100%): Pure white for panels and cards
 
-**Background Gradients:**
-- Page Background: `bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10`
-- Card Gradients: Component-specific subtle gradients (10% opacity)
-- Border Accents: Colored borders at 20-30% opacity
+**Text Colors:**
+- **Primary Text** (`#0F172A` / HSL: 222 47% 11%): Near-black, high-contrast typography
+- **Secondary Text** (`#64748B` / HSL: 215 16% 47%): Soft gray for sublabels and timestamps
 
 **Semantic Colors:**
-- Success Green: `text-green-500` (wins, positive feedback)
-- Error Red: `text-red-500` (losses, errors)
-- Info Blue: `text-blue-500` (informational alerts)
-- Warning: Maintained for alerts
+- **Success Green** (`#10B981` / HSL: 160 84% 39%): Wins, progress, positive feedback
+- **Error Red** (`#EF4444` / HSL: 0 72% 60%): Errors, losses, negative feedback  
+- **Highlight Gold** (`#FACC15` / HSL: 45 93% 53%): Achievements, rank ups, Elo gains
+
+**Usage Guidelines:**
+- Use primary blue for all CTAs and important actions
+- Accent violet for secondary highlights and special features
+- Success green for positive outcomes (wins, good grammar scores)
+- Error red for negative outcomes (losses, mistakes)
+- Highlight gold for achievements and special recognition
 
 ---
 
 ### B. Typography
 
-**Font Families:**
-- Primary: 'Inter', -apple-system, system-ui, sans-serif
-- Monospace: 'JetBrains Mono', 'Courier New', monospace (for Elo ratings, timers)
-
-**Type Scale:**
-- Hero/Display: text-5xl to text-6xl, font-bold (match results, rankings)
-- Headings: text-2xl to text-3xl, font-semibold
-- Body: text-base to text-lg, font-normal
-- Metadata: text-sm to text-xs, font-medium (stats, timestamps)
-- Elo Ratings: text-xl, font-mono, font-bold
+**Font Stack:**
+- **Sans Serif** (Primary): Inter, -apple-system, system-ui, sans-serif
+- **Monospace** (Stats/Elo): 'JetBrains Mono', 'Courier New', monospace
+- **Serif** (Decorative): Georgia, serif
 
 **Text Hierarchy:**
-- Primary text: white (`text-white`)
-- Secondary text: gray-400 (`text-gray-400`)
-- Muted text: gray-500 (`text-gray-500`)
+- **Hero Titles**: 4xl-6xl, bold, foreground color
+- **Page Titles**: 2xl-4xl, bold
+- **Section Headers**: xl-2xl, semibold
+- **Body Text**: base, regular
+- **Supporting Text**: sm-base, muted-foreground
+- **Micro Copy**: xs-sm, muted-foreground
 
 ---
 
 ### C. Layout System
 
-**Spacing Primitives:** Use Tailwind units of **4, 6, 8, 12, 16** for consistent rhythm
+**Spacing Primitives:** Tailwind units of **4, 6, 8, 12, 16** for consistent rhythm
 - Component padding: `p-6`, `p-8` for cards
 - Section spacing: `gap-6`, `gap-8`, `space-y-6`
 - Page margins: `px-4` with `container mx-auto`
 
 **Grid Structure:**
 - Match Finder: 3-column grid (`lg:grid-cols-3`) - Stats (1 col) | Controls (2 cols)
-- Full-width backgrounds with gradient overlays
-- Cards with colored borders and gradient backgrounds
-- Container: `max-w-7xl mx-auto` for content constraint
+- Content constraint: `max-w-7xl mx-auto`
+- Responsive breakpoints: sm, md, lg, xl
 
-**Modern Layout Patterns:**
-- Hero sections with gradient icon containers (`w-20 h-20 rounded-2xl`)
+**Layout Patterns:**
+- Hero sections with icon containers
 - Split layouts for stats vs. actions
-- Full-height backgrounds with gradient overlays
-- Colored card borders with matching background gradients
+- Card-based information architecture
+- Proper spacing and visual hierarchy
 
 ---
 
 ### D. Component Library
 
-**Navigation:**
-- Top nav bar: Fixed, dark background, white text, minimal height (h-16)
-- User avatar with Elo rating badge in top-right
-- Main sections: Duel, Practice, Leaderboard, Profile
-- Active state: white underline border-b-2
-
-**Match Interface:**
-- Split-screen layout: Left (user chat) | Right (opponent chat)
-- Timer display: Circular progress indicator, white stroke, centered top
-- Message bubbles: Dark gray bg, white text, sharp corners (rounded-sm)
-- Input area: Full-width, fixed bottom, white border-t
-
-**Cards & Panels:**
-- Match card: Dark elevated bg, white border (border-white/10)
-- Stat cards: Grid layout, icon + number + label
-- Hover state: Subtle lift with shadow-lg, border brightness increase
-
 **Buttons:**
-- Primary: White bg, black text, rounded-md, font-semibold
-- Secondary: White border, white text, transparent bg
-- Danger: Red bg, white text (forfeit, leave match)
-- Disabled: Gray-600 bg, gray-400 text
+- Primary: Blue background, white text
+- Secondary: Outlined with secondary colors  
+- Destructive: Red for dangerous actions
+- Ghost: Transparent with hover effects
+- Sizes: sm, default, lg
+- **Never override hover states** - use built-in elevate system
 
-**Data Display:**
-- Elo rating: Large monospace number with +/- indicator
-- Match history: Table with alternating row colors (zebra striping)
-- Progress bars: White foreground on dark gray background
-- Win/Loss indicators: Green checkmark / Red X icons
+**Cards:**
+- White background with subtle borders
+- Colored borders for category distinction (primary/20, accent/20, success/20)
+- Shadow-sm or shadow-md for depth
+- Proper padding (p-6, p-8)
 
-**Feedback Elements:**
-- Post-match overlay: Full-screen modal, dark backdrop blur
-- Score breakdown: Grid of metrics with progress circles
-- Corrections: Inline red highlights with white replacement text
-- Achievement badges: Outlined icons with gold accent
+**Badges:**
+- Semantic colors with 20% opacity backgrounds
+- Bordered variants with 30% opacity borders
+- Text matches the badge category color
+- Examples: primary/20 bg, accent/20 bg, success/20 bg
 
-**Real-time Elements:**
-- Typing indicator: Three dots animation, white
-- Connection status: Small pill badge (green dot + "Online")
-- Live match count: Pulsing number badge
-
----
-
-### E. Animations
-
-**Minimal & Purposeful:**
-- Match start countdown: Scale-in animation for 3-2-1
-- Message send: Slight slide-up with fade-in (100ms)
-- Elo change: Number counter animation (500ms)
-- Timer pulse: Subtle scale when < 10 seconds remain
-- NO decorative background animations or gradients
+**Icons:**
+- Lucide React icon set
+- Consistent sizing (w-4 h-4, w-5 h-5, w-6 h-6)
+- Icon containers: rounded with colored backgrounds
+- Match icon color to container theme
 
 ---
 
-## Images
+### E. Specific Component Guidelines
 
-**Hero Section:**
-- Large hero image showing two chess players in intense focus (black and white photography)
-- Overlay: Dark gradient (black to transparent) for text legibility
-- Placement: Full-width background, 70vh height
-- Alt approach: Split-screen image collage of language learners in competitive settings
+**Match Finder:**
+- Hero with primary blue icon container
+- Stats card with primary accents
+- Difficulty selector with clear typography
+- Primary blue CTA for competitive matches
+- Outlined button for practice mode
 
-**Dashboard:**
-- No images - focus on data, stats, and match cards
-- User avatars: Circular, 40x40px, white border
+**Landing Page:**
+- Large hero with primary icon
+- Feature cards with colored borders (primary, accent, success)
+- Icon containers matching card themes
+- Clear CTA hierarchy
 
-**Practice Mode:**
-- AI bot avatar: Minimalist robot icon, white on dark circle
-- No background images - keep interface clean
+**Duel Interface:**
+- Header with primary accents
+- Topic section with accent violet icon
+- User messages: primary blue background
+- Bot messages: muted background
+- Color-coded turn indicators
+- Side panel with progress and stats
 
 **Leaderboard:**
-- Top 3 podium illustration: Simplified geometric shapes in white
-- Trophy icons for ranking tiers (SVG, white stroke)
-
-**Match Interface:**
-- No images during active duels - distraction-free environment
-- Post-match: Optional celebration graphic (minimal, geometric)
+- Gold highlight for #1 rank
+- Gray for #2, amber for #3
+- Primary accents for current user
+- Success/destructive for win/loss stats
+- Clear visual hierarchy
 
 ---
 
-## Key Interface Patterns
+### F. Interactive States
 
-**Matchmaking Flow:**
-1. Large "Find Match" button (center screen, white, prominent)
-2. Searching state: Animated radar/pulse effect
-3. Match found: Quick fade transition to chat interface
+**Hover & Active:**
+- Use built-in `hover-elevate` and `active-elevate-2` utilities
+- Never manually override hover colors
+- Elevation automatically adjusts for any background
 
-**Duel Screen:**
-- Fixed header: Topic + vocabulary chips
-- Scrollable chat area: Auto-scroll to latest message
-- Fixed footer: Input field + send button + forfeit option
-- Side panel: Opponent info, Elo, timer, round counter
+**Focus:**
+- Ring color matches primary blue
+- Clear focus indicators for accessibility
 
-**Results Screen:**
-- Center: Winner declaration (large text)
-- Grid: 4 metrics (Grammar, Fluency, Vocabulary, Naturalness)
-- Elo change: Prominent display with +/- arrow
-- Action buttons: Rematch, View Feedback, Return to Dashboard
+**Disabled:**
+- Reduced opacity (60%)
+- No pointer events
+- Muted appearance
 
-**Leaderboard:**
-- Sticky header with filter tabs (Global, Friends, This Week)
-- Rank | Avatar | Name | Elo | Win/Loss Ratio
-- Current user row: Highlighted with white border
-- Infinite scroll for full rankings
+---
 
-This design creates a serious, competitive atmosphere that mirrors chess.com's professional gaming aesthetic while adapting it for language learning duels.
+### G. Accessibility
+
+**Contrast:**
+- Primary text (#0F172A) on white: AAA compliant
+- Muted text (#64748B) on white: AA compliant
+- All interactive elements meet WCAG standards
+
+**Interactive Elements:**
+- Minimum touch target: 44x44px
+- Clear focus indicators
+- Descriptive labels and ARIA attributes
+- data-testid for all interactive elements
+
+---
+
+### H. Responsive Design
+
+**Breakpoints:**
+- Mobile: < 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
+
+**Mobile Optimizations:**
+- Stacked layouts on mobile
+- Larger touch targets
+- Simplified navigation
+- Optimized typography scale
+
+---
+
+## Implementation Notes
+
+1. **Always use semantic color tokens** (primary, accent, success, destructive) instead of hardcoded hex values
+2. **Maintain consistent spacing** using the defined spacing scale
+3. **Follow shadcn component patterns** - don't reinvent components
+4. **Use hover-elevate utilities** - never manual hover states
+5. **Test in light and dark modes** - ensure proper contrast in both
+6. **Add data-testid attributes** to all interactive elements
+
+---
+
+## Recent Changes (October 2025)
+
+- **Updated to blue/violet tech theme** from previous purple/cyan gradient system
+- **Removed gradient backgrounds** in favor of clean white/light gray
+- **Implemented semantic color system** with primary blue, accent violet
+- **Added highlight gold** for achievements and special recognition
+- **Maintained Swords icon** as primary brand element
+- **Improved accessibility** with higher contrast ratios
