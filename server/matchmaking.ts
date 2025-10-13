@@ -161,13 +161,13 @@ class MatchmakingQueue {
 
   private getRandomBotName(): string {
     const botNames = [
-      'Language Master', 'Fluent Helper', 'Smart Partner', 'Language Coach',
-      'Study Buddy', 'Conversation Expert', 'Polyglot Pro', 'AI Language Partner',
-      'Wise Tutor', 'Practice Assistant', 'Grammar Expert', 'Pronunciation Coach',
-      'Vocabulary Master', 'Culture Guide', 'Fluency Bot', 'Dialect Helper',
-      'Word Wizard', 'Syntax Sage', 'Lingua AI', 'Chat Mentor',
-      'Babel Bot', 'Idiom Expert', 'Phrase Master', 'Eloquent AI',
-      'Language Ninja', 'Conversation Guru', 'Fluency Coach', 'Verbal Virtuoso'
+      'Emma Chen', 'Lucas Rodriguez', 'Sofia Martinez', 'Wei Zhang',
+      'Aisha Patel', 'Nikolai Petrov', 'Isabella Rossi', 'Kenji Tanaka',
+      'Leila Hassan', 'Marcus Johnson', 'Yuki Yamamoto', 'Fatima Al-Rashid',
+      'Diego Silva', 'Amara Okafor', 'Sven Andersson', 'Priya Sharma',
+      'Alexandre Dubois', 'Maya Cohen', 'Rashid Ahmed', 'Nina Kowalski',
+      'Carlos Mendoza', 'Ingrid Larsson', 'Omar Hassan', 'Valentina Romano',
+      'Jin Park', 'Aaliyah Thompson', 'Anton Volkov', 'Zara Ibrahim'
     ];
     return botNames[Math.floor(Math.random() * botNames.length)];
   }
