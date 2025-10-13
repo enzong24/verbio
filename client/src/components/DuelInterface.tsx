@@ -375,7 +375,7 @@ export default function DuelInterface({
             <div className="p-3 md:p-4 border-b bg-card">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                  <Swords className="w-4 h-4 text-accent-foreground" />
+                  <Swords className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <span className="font-semibold text-sm md:text-base">Topic:</span>

@@ -40,7 +40,9 @@ export default function Landing() {
               </Button>
               <Button 
                 size="lg"
-                className="text-lg font-semibold bg-accent text-accent-foreground border-accent"
+                className="text-lg font-semibold"
+                variant="default"
+                style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', borderColor: 'hsl(var(--accent))' }}
                 onClick={handleGuestPlay}
                 data-testid="button-guest-play"
               >
@@ -69,7 +71,7 @@ export default function Landing() {
               <CardContent className="pt-8 pb-8">
                 <div className="flex justify-center mb-6">
                   <div className="w-16 h-16 rounded-xl bg-accent flex items-center justify-center shadow-lg">
-                    <Zap className="w-8 h-8 text-accent-foreground" />
+                    <Zap className="w-8 h-8 text-white" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3">AI-Powered Feedback</h3>
