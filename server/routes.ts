@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { gradingRequestSchema } from "@shared/schema";
 import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupMatchmaking } from "./matchmaking";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth
@@ -246,6 +247,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+
+  // Setup WebSocket matchmaking
+  setupMatchmaking(httpServer);
 
   return httpServer;
 }

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Swords, Bot, Loader2, Languages, Target, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { THEMES } from "@shared/themes";
+import { useMatchmaking } from "@/hooks/useMatchmaking";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -33,6 +34,7 @@ interface MatchFinderProps {
   userElo?: number;
   userWins?: number;
   userLosses?: number;
+  username?: string;
 }
 
 export default function MatchFinder({ 
@@ -41,12 +43,48 @@ export default function MatchFinder({
   currentLanguage = "Chinese",
   userElo = 1000,
   userWins = 0,
-  userLosses = 0
+  userLosses = 0,
+  username = "Player"
 }: MatchFinderProps) {
-  const [searching, setSearching] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(currentLanguage);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
+
+  // Generate a persistent session ID that survives remounts (SSR-safe)
+  const getSessionId = () => {
+    if (typeof window === 'undefined') {
+      // Fallback for SSR/test environments
+      return `temp-session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
+    let sessionId = localStorage.getItem('matchmaking_session_id');
+    if (!sessionId) {
+      sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('matchmaking_session_id', sessionId);
+    }
+    return sessionId;
+  };
+
+  const playerId = getSessionId();
+
+  // WebSocket matchmaking hook
+  const handleWebSocketMatch = useCallback((matchData: any) => {
+    // Call onMatchFound with server-provided match details
+    onMatchFound?.(
+      matchData.opponent.username,
+      matchData.isAI,
+      matchData.language as Language, // Use server-provided language
+      matchData.difficulty as Difficulty, // Use server-provided difficulty
+      matchData.topic // Topic from matchmaking
+    );
+  }, [onMatchFound]);
+
+  const { isConnected, isSearching, findMatch, cancelSearch } = useMatchmaking({
+    playerId,
+    username,
+    elo: userElo,
+    onMatchFound: handleWebSocketMatch,
+  });
 
   const handleLanguageChange = (language: Language) => {
     setSelectedLanguage(language);
@@ -54,12 +92,12 @@ export default function MatchFinder({
   };
 
   const handleFindMatch = () => {
-    setSearching(true);
-    // Simulate matchmaking - competitive mode (affects Elo) - Random topic
-    setTimeout(() => {
-      setSearching(false);
-      onMatchFound?.("Maria García", false, selectedLanguage, selectedDifficulty);
-    }, 2000);
+    if (isSearching) {
+      cancelSearch();
+    } else {
+      // Competitive mode - no topic selection (random topic)
+      findMatch(selectedLanguage, selectedDifficulty);
+    }
   };
 
   const handlePractice = () => {
@@ -114,18 +152,19 @@ export default function MatchFinder({
             <div className="border-t border-card-border pt-4 mt-4">
               <div className="text-sm text-muted-foreground mb-3">
                 Competitive matches use random topics for fair ranking
+                {!isConnected && <span className="text-destructive ml-2">(Connecting to server...)</span>}
               </div>
               <Button
                 size="lg"
                 className="w-full h-14 text-lg font-semibold"
                 onClick={handleFindMatch}
-                disabled={searching}
+                disabled={!isConnected}
                 data-testid="button-find-match"
               >
-                {searching ? (
+                {isSearching ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Finding opponent...
+                    Finding opponent... (Click to cancel)
                   </>
                 ) : (
                   <>

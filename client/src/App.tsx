@@ -292,6 +292,7 @@ function MainApp() {
             userElo={userElo}
             userWins={userWins}
             userLosses={userLosses}
+            username={username}
           />
         )}
         
