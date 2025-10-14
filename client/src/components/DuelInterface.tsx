@@ -334,7 +334,11 @@ export default function DuelInterface({
   };
 
   const handleSend = async () => {
-    if (!input.trim() || !isUserTurn || isGrading) return;
+    // Prevent sending during any loading state
+    if (!input.trim() || !isUserTurn || isGrading || 
+        validateQuestionMutation.isPending || 
+        botQuestionMutation.isPending || 
+        botAnswerMutation.isPending) return;
 
     const messageToSend = input;
     const timestamp = Date.now();
@@ -626,14 +630,14 @@ export default function DuelInterface({
                       : `Ask a question in ${language}...`
                   }
                   className="flex-1 text-base min-h-[48px] md:min-h-[40px]"
-                  disabled={!isUserTurn || isGrading}
+                  disabled={!isUserTurn || isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                   data-testid="input-message"
                 />
                 {turnPhase === "user-answer" && (
                   <Button 
                     variant="outline"
                     onClick={handleDontKnow} 
-                    disabled={isGrading}
+                    disabled={isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                     data-testid="button-dont-know"
                     className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-4"
                   >
@@ -644,7 +648,7 @@ export default function DuelInterface({
                 )}
                 <Button 
                   onClick={handleSend} 
-                  disabled={!isUserTurn || isGrading}
+                  disabled={!isUserTurn || isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                   data-testid="button-send"
                   className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-4"
                 >

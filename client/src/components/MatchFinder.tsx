@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Bot, Loader2, Target, BookOpen, AlertCircle, Swords, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,7 +30,7 @@ const BOT_NAMES = [
 ];
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number, isPracticeMode?: boolean, startsFirst?: boolean, matchId?: string) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number, isPracticeMode?: boolean, startsFirst?: boolean, matchId?: string, vocabularyFromServer?: any[]) => void;
   currentLanguage?: Language;
   userElo?: number;
   userWins?: number;
@@ -51,9 +51,17 @@ export default function MatchFinder({
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
+  const practiceLoadingRef = useRef(false);
   
   const canPlay = !isGuest || canGuestPlayMatch();
   const remainingMatches = isGuest ? getRemainingGuestMatches() : null;
+
+  // Reset loading ref when component unmounts or practice completes
+  useEffect(() => {
+    if (!isPracticeLoading) {
+      practiceLoadingRef.current = false;
+    }
+  }, [isPracticeLoading]);
 
   const getSessionId = () => {
     if (typeof window === 'undefined') {
@@ -114,9 +122,12 @@ export default function MatchFinder({
   };
 
   const handlePractice = () => {
-    if (isPracticeLoading) return;
+    // Immediate double-click prevention using ref
+    if (practiceLoadingRef.current) return;
+    practiceLoadingRef.current = true;
     
     if (isGuest && !canGuestPlayMatch()) {
+      practiceLoadingRef.current = false;
       return;
     }
     
