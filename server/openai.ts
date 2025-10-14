@@ -17,6 +17,7 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     .join("\n");
 
   const difficultyGuidelines: Record<string, string> = {
+    Beginner: "Grade with ABSOLUTE MAXIMUM encouragement. This is for complete beginners - celebrate ANY word or sound in the target language! Give extremely high scores (80-95+) for trying AT ALL. Even if they write in English or use translator, give encouragement. Focus purely on participation and effort.",
     Easy: "Grade with MAXIMUM encouragement and patience. This is absolute beginner level - accept ANY attempt at communication, even single words or very broken sentences. Focus ONLY on effort and attempting to communicate. Give high scores (70-90+) for any genuine attempt.",
     Medium: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success. Expect simple but complete sentences.",
     Hard: "Grade with balanced standards. Expect correct grammar, appropriate vocabulary, and natural language flow for intermediate level."
