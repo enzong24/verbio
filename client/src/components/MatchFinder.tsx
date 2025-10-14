@@ -10,7 +10,7 @@ import { canGuestPlayMatch, getRemainingGuestMatches, getGuestMatchLimit } from 
 import { useSound } from "@/hooks/use-sound";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
-export type Difficulty = "Easy" | "Medium" | "Hard";
+export type Difficulty = "Beginner" | "Easy" | "Medium" | "Hard";
 
 const BOT_NAMES = [
   "Emma Chen",

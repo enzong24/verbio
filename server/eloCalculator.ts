@@ -1,4 +1,4 @@
-export type Difficulty = "Easy" | "Medium" | "Hard";
+export type Difficulty = "Beginner" | "Easy" | "Medium" | "Hard";
 
 interface EloResult {
   newElo: number;
@@ -89,6 +89,7 @@ export function calculateEloChange(
   difficulty: Difficulty
 ): EloResult {
   const BASE_ELO_CHANGES = {
+    Beginner: 4,
     Easy: 6,
     Medium: 8,
     Hard: 12,
