@@ -31,6 +31,7 @@ interface DuelInterfaceProps {
   difficulty?: string;
   onComplete?: (result: GradingResult, messages?: Message[]) => void;
   onForfeit?: () => void;
+  startsFirst?: boolean;
 }
 
 type TurnPhase = "bot-question" | "user-answer" | "user-question" | "bot-answer";
@@ -50,7 +51,8 @@ export default function DuelInterface({
   language = "Chinese",
   difficulty = "Medium",
   onComplete,
-  onForfeit
+  onForfeit,
+  startsFirst = false
 }: DuelInterfaceProps) {
   // Get timer duration based on difficulty
   const getTimerDuration = () => {
@@ -72,11 +74,14 @@ export default function DuelInterface({
     }
   };
 
+  // Determine initial turn phase based on who starts first
+  const initialTurnPhase: TurnPhase = startsFirst ? "user-question" : "bot-question";
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [timeLeft, setTimeLeft] = useState(getTimerDuration());
   const [round, setRound] = useState(1);
-  const [turnPhase, setTurnPhase] = useState<TurnPhase>("bot-question");
+  const [turnPhase, setTurnPhase] = useState<TurnPhase>(initialTurnPhase);
   const [isGrading, setIsGrading] = useState(false);
   const [botQuestions, setBotQuestions] = useState<string[]>([]);
   const [skippedQuestions, setSkippedQuestions] = useState(0);
@@ -87,7 +92,7 @@ export default function DuelInterface({
   // Refs to avoid recreating timer interval
   const shouldCountRef = useRef(false);
   const currentRoundRef = useRef(1);
-  const currentTurnPhaseRef = useRef<TurnPhase>("bot-question");
+  const currentTurnPhaseRef = useRef<TurnPhase>(initialTurnPhase);
   const inputRef = useRef<HTMLInputElement>(null);
   const inactivityCountRef = useRef(false);
 
@@ -145,9 +150,17 @@ export default function DuelInterface({
     },
   });
 
-  // Initialize with bot question
+  // Initialize with bot question only if bot starts first
   useEffect(() => {
-    botQuestionMutation.mutate();
+    if (!startsFirst) {
+      botQuestionMutation.mutate();
+    } else {
+      // User starts first, enable timer and inactivity tracking immediately
+      shouldCountRef.current = true;
+      inactivityCountRef.current = true;
+      setTimeLeft(getTimerDuration());
+      setInactivityTimeLeft(60);
+    }
   }, []);
 
   // Update when bot question is ready

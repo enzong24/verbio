@@ -38,6 +38,7 @@ function MainApp() {
     vocabulary: VocabWord[];
     language: Language;
     difficulty: Difficulty;
+    startsFirst?: boolean;
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
   const [matchMessages, setMatchMessages] = useState<any[]>([]);
@@ -109,7 +110,7 @@ function MainApp() {
     return <Landing />;
   }
 
-  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false) => {
+  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean) => {
     // Use selected topic or random if not specified
     const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
@@ -144,6 +145,7 @@ function MainApp() {
         vocabulary,
         language,
         difficulty,
+        startsFirst,
       });
       setCurrentPage("match");
     } catch (error) {
@@ -186,6 +188,7 @@ function MainApp() {
         vocabulary,
         language,
         difficulty,
+        startsFirst,
       });
       setCurrentPage("match");
     }
@@ -372,6 +375,7 @@ function MainApp() {
             difficulty={matchData.difficulty}
             onComplete={handleDuelComplete}
             onForfeit={handleForfeit}
+            startsFirst={matchData.startsFirst}
           />
         )}
         

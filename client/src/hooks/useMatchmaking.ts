@@ -10,6 +10,7 @@ interface MatchFoundData {
   language: string;
   difficulty: string;
   isAI: boolean;
+  startsFirst?: boolean;
 }
 
 interface UseMatchmakingOptions {
@@ -56,6 +57,7 @@ export function useMatchmaking({ playerId, username, elo, onMatchFound }: UseMat
             language: data.language,
             difficulty: data.difficulty,
             isAI: data.isAI,
+            startsFirst: data.startsFirst,
           });
         }
       } catch (error) {

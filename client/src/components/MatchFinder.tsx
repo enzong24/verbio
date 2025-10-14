@@ -30,7 +30,7 @@ const BOT_NAMES = [
 ];
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number, isPracticeMode?: boolean) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number, isPracticeMode?: boolean, startsFirst?: boolean) => void;
   currentLanguage?: Language;
   userElo?: number;
   userWins?: number;
@@ -78,7 +78,8 @@ export default function MatchFinder({
       matchData.difficulty as Difficulty,
       matchData.topic,
       matchData.opponent.elo,
-      false
+      false,
+      matchData.startsFirst
     );
   }, [onMatchFound]);
 
