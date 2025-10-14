@@ -118,7 +118,7 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                             }`}
                           >
                             {language === "Chinese" ? (
-                              <TextWithPinyin text={message.text} />
+                              <TextWithPinyin text={message.text} language={language} />
                             ) : (
                               <p className="text-sm">{message.text}</p>
                             )}
@@ -157,7 +157,7 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                               <div className="flex items-start gap-2 mb-1">
                                                 <span className="text-destructive line-through">
                                                   {language === "Chinese" ? (
-                                                    <TextWithPinyin text={correction.original} />
+                                                    <TextWithPinyin text={correction.original} language={language} />
                                                   ) : (
                                                     correction.original
                                                   )}
@@ -165,7 +165,7 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                                 <span>→</span>
                                                 <span className="text-success font-medium">
                                                   {language === "Chinese" ? (
-                                                    <TextWithPinyin text={correction.corrected} />
+                                                    <TextWithPinyin text={correction.corrected} language={language} />
                                                   ) : (
                                                     correction.corrected
                                                   )}
@@ -191,7 +191,7 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                               <div className="flex items-start gap-2 mb-1">
                                                 <span className="text-muted-foreground">
                                                   {language === "Chinese" ? (
-                                                    <TextWithPinyin text={suggestion.word} />
+                                                    <TextWithPinyin text={suggestion.word} language={language} />
                                                   ) : (
                                                     suggestion.word
                                                   )}
@@ -199,7 +199,7 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                                 <span>→</span>
                                                 <span className="text-primary font-medium">
                                                   {language === "Chinese" ? (
-                                                    <TextWithPinyin text={suggestion.betterAlternative} />
+                                                    <TextWithPinyin text={suggestion.betterAlternative} language={language} />
                                                   ) : (
                                                     suggestion.betterAlternative
                                                   )}

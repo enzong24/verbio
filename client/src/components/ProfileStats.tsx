@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Trophy, Target, Calendar, Flame, Zap } from "lucide-react";
+import { TrendingUp, Trophy, Target, Calendar, Flame, Zap, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import type { Match } from "@shared/schema";
+import MatchDetails from "@/components/MatchDetails";
 
 interface ProfileStatsProps {
   username?: string;
@@ -32,6 +35,7 @@ export default function ProfileStats({
   bestWinStreak = 0,
   dailyLoginStreak = 0,
 }: ProfileStatsProps) {
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
   // Fetch recent matches
@@ -153,7 +157,8 @@ export default function ProfileStats({
                   {matches.map((match) => (
                     <div
                       key={match.id}
-                      className="flex items-center gap-4 p-3 rounded-md hover-elevate"
+                      className="flex items-center gap-4 p-3 rounded-md hover-elevate cursor-pointer transition-all"
+                      onClick={() => setSelectedMatch(match)}
                       data-testid={`match-history-${match.id}`}
                     >
                       <Badge
@@ -173,12 +178,28 @@ export default function ProfileStats({
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
+                          {match.topic && ` • ${match.topic}`}
                         </div>
                       </div>
-                      <div className={`font-mono font-bold ${
-                        match.result === "win" ? "text-success" : "text-destructive"
-                      }`}>
-                        {match.result === "win" ? "+" : ""}{match.eloChange}
+                      <div className="flex items-center gap-3">
+                        <div className={`font-mono font-bold ${
+                          match.result === "win" ? "text-success" : "text-destructive"
+                        }`}>
+                          {match.result === "win" ? "+" : ""}{match.eloChange}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedMatch(match);
+                          }}
+                          data-testid={`button-view-match-${match.id}`}
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -235,6 +256,14 @@ export default function ProfileStats({
             </CardContent>
           </Card>
         </>
+      )}
+      
+      {selectedMatch && (
+        <MatchDetails
+          match={selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          language={currentLanguage}
+        />
       )}
     </div>
   );
