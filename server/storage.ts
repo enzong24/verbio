@@ -5,12 +5,18 @@ import {
   type InsertUserLanguageStats,
   type Match,
   type InsertMatch,
+  type Friend,
+  type InsertFriend,
+  type PrivateMatchInvite,
+  type InsertPrivateMatchInvite,
   users,
   userLanguageStats,
-  matches
+  matches,
+  friends,
+  privateMatchInvites
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or } from "drizzle-orm";
 
 // Storage interface for Replit Auth
 export interface IStorage {
@@ -36,17 +42,35 @@ export interface IStorage {
   // Streaks
   updateWinStreak(userId: string, language: string, isWin: boolean, isForfeit: boolean): Promise<UserLanguageStats>;
   updateDailyLoginStreak(userId: string, language: string): Promise<UserLanguageStats>;
+  
+  // Friend system
+  sendFriendRequest(userId: string, friendUsername: string): Promise<Friend>;
+  getFriendshipById(friendshipId: string): Promise<Friend | undefined>;
+  acceptFriendRequest(friendshipId: string): Promise<Friend>;
+  rejectFriendRequest(friendshipId: string): Promise<void>;
+  removeFriend(friendshipId: string): Promise<void>;
+  getFriends(userId: string): Promise<Array<Friend & { friendUser: User; friendStats?: UserLanguageStats }>>;
+  getPendingFriendRequests(userId: string): Promise<Array<Friend & { requesterUser: User }>>;
+  
+  // Private match invites
+  createPrivateMatchInvite(invite: InsertPrivateMatchInvite): Promise<PrivateMatchInvite>;
+  getPrivateMatchInvite(inviteCode: string): Promise<PrivateMatchInvite | undefined>;
+  updatePrivateMatchInviteStatus(inviteCode: string, status: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private languageStats: Map<string, UserLanguageStats>; // key: `${userId}-${language}`
   private matches: Map<string, Match>;
+  private friendships: Map<string, Friend>;
+  private privateInvites: Map<string, PrivateMatchInvite>; // key: inviteCode
 
   constructor() {
     this.users = new Map();
     this.languageStats = new Map();
     this.matches = new Map();
+    this.friendships = new Map();
+    this.privateInvites = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -201,6 +225,121 @@ export class MemStorage implements IStorage {
       dailyLoginStreak: isConsecutive ? stats.dailyLoginStreak + 1 : 1,
       lastLoginDate: today,
     });
+  }
+
+  async sendFriendRequest(userId: string, friendUsername: string): Promise<Friend> {
+    // Find friend by username (email in guest mode)
+    const friendUser = Array.from(this.users.values()).find(u => 
+      u.email === friendUsername || u.firstName === friendUsername
+    );
+    
+    if (!friendUser) {
+      throw new Error("User not found");
+    }
+    
+    if (friendUser.id === userId) {
+      throw new Error("Cannot add yourself as a friend");
+    }
+    
+    // Check if friendship already exists
+    const existing = Array.from(this.friendships.values()).find(f => 
+      (f.userId === userId && f.friendId === friendUser.id) ||
+      (f.userId === friendUser.id && f.friendId === userId)
+    );
+    
+    if (existing) {
+      throw new Error("Friend request already exists");
+    }
+    
+    const friendship: Friend = {
+      id: crypto.randomUUID(),
+      userId,
+      friendId: friendUser.id,
+      status: "pending",
+      createdAt: new Date(),
+    };
+    
+    this.friendships.set(friendship.id, friendship);
+    return friendship;
+  }
+
+  async getFriendshipById(friendshipId: string): Promise<Friend | undefined> {
+    return this.friendships.get(friendshipId);
+  }
+
+  async acceptFriendRequest(friendshipId: string): Promise<Friend> {
+    const friendship = this.friendships.get(friendshipId);
+    if (!friendship) {
+      throw new Error("Friend request not found");
+    }
+    
+    const updated = { ...friendship, status: "accepted" };
+    this.friendships.set(friendshipId, updated);
+    return updated;
+  }
+
+  async rejectFriendRequest(friendshipId: string): Promise<void> {
+    this.friendships.delete(friendshipId);
+  }
+
+  async removeFriend(friendshipId: string): Promise<void> {
+    this.friendships.delete(friendshipId);
+  }
+
+  async getFriends(userId: string): Promise<Array<Friend & { friendUser: User; friendStats?: UserLanguageStats }>> {
+    const accepted = Array.from(this.friendships.values()).filter(f => 
+      (f.userId === userId || f.friendId === userId) && f.status === "accepted"
+    );
+    
+    return accepted.map(friendship => {
+      const friendId = friendship.userId === userId ? friendship.friendId : friendship.userId;
+      const friendUser = this.users.get(friendId)!;
+      return {
+        ...friendship,
+        friendUser,
+        friendStats: undefined, // In-memory storage doesn't track this
+      };
+    });
+  }
+
+  async getPendingFriendRequests(userId: string): Promise<Array<Friend & { requesterUser: User }>> {
+    const pending = Array.from(this.friendships.values()).filter(f => 
+      f.friendId === userId && f.status === "pending"
+    );
+    
+    return pending.map(friendship => ({
+      ...friendship,
+      requesterUser: this.users.get(friendship.userId)!,
+    }));
+  }
+
+  async createPrivateMatchInvite(inviteData: InsertPrivateMatchInvite): Promise<PrivateMatchInvite> {
+    const invite: PrivateMatchInvite = {
+      id: crypto.randomUUID(),
+      inviteCode: inviteData.inviteCode!,
+      creatorId: inviteData.creatorId!,
+      language: inviteData.language!,
+      difficulty: inviteData.difficulty!,
+      topic: inviteData.topic || null,
+      status: inviteData.status || "pending",
+      expiresAt: inviteData.expiresAt!,
+      createdAt: new Date(),
+    };
+    
+    this.privateInvites.set(invite.inviteCode, invite);
+    return invite;
+  }
+
+  async getPrivateMatchInvite(inviteCode: string): Promise<PrivateMatchInvite | undefined> {
+    return this.privateInvites.get(inviteCode);
+  }
+
+  async updatePrivateMatchInviteStatus(inviteCode: string, status: string): Promise<void> {
+    const invite = this.privateInvites.get(inviteCode);
+    if (invite) {
+      invite.status = status;
+      this.privateInvites.set(inviteCode, invite);
+    }
   }
 }
 
@@ -408,6 +547,161 @@ export class DbStorage implements IStorage {
       ))
       .returning();
     return result[0];
+  }
+
+  async sendFriendRequest(userId: string, friendUsername: string): Promise<Friend> {
+    // Find friend by username (email)
+    const friendUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, friendUsername))
+      .limit(1);
+    
+    if (friendUsers.length === 0) {
+      throw new Error("User not found");
+    }
+    
+    const friendUser = friendUsers[0];
+    
+    if (friendUser.id === userId) {
+      throw new Error("Cannot add yourself as a friend");
+    }
+    
+    // Check if friendship already exists
+    const existing = await db
+      .select()
+      .from(friends)
+      .where(
+        or(
+          and(eq(friends.userId, userId), eq(friends.friendId, friendUser.id)),
+          and(eq(friends.userId, friendUser.id), eq(friends.friendId, userId))
+        )
+      )
+      .limit(1);
+    
+    if (existing.length > 0) {
+      throw new Error("Friend request already exists");
+    }
+    
+    const result = await db
+      .insert(friends)
+      .values({
+        userId,
+        friendId: friendUser.id,
+        status: "pending",
+      })
+      .returning();
+    
+    return result[0];
+  }
+
+  async getFriendshipById(friendshipId: string): Promise<Friend | undefined> {
+    const result = await db
+      .select()
+      .from(friends)
+      .where(eq(friends.id, friendshipId))
+      .limit(1);
+    return result[0];
+  }
+
+  async acceptFriendRequest(friendshipId: string): Promise<Friend> {
+    const result = await db
+      .update(friends)
+      .set({ status: "accepted" })
+      .where(eq(friends.id, friendshipId))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error("Friend request not found");
+    }
+    
+    return result[0];
+  }
+
+  async rejectFriendRequest(friendshipId: string): Promise<void> {
+    await db.delete(friends).where(eq(friends.id, friendshipId));
+  }
+
+  async removeFriend(friendshipId: string): Promise<void> {
+    await db.delete(friends).where(eq(friends.id, friendshipId));
+  }
+
+  async getFriends(userId: string): Promise<Array<Friend & { friendUser: User; friendStats?: UserLanguageStats }>> {
+    const friendships = await db
+      .select()
+      .from(friends)
+      .where(
+        and(
+          or(eq(friends.userId, userId), eq(friends.friendId, userId)),
+          eq(friends.status, "accepted")
+        )
+      );
+    
+    const result = [];
+    for (const friendship of friendships) {
+      const friendId = friendship.userId === userId ? friendship.friendId : friendship.userId;
+      const friendUser = await this.getUser(friendId);
+      
+      if (friendUser) {
+        result.push({
+          ...friendship,
+          friendUser,
+          friendStats: undefined,
+        });
+      }
+    }
+    
+    return result;
+  }
+
+  async getPendingFriendRequests(userId: string): Promise<Array<Friend & { requesterUser: User }>> {
+    const requests = await db
+      .select()
+      .from(friends)
+      .where(
+        and(
+          eq(friends.friendId, userId),
+          eq(friends.status, "pending")
+        )
+      );
+    
+    const result = [];
+    for (const request of requests) {
+      const requesterUser = await this.getUser(request.userId);
+      
+      if (requesterUser) {
+        result.push({
+          ...request,
+          requesterUser,
+        });
+      }
+    }
+    
+    return result;
+  }
+
+  async createPrivateMatchInvite(inviteData: InsertPrivateMatchInvite): Promise<PrivateMatchInvite> {
+    const result = await db
+      .insert(privateMatchInvites)
+      .values(inviteData)
+      .returning();
+    return result[0];
+  }
+
+  async getPrivateMatchInvite(inviteCode: string): Promise<PrivateMatchInvite | undefined> {
+    const result = await db
+      .select()
+      .from(privateMatchInvites)
+      .where(eq(privateMatchInvites.inviteCode, inviteCode))
+      .limit(1);
+    return result[0];
+  }
+
+  async updatePrivateMatchInviteStatus(inviteCode: string, status: string): Promise<void> {
+    await db
+      .update(privateMatchInvites)
+      .set({ status })
+      .where(eq(privateMatchInvites.inviteCode, inviteCode));
   }
 }
 

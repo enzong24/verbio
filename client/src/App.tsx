@@ -13,11 +13,12 @@ import MatchResults from "@/components/MatchResults";
 import Leaderboard from "@/components/Leaderboard";
 import ProfileStats from "@/components/ProfileStats";
 import AIReview from "@/components/AIReview";
+import Friends from "@/components/Friends";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 import { incrementGuestMatches } from "@/utils/guestRateLimit";
 
-type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review";
+type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review" | "friends";
 
 interface VocabWord {
   word: string;
@@ -579,6 +580,8 @@ function MainApp() {
             dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
           />
         )}
+        
+        {currentPage === "friends" && isAuthenticated && <Friends />}
         
         {currentPage === "ai-review" && matchData && (
           <AIReview

@@ -267,6 +267,203 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send friend request
+  app.post("/api/friends/request", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { friendUsername } = req.body;
+      
+      if (!friendUsername) {
+        return res.status(400).json({ message: "Friend username is required" });
+      }
+      
+      const friendship = await storage.sendFriendRequest(userId, friendUsername);
+      res.json(friendship);
+    } catch (error: any) {
+      console.error("Error sending friend request:", error);
+      res.status(400).json({ message: error.message || "Failed to send friend request" });
+    }
+  });
+
+  // Accept friend request
+  app.post("/api/friends/accept/:friendshipId", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { friendshipId } = req.params;
+      
+      // Verify user is the recipient of this friend request
+      const existingFriendship = await storage.getFriendshipById(friendshipId);
+      if (!existingFriendship) {
+        return res.status(404).json({ message: "Friend request not found" });
+      }
+      
+      if (existingFriendship.friendId !== userId) {
+        return res.status(403).json({ message: "Unauthorized to accept this request" });
+      }
+      
+      const friendship = await storage.acceptFriendRequest(friendshipId);
+      res.json(friendship);
+    } catch (error: any) {
+      console.error("Error accepting friend request:", error);
+      res.status(400).json({ message: error.message || "Failed to accept friend request" });
+    }
+  });
+
+  // Reject friend request
+  app.post("/api/friends/reject/:friendshipId", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { friendshipId } = req.params;
+      
+      // Verify user is the recipient of this friend request
+      const existingFriendship = await storage.getFriendshipById(friendshipId);
+      if (!existingFriendship) {
+        return res.status(404).json({ message: "Friend request not found" });
+      }
+      
+      if (existingFriendship.friendId !== userId) {
+        return res.status(403).json({ message: "Unauthorized to reject this request" });
+      }
+      
+      await storage.rejectFriendRequest(friendshipId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error rejecting friend request:", error);
+      res.status(400).json({ message: error.message || "Failed to reject friend request" });
+    }
+  });
+
+  // Remove friend
+  app.delete("/api/friends/:friendshipId", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { friendshipId } = req.params;
+      
+      // Verify user is a participant in this friendship
+      const existingFriendship = await storage.getFriendshipById(friendshipId);
+      if (!existingFriendship) {
+        return res.status(404).json({ message: "Friendship not found" });
+      }
+      
+      if (existingFriendship.userId !== userId && existingFriendship.friendId !== userId) {
+        return res.status(403).json({ message: "Unauthorized to remove this friendship" });
+      }
+      
+      await storage.removeFriend(friendshipId);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error removing friend:", error);
+      res.status(400).json({ message: error.message || "Failed to remove friend" });
+    }
+  });
+
+  // Get friends list
+  app.get("/api/friends", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const friends = await storage.getFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+      res.status(500).json({ message: "Failed to fetch friends" });
+    }
+  });
+
+  // Get pending friend requests
+  app.get("/api/friends/requests", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const requests = await storage.getPendingFriendRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching friend requests:", error);
+      res.status(500).json({ message: "Failed to fetch friend requests" });
+    }
+  });
+
+  // Create private match invite
+  app.post("/api/private-match/create", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { language, difficulty, topic } = req.body;
+      
+      // Generate a random 6-character invite code
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      // Invite expires in 24 hours
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      
+      const invite = await storage.createPrivateMatchInvite({
+        inviteCode,
+        creatorId: userId,
+        language,
+        difficulty,
+        topic: topic || null,
+        status: "pending",
+        expiresAt,
+      });
+      
+      res.json(invite);
+    } catch (error) {
+      console.error("Error creating private match invite:", error);
+      res.status(500).json({ message: "Failed to create invite" });
+    }
+  });
+
+  // Get private match invite by code
+  app.get("/api/private-match/:inviteCode", async (req, res) => {
+    try {
+      const { inviteCode } = req.params;
+      const invite = await storage.getPrivateMatchInvite(inviteCode);
+      
+      if (!invite) {
+        return res.status(404).json({ message: "Invite not found" });
+      }
+      
+      // Check if expired
+      if (new Date() > new Date(invite.expiresAt)) {
+        return res.status(410).json({ message: "Invite expired" });
+      }
+      
+      if (invite.status !== "pending") {
+        return res.status(400).json({ message: "Invite already used" });
+      }
+      
+      res.json(invite);
+    } catch (error) {
+      console.error("Error fetching invite:", error);
+      res.status(500).json({ message: "Failed to fetch invite" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Setup WebSocket matchmaking

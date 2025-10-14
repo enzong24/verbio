@@ -1,4 +1,4 @@
-import { Swords, Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal } from "lucide-react";
+import { Swords, Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -361,6 +361,60 @@ export default function Header({
                     </Card>
                   </>
                 )}
+
+                {/* Navigation Buttons */}
+                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-card-border">
+                  <Button
+                    variant={currentPage === "duel" ? "default" : "outline"}
+                    className="w-full gap-2"
+                    onClick={() => {
+                      onNavigate?.("duel");
+                      setMobileMenuOpen(false);
+                    }}
+                    data-testid="button-nav-duel"
+                  >
+                    <Swords className="w-4 h-4" />
+                    <span>Duel</span>
+                  </Button>
+                  <Button
+                    variant={currentPage === "leaderboard" ? "default" : "outline"}
+                    className="w-full gap-2"
+                    onClick={() => {
+                      onNavigate?.("leaderboard");
+                      setMobileMenuOpen(false);
+                    }}
+                    data-testid="button-nav-leaderboard"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    <span>Leaderboard</span>
+                  </Button>
+                  <Button
+                    variant={currentPage === "profile" ? "default" : "outline"}
+                    className="w-full gap-2"
+                    onClick={() => {
+                      onNavigate?.("profile");
+                      setMobileMenuOpen(false);
+                    }}
+                    data-testid="button-nav-profile"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profile</span>
+                  </Button>
+                  {isAuthenticated && (
+                    <Button
+                      variant={currentPage === "friends" ? "default" : "outline"}
+                      className="w-full gap-2"
+                      onClick={() => {
+                        onNavigate?.("friends");
+                        setMobileMenuOpen(false);
+                      }}
+                      data-testid="button-nav-friends"
+                    >
+                      <Users className="w-4 h-4" />
+                      <span>Friends</span>
+                    </Button>
+                  )}
+                </div>
               </div>
             </TabsContent>
             
