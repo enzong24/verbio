@@ -1,27 +1,14 @@
-import { Trophy, Users, Zap } from "lucide-react";
+import { Trophy, Users, Zap, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState } from "react";
-
-const LANGUAGES = [
-  { code: "chinese", flag: "🇨🇳", name: "Chinese" },
-  { code: "spanish", flag: "🇪🇸", name: "Spanish" },
-  { code: "italian", flag: "🇮🇹", name: "Italian" },
-];
 
 export default function Landing() {
-  const [currentLangIndex, setCurrentLangIndex] = useState(0);
-
   const handleSignIn = () => {
     window.location.href = "/api/login";
   };
 
   const handleGuestPlay = () => {
     window.location.href = "/?guest=true";
-  };
-
-  const toggleLanguage = () => {
-    setCurrentLangIndex((prev) => (prev + 1) % LANGUAGES.length);
   };
 
   return (
@@ -38,15 +25,15 @@ export default function Landing() {
               </div>
             </div>
             
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center justify-center w-12 h-12 rounded-lg hover-elevate active-elevate-2 border border-border/40 transition-transform"
-              title={`Switch language (Current: ${LANGUAGES[currentLangIndex].name})`}
-              data-testid="button-language-toggle"
+            {/* External Link Placeholder */}
+            <a
+              href="#"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="link-external"
             >
-              <span className="text-2xl">{LANGUAGES[currentLangIndex].flag}</span>
-            </button>
+              <span>Learn More</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </div>
