@@ -534,8 +534,16 @@ export default function DuelInterface({
               <div className="mt-3 text-xs md:text-sm font-medium">
                 {turnPhase === "user-answer" && <span className="text-primary">⏳ Your turn to answer the question</span>}
                 {turnPhase === "user-question" && <span className="text-accent">❓ Your turn to ask a question using vocabulary</span>}
-                {turnPhase === "bot-question" && <span className="text-muted-foreground">🤖 Bot is thinking...</span>}
-                {turnPhase === "bot-answer" && <span className="text-success">🤖 Bot is answering...</span>}
+                {turnPhase === "bot-question" && (
+                  <span className="text-muted-foreground">
+                    {isBot ? "🤖 Bot is thinking..." : "⏳ Opponent is thinking..."}
+                  </span>
+                )}
+                {turnPhase === "bot-answer" && (
+                  <span className="text-success">
+                    {isBot ? "🤖 Bot is answering..." : "💬 Opponent is answering..."}
+                  </span>
+                )}
               </div>
             </div>
 
