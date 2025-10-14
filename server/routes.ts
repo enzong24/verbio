@@ -415,8 +415,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { language, difficulty, topic } = req.body;
       
-      // Generate a random 6-character invite code
-      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // Generate a random 6-digit number invite code
+      const inviteCode = Math.floor(100000 + Math.random() * 900000).toString();
       
       // Invite expires in 24 hours
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);

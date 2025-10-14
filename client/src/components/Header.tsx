@@ -1,4 +1,4 @@
-import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users } from "lucide-react";
+import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,10 @@ interface HeaderProps {
   wins?: number;
   losses?: number;
   onLanguageChange?: (language: string) => void;
+  winStreak?: number;
+  bestWinStreak?: number;
+  dailyLoginStreak?: number;
+  bestDailyLoginStreak?: number;
 }
 
 export default function Header({ 
@@ -56,7 +60,11 @@ export default function Header({
   currentLanguage = "Chinese",
   wins = 0,
   losses = 0,
-  onLanguageChange
+  onLanguageChange,
+  winStreak = 0,
+  bestWinStreak = 0,
+  dailyLoginStreak = 0,
+  bestDailyLoginStreak = 0
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -112,9 +120,13 @@ export default function Header({
             >
               <Menu className="w-5 h-5" />
             </Button>
-            <h1 className="text-xl font-bold tracking-tight">
+            <button 
+              onClick={() => onNavigate?.("duel")}
+              className="text-xl font-bold tracking-tight hover:opacity-80 transition-opacity cursor-pointer"
+              data-testid="button-logo"
+            >
               Verbio
-            </h1>
+            </button>
           </div>
 
         <div className="flex items-center gap-4">
@@ -241,12 +253,12 @@ export default function Header({
                   <Card className="border-card-border">
                     <CardContent className="pt-3 pb-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md bg-success/10 flex items-center justify-center">
-                          <TrendingUp className="w-4 h-4 text-success" />
+                        <div className="w-8 h-8 rounded-md bg-orange-500/10 flex items-center justify-center">
+                          <Flame className="w-4 h-4 text-orange-500" />
                         </div>
                         <div>
-                          <div className="text-lg font-bold font-mono">{winRate}%</div>
-                          <div className="text-xs text-muted-foreground">Win Rate</div>
+                          <div className="text-lg font-bold font-mono" data-testid="text-win-streak">{winStreak}</div>
+                          <div className="text-xs text-muted-foreground">Win Streak</div>
                         </div>
                       </div>
                     </CardContent>
@@ -255,12 +267,12 @@ export default function Header({
                   <Card className="border-card-border">
                     <CardContent className="pt-3 pb-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md bg-warning/10 flex items-center justify-center">
-                          <Calendar className="w-4 h-4 text-warning" />
+                        <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center">
+                          <Zap className="w-4 h-4 text-blue-500" />
                         </div>
                         <div>
-                          <div className="text-lg font-bold font-mono">{totalMatches}</div>
-                          <div className="text-xs text-muted-foreground">Total</div>
+                          <div className="text-lg font-bold font-mono" data-testid="text-daily-streak">{dailyLoginStreak}</div>
+                          <div className="text-xs text-muted-foreground">Day Streak</div>
                         </div>
                       </div>
                     </CardContent>

@@ -515,6 +515,10 @@ function MainApp() {
         wins={userWins}
         losses={userLosses}
         onLanguageChange={(lang) => setCurrentLanguage(lang as Language)}
+        winStreak={isAuthenticated ? (languageStats?.winStreak ?? 0) : 0}
+        bestWinStreak={isAuthenticated ? (languageStats?.bestWinStreak ?? 0) : 0}
+        dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
+        bestDailyLoginStreak={0}
       />
       
       <main className="pt-16">
