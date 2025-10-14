@@ -44,6 +44,17 @@ WebSocket is implemented for real-time multiplayer matchmaking with Fluency Scor
   - **Hard**: 5 rounds, 30s per turn, 8 vocab words, bot Elo 1300-1600, bot accuracy 70-80% (subtle mistakes), strict grading standards
 - **Expanded Theme System**: Includes 21 comprehensive themes with difficulty-specific vocabulary and full language support (Chinese, Spanish, Italian). Competitive matches use random topics.
 - **Turn-Based Q&A**: Structured turn-based conversation flow with bot asking first, user answering, user asking, and bot answering, with question deduplication. Question validation ensures questions are answerable and topic-related while being supportive of language learners - rejects off-topic, nonsensical, or unanswerable questions (uses gpt-4o-mini for cost optimization).
+- **Detailed AI Feedback System**: 
+  - **Message-Level Analysis**: OpenAI grading provides per-message feedback including grammar corrections, vocabulary suggestions, strengths, and improvement areas
+  - **Grammar Corrections**: Identifies specific mistakes with original/corrected text pairs and explanations (e.g., "用了 → 用" with explanation "过去时态标记不必要")
+  - **Vocabulary Suggestions**: Recommends better word choices with reasons (e.g., "好 → 精彩" because "more vivid and descriptive")
+  - **Conversation Storage**: Full chat logs stored in `conversation` JSONB field in matches table
+  - **Feedback Storage**: Detailed per-message analysis stored in `detailedFeedback` JSONB field in matches table
+  - **UI Components**: 
+    - MatchDetails component displays full conversation history with expandable inline feedback for each user message
+    - Recent matches are clickable in ProfileStats to view detailed feedback
+    - "AI Review & Analysis" button in MatchResults provides access to detailed feedback
+  - **Cost Optimization**: GPT-4o used for accuracy-critical grading; feedback generated during normal grading process without extra API calls
 - **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and scrollable slide-out navigation.
 - **Loading State Protection**: All action buttons implement loading states with disabled states to prevent duplicate actions (rapid clicking, simultaneous requests).
 - **Fluency Score Calculation Consistency**: Both MatchResults display and handleResultsContinue use identical Fluency Score formula to ensure displayed changes match applied changes. handleForfeit does NOT update Fluency Score directly; all updates happen in handleResultsContinue.
@@ -85,7 +96,7 @@ WebSocket is implemented for real-time multiplayer matchmaking with Fluency Scor
   - `Sessions`: Replit Auth session data
   - `Users`: User profiles with authentication info
   - `UserLanguageStats`: Language-specific stats including Fluency Score, wins/losses, skill progress, and streaks (currentWinStreak, bestWinStreak, currentDailyLoginStreak, bestDailyLoginStreak, lastLoginDate)
-  - `Matches`: Match history with scores, isForfeit flag, and match metadata
+  - `Matches`: Match history with scores, isForfeit flag, match metadata, full conversation (JSONB), and detailed per-message AI feedback (JSONB)
   - `Friends`: Friendship relationships with status (pending/accepted), supporting bidirectional friend connections
   - `PrivateMatchInvites`: Private match invites with unique codes, creator, settings, expiry, and status tracking
 - **drizzle-kit**: For schema migrations.
