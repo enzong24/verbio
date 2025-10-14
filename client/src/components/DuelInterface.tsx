@@ -638,17 +638,17 @@ export default function DuelInterface({
                       {msg.text === "(Skipped)" ? (
                         <span className="italic opacity-60">Skipped question</span>
                       ) : (
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0">
+                        <div className="flex flex-col gap-2">
+                          <div>
                             <TextWithPinyin text={msg.text} language={language} />
                           </div>
                           {shouldShowTranslation && isHovered && translation && (
-                            <div className="flex-shrink-0 pl-3 border-l-2 border-primary/30 text-sm italic opacity-80">
+                            <div className="pt-2 border-t border-primary/20 text-sm italic opacity-80">
                               {translation}
                             </div>
                           )}
                           {shouldShowTranslation && isHovered && !translation && translateMutation.isPending && (
-                            <div className="flex-shrink-0 pl-3 border-l-2 border-primary/30 text-sm italic opacity-60">
+                            <div className="pt-2 border-t border-primary/20 text-sm italic opacity-60">
                               Translating...
                             </div>
                           )}
