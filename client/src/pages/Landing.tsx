@@ -1,6 +1,7 @@
-import { Trophy, Users, Zap } from "lucide-react";
+import { Trophy, Users, Zap, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function Landing() {
   const handleSignIn = () => {
@@ -16,11 +17,32 @@ export default function Landing() {
       {/* Header */}
       <div className="border-b border-border/40 bg-card/30 backdrop-blur-sm">
         <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
-          <div className="flex items-center gap-4">
-            <img src="/favicon.png" alt="Verbio" className="w-12 h-12" />
-            <div>
-              <h2 className="text-2xl font-bold">Verbio</h2>
-              <p className="text-sm text-muted-foreground">Competitive Language Learning</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <img src="/favicon.png" alt="Verbio" className="w-12 h-12" />
+              <div>
+                <h2 className="text-2xl font-bold">Verbio</h2>
+                <p className="text-sm text-muted-foreground">Competitive Language Learning</p>
+              </div>
+            </div>
+            
+            {/* Language Preview */}
+            <div className="flex items-center gap-3">
+              <Globe className="w-4 h-4 text-muted-foreground hidden sm:block" />
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="gap-1.5 font-normal">
+                  <span className="text-base">🇨🇳</span>
+                  <span>Chinese</span>
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 font-normal">
+                  <span className="text-base">🇪🇸</span>
+                  <span>Spanish</span>
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 font-normal">
+                  <span className="text-base">🇮🇹</span>
+                  <span>Italian</span>
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
