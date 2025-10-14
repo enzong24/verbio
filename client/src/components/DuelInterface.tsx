@@ -34,6 +34,7 @@ interface DuelInterfaceProps {
   startsFirst?: boolean;
   matchId?: string;
   playerId?: string;
+  multiplayerWsRef?: React.MutableRefObject<WebSocket | null>;
 }
 
 type TurnPhase = "bot-question" | "user-answer" | "user-question" | "bot-answer";
@@ -56,7 +57,8 @@ export default function DuelInterface({
   onForfeit,
   startsFirst = false,
   matchId,
-  playerId
+  playerId,
+  multiplayerWsRef
 }: DuelInterfaceProps) {
   // Get timer duration based on difficulty
   const getTimerDuration = () => {
@@ -155,24 +157,14 @@ export default function DuelInterface({
     },
   });
 
-  // Setup WebSocket for human vs human matches
+  // Setup WebSocket message handlers for human vs human matches
   useEffect(() => {
-    if (!isBot && matchId && playerId) {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/matchmaking`;
-      const ws = new WebSocket(wsUrl);
+    if (!isBot && matchId && playerId && multiplayerWsRef?.current) {
+      const ws = multiplayerWsRef.current;
+      wsRef.current = ws;
       
-      ws.onopen = () => {
-        console.log('WebSocket connected for multiplayer match');
-        // Register this WebSocket with the server for this match
-        ws.send(JSON.stringify({
-          type: 'register_match_socket',
-          playerId,
-          matchId
-        }));
-      };
-      
-      ws.onmessage = (event) => {
+      // Set up message handlers on the existing WebSocket from App.tsx
+      const messageHandler = (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
           
@@ -204,33 +196,20 @@ export default function DuelInterface({
             handleOpponentForfeit();
           }
           
-          if (data.type === 'opponent_grading_result') {
-            // Received opponent's grading result
-            // Store it to use when displaying results
-            sessionStorage.setItem(`opponent_result_${matchId}`, JSON.stringify(data.gradingResult));
-          }
+          // opponent_grading_result is handled by App.tsx
         } catch (error) {
-          console.error('WebSocket message error:', error);
+          console.error('DuelInterface: WebSocket message error:', error);
         }
       };
       
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-      
-      ws.onclose = () => {
-        console.log('WebSocket closed');
-      };
-      
-      wsRef.current = ws;
+      ws.addEventListener('message', messageHandler);
       
       return () => {
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-          wsRef.current.close();
-        }
+        // Remove our message handler but don't close the WebSocket
+        ws.removeEventListener('message', messageHandler);
       };
     }
-  }, [isBot, matchId, playerId]);
+  }, [isBot, matchId, playerId, multiplayerWsRef?.current]);
 
   // Initialize with bot question only if bot starts first (only for AI opponents)
   useEffect(() => {

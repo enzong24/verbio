@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
@@ -44,6 +44,8 @@ function MainApp() {
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
   const [matchMessages, setMatchMessages] = useState<any[]>([]);
+  const multiplayerWsRef = useRef<WebSocket | null>(null);
+  const [waitingForOpponentResult, setWaitingForOpponentResult] = useState(false);
 
   // Track current language (persisted to localStorage)
   const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
@@ -101,6 +103,92 @@ function MainApp() {
       setIsGuestMode(false);
     }
   }, [isAuthenticated]);
+
+  // Set up WebSocket for multiplayer matches
+  useEffect(() => {
+    if (matchData && !matchData.isBot && matchData.matchId && matchData.playerId) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/matchmaking`;
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('App.tsx: WebSocket connected for multiplayer match');
+        // Register this WebSocket with the server for this match
+        ws.send(JSON.stringify({
+          type: 'register_match_socket',
+          playerId: matchData.playerId,
+          matchId: matchData.matchId
+        }));
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'opponent_grading_result') {
+            console.log('App.tsx: Received opponent grading result', data.gradingResult);
+            // Store it in sessionStorage for retrieval
+            sessionStorage.setItem(`opponent_result_${matchData.matchId}`, JSON.stringify(data.gradingResult));
+            
+            // If we're already waiting for opponent result, update immediately
+            if (waitingForOpponentResult && gradingResult) {
+              setGradingResult(prev => prev ? {
+                ...prev,
+                botGrammar: data.gradingResult.grammar,
+                botFluency: data.gradingResult.fluency,
+                botVocabulary: data.gradingResult.vocabulary,
+                botNaturalness: data.gradingResult.naturalness,
+                botOverall: data.gradingResult.overall,
+              } : prev);
+              setWaitingForOpponentResult(false);
+              
+              // Close the WebSocket
+              if (multiplayerWsRef.current?.readyState === WebSocket.OPEN) {
+                multiplayerWsRef.current.close();
+                multiplayerWsRef.current = null;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('App.tsx: WebSocket message error:', error);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('App.tsx: WebSocket error:', error);
+      };
+      
+      ws.onclose = () => {
+        console.log('App.tsx: WebSocket closed');
+      };
+      
+      multiplayerWsRef.current = ws;
+      
+      return () => {
+        // Don't close the WebSocket here - we need it to stay alive
+        // It will be closed when opponent result is received or timeout occurs
+      };
+    }
+  }, [matchData?.matchId, matchData?.playerId]);
+
+  // Handle timeout for waiting for opponent result
+  useEffect(() => {
+    if (waitingForOpponentResult) {
+      const timeout = setTimeout(() => {
+        console.log('App.tsx: Timeout waiting for opponent result');
+        setWaitingForOpponentResult(false);
+        // Close WebSocket on timeout
+        if (multiplayerWsRef.current?.readyState === WebSocket.OPEN) {
+          multiplayerWsRef.current.close();
+          multiplayerWsRef.current = null;
+        }
+      }, 30000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [waitingForOpponentResult]);
 
   if (isLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
@@ -256,13 +344,20 @@ function MainApp() {
           
           // Clean up
           sessionStorage.removeItem(`opponent_result_${matchData.matchId}`);
+          
+          // Close the WebSocket now that we have the opponent result
+          if (multiplayerWsRef.current?.readyState === WebSocket.OPEN) {
+            multiplayerWsRef.current.close();
+            multiplayerWsRef.current = null;
+          }
         } catch (error) {
           console.error('Failed to parse opponent result:', error);
           result.botElo = matchData.opponentElo;
         }
       } else {
-        // Opponent result not yet received, set botElo for Elo calculation
+        // Opponent result not yet received, wait for it
         result.botElo = matchData.opponentElo;
+        setWaitingForOpponentResult(true);
       }
     }
     
@@ -450,6 +545,7 @@ function MainApp() {
             startsFirst={matchData.startsFirst}
             matchId={matchData.matchId}
             playerId={matchData.playerId}
+            multiplayerWsRef={multiplayerWsRef}
           />
         )}
         
