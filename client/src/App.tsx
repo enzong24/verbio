@@ -528,6 +528,9 @@ function MainApp() {
                 overall: gradingResult.overall,
               },
               isForfeit: isForfeit,
+              conversation: matchMessages || [], // Full chat log
+              detailedFeedback: gradingResult.messageAnalysis || [], // Detailed AI feedback with corrections
+              topic: matchData.topic || null, // Match topic
             });
             // Invalidate match history and skill progress queries
             queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
