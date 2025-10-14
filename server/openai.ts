@@ -163,6 +163,12 @@ export async function generateBotQuestion(
   };
 
   const difficultyInstructions: Record<string, string> = {
+    Beginner: `You are a TRUE BEGINNER learner (${targetAccuracy}% proficiency). Make 3-4 MAJOR mistakes:
+- Use VERY basic vocabulary (like "hello", "I", "you", "good") with many errors
+- Mix in English words when you don't know the target language word
+- Make SEVERE grammar mistakes - wrong word order, missing words, incorrect everything
+- Use single words or 2-3 word fragments instead of full sentences
+- Make it sound like someone in their first week of learning`,
     Easy: `You are a BEGINNER learner (${targetAccuracy}% proficiency). Make 2-3 noticeable mistakes that beginners make:
 - Use extremely simple vocabulary but make basic grammar errors
 - Include hesitations or awkward phrasing
@@ -260,6 +266,12 @@ export async function generateBotAnswer(
   };
 
   const difficultyInstructions: Record<string, string> = {
+    Beginner: `You are a TRUE BEGINNER learner (${targetAccuracy}% proficiency). Make 3-4 MAJOR mistakes:
+- Use VERY basic vocabulary (like "hello", "I", "you", "good") with many errors
+- Mix in English words when you don't know the target language word
+- Make SEVERE grammar mistakes - wrong word order, missing words, incorrect everything
+- Keep answers VERY short - just 1-3 words or tiny fragments
+- Make it sound like someone in their first week of learning`,
     Easy: `You are a BEGINNER learner (${targetAccuracy}% proficiency). Make 2-3 noticeable mistakes that beginners make:
 - Use extremely simple vocabulary but make basic grammar errors
 - Include awkward phrasing or unnatural expressions
