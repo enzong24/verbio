@@ -140,7 +140,7 @@ export default function Leaderboard({
                       entry.rank === 3 ? 'text-amber-600' :
                       ''
                     }`}>{entry.elo}</div>
-                    <div className="text-xs text-muted-foreground">Elo Rating</div>
+                    <div className="text-xs text-muted-foreground">Fluency Score</div>
                   </div>
                 </div>
               ))}

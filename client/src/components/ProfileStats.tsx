@@ -59,7 +59,7 @@ export default function ProfileStats({
               <CardTitle className="text-2xl" data-testid="text-username">{username}</CardTitle>
               <div className="flex items-center gap-3 mt-1">
                 <Badge variant="outline" className="font-mono font-semibold text-base">
-                  {elo} Elo
+                  {elo} Fluency
                 </Badge>
                 <Badge variant="secondary" className="gap-1">
                   <TrendingUp className="w-3 h-3" />

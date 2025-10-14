@@ -518,7 +518,7 @@ export default function DuelInterface({
             {!isPracticeMode && (
               <Card className="mt-3 border-primary/30 bg-primary/5 hidden md:block">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Your Elo</CardTitle>
+                  <CardTitle className="text-sm">Fluency Score</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold font-mono text-primary">{userElo}</div>

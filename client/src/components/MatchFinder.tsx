@@ -160,7 +160,7 @@ export default function MatchFinder({
                     <Trophy className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Your Elo</p>
+                    <p className="text-sm text-muted-foreground">Fluency Score</p>
                     <p className="text-3xl font-bold font-mono text-primary" data-testid="text-user-elo">{userElo}</p>
                   </div>
                 </div>
@@ -186,7 +186,7 @@ export default function MatchFinder({
                   <h3 className="font-semibold">Quick Tips</h3>
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Practice mode doesn't affect Elo</li>
+                  <li>• Practice mode doesn't affect Fluency Score</li>
                   <li>• Use vocabulary hints freely - no penalties!</li>
                   <li>• Avoid skipping questions (-20 pts each)</li>
                 </ul>
@@ -222,7 +222,7 @@ export default function MatchFinder({
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">Competitive Match</h3>
                   <p className="text-sm text-muted-foreground">
-                    Random topics • Elo changes apply
+                    Random topics • Fluency Score changes apply
                     {!isConnected && <span className="text-destructive ml-2">(Connecting...)</span>}
                   </p>
                 </div>
@@ -252,7 +252,7 @@ export default function MatchFinder({
               <CardContent className="p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">Practice Mode</h3>
-                  <p className="text-sm text-muted-foreground">Choose your topic • No Elo changes</p>
+                  <p className="text-sm text-muted-foreground">Choose your topic • No Fluency Score changes</p>
                 </div>
                 <div className="flex items-center gap-3 mb-4">
                   <BookOpen className="w-5 h-5 text-muted-foreground" />

@@ -67,7 +67,7 @@ export default function MatchResults({
               {isWinner ? "Victory!" : "Good Effort!"}
             </CardTitle>
             {eloChange === 0 ? (
-              <p className="text-muted-foreground">Practice Mode - No Elo Change</p>
+              <p className="text-muted-foreground">Practice Mode - No Fluency Score Change</p>
             ) : (
               <div className="flex items-center justify-center gap-2 text-2xl font-mono font-bold">
                 {actualEloChange > 0 ? (
@@ -82,7 +82,7 @@ export default function MatchResults({
                   </>
                 )}
                 <span className="text-muted-foreground mx-2">→</span>
-                <span data-testid="text-new-elo">{newElo + actualEloChange} Elo</span>
+                <span data-testid="text-new-elo">{newElo + actualEloChange} Fluency</span>
               </div>
             )}
           </CardHeader>
