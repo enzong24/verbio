@@ -335,7 +335,7 @@ export default function DuelInterface({
                 {isBot && <Badge className="text-xs flex-shrink-0 bg-accent/20 text-accent border-accent/30">Bot</Badge>}
               </div>
               {!isPracticeMode && (
-                <div className="text-xs text-muted-foreground font-mono">{opponentElo} Elo</div>
+                <div className="text-xs text-muted-foreground font-mono">{opponentElo} Fluency</div>
               )}
             </div>
           </div>

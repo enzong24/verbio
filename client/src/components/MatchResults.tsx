@@ -122,7 +122,7 @@ export default function MatchResults({
                       </Badge>
                       {gradingResult.botElo && (
                         <Badge variant="secondary" className="font-mono">
-                          {gradingResult.botElo} Elo
+                          {gradingResult.botElo} Fluency
                         </Badge>
                       )}
                     </div>
