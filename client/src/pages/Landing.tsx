@@ -18,7 +18,12 @@ export default function Landing() {
         <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <img src="/favicon.png" alt="Verbio" className="w-12 h-12" />
+              <img 
+                src="/favicon.png" 
+                alt="Verbio" 
+                className="w-12 h-12 rounded-md" 
+                style={{ imageRendering: 'auto' }}
+              />
               <div>
                 <h2 className="text-2xl font-bold">Verbio</h2>
                 <p className="text-sm text-muted-foreground">Competitive Language Learning</p>
