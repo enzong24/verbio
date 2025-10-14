@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Check, X, Users, Inbox, Swords, Copy } from "lucide-react";
+import { UserPlus, Check, X, Users, Inbox, Swords, Circle } from "lucide-react";
 import type { Friend, User } from "@shared/schema";
+import { formatDistanceToNow } from "date-fns";
 
 interface FriendWithUser extends Friend {
   friendUser: User;
@@ -25,9 +26,7 @@ interface FriendRequest extends Friend {
 
 export default function Friends() {
   const [friendUsername, setFriendUsername] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
-  const [joinCode, setJoinCode] = useState("");
-  const [createdInvite, setCreatedInvite] = useState<string | null>(null);
+  const [selectedFriendForInvite, setSelectedFriendForInvite] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Fetch friends list
@@ -134,9 +133,9 @@ export default function Friends() {
     sendRequestMutation.mutate(friendUsername);
   };
 
-  // Create private match invite mutation
+  // Create private match invite mutation for a specific friend
   const createInviteMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (friendId: string) => {
       return await apiRequest("POST", "/api/private-match/create", {
         language: "Chinese",
         difficulty: "Medium",
@@ -144,65 +143,36 @@ export default function Friends() {
       });
     },
     onSuccess: (data: any) => {
-      setCreatedInvite(data.inviteCode);
       toast({
-        title: "Invite created!",
-        description: `Share code: ${data.inviteCode}`,
+        title: "Challenge sent!",
+        description: `Private match invite created. Share code ${data.inviteCode} with your friend.`,
       });
+      setSelectedFriendForInvite(null);
     },
     onError: () => {
       toast({
-        title: "Failed to create invite",
+        title: "Failed to create challenge",
         variant: "destructive",
       });
+      setSelectedFriendForInvite(null);
     },
   });
 
-  // Join private match mutation
-  const joinMatchMutation = useMutation({
-    mutationFn: async (code: string) => {
-      return await apiRequest("POST", "/api/private-match/join", {
-        inviteCode: code,
-      });
-    },
-    onSuccess: (data: any) => {
-      toast({
-        title: "Joined match!",
-        description: "Private match functionality will connect you with your friend.",
-      });
-      setJoinCode("");
-      // TODO: Navigate to DuelInterface with matchData
-      // For now, just show success message
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Failed to join match",
-        description: error.message || "Could not join private match",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const copyInviteCode = () => {
-    if (createdInvite) {
-      navigator.clipboard.writeText(createdInvite);
-      toast({
-        title: "Copied!",
-        description: "Invite code copied to clipboard",
-      });
-    }
+  const handleChallengeFriend = (friendId: string) => {
+    setSelectedFriendForInvite(friendId);
+    createInviteMutation.mutate(friendId);
   };
 
-  const handleJoinMatch = () => {
-    if (!joinCode.trim()) {
-      toast({
-        title: "Code required",
-        description: "Please enter an invite code",
-        variant: "destructive",
-      });
-      return;
-    }
-    joinMatchMutation.mutate(joinCode);
+  const isOnline = (user: User) => {
+    if (!user.lastSeenAt) return false;
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    return new Date(user.lastSeenAt) > fiveMinutesAgo && user.isOnline === 1;
+  };
+
+  const getLastSeenText = (user: User) => {
+    if (isOnline(user)) return "Online";
+    if (!user.lastSeenAt) return "Never";
+    return `Last seen ${formatDistanceToNow(new Date(user.lastSeenAt), { addSuffix: true })}`;
   };
 
   return (
@@ -236,69 +206,6 @@ export default function Friends() {
             >
               {sendRequestMutation.isPending ? "Sending..." : "Send Request"}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Private Match Section */}
-      <Card className="mb-6 border-card-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Swords className="w-5 h-5" />
-            Private Match
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-3">
-              Create a private match invite and share the code with a friend
-            </p>
-            <Button
-              onClick={() => createInviteMutation.mutate()}
-              disabled={createInviteMutation.isPending}
-              data-testid="button-create-invite"
-            >
-              {createInviteMutation.isPending ? "Creating..." : "Create Invite Code"}
-            </Button>
-            {createdInvite && (
-              <div className="mt-3 p-3 rounded-md bg-muted flex items-center justify-between">
-                <div>
-                  <div className="text-sm text-muted-foreground">Invite Code:</div>
-                  <div className="font-mono font-bold text-lg" data-testid="text-invite-code">
-                    {createdInvite}
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={copyInviteCode}
-                  data-testid="button-copy-invite"
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-          <div className="pt-4 border-t border-card-border">
-            <p className="text-sm text-muted-foreground mb-3">
-              Enter a friend's invite code to join their match
-            </p>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Enter invite code"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                onKeyDown={(e) => e.key === "Enter" && handleJoinMatch()}
-                data-testid="input-join-code"
-              />
-              <Button
-                onClick={handleJoinMatch}
-                disabled={joinMatchMutation.isPending}
-                data-testid="button-join-match"
-              >
-                {joinMatchMutation.isPending ? "Joining..." : "Join Match"}
-              </Button>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -383,40 +290,77 @@ export default function Friends() {
 
           {!friendsLoading && friends.length > 0 && (
             <div className="grid gap-4 md:grid-cols-2">
-              {friends.map((friend) => (
-                <div
-                  key={friend.id}
-                  className="flex items-center justify-between p-4 rounded-md border border-card-border hover-elevate"
-                  data-testid={`friend-card-${friend.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                        {(friend.friendUser.firstName || friend.friendUser.email || "?")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">
-                        {friend.friendUser.firstName || friend.friendUser.email}
+              {friends.map((friend) => {
+                const online = isOnline(friend.friendUser);
+                return (
+                  <div
+                    key={friend.id}
+                    className="flex items-start justify-between p-4 rounded-md border border-card-border hover-elevate cursor-pointer transition-all"
+                    data-testid={`friend-card-${friend.id}`}
+                  >
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="relative">
+                        <Avatar>
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                            {(friend.friendUser.firstName || friend.friendUser.email || "?")
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <Circle 
+                          className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 ${
+                            online ? "fill-success text-success" : "fill-muted-foreground/40 text-muted-foreground/40"
+                          }`}
+                        />
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {friend.friendUser.email}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium flex items-center gap-2">
+                          {friend.friendUser.firstName || friend.friendUser.email}
+                          {online && (
+                            <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                              Online
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground truncate">
+                          {friend.friendUser.email}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {getLastSeenText(friend.friendUser)}
+                        </div>
+                        {friend.friendStats && (
+                          <div className="text-xs text-muted-foreground mt-2 flex gap-3">
+                            <span>Fluency Score: <span className="font-mono font-semibold text-foreground">{friend.friendStats.elo}</span></span>
+                            <span className="text-success">{friend.friendStats.wins}W</span>
+                            <span className="text-destructive">{friend.friendStats.losses}L</span>
+                          </div>
+                        )}
                       </div>
                     </div>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => handleChallengeFriend(friend.friendUser.id)}
+                        disabled={createInviteMutation.isPending && selectedFriendForInvite === friend.friendUser.id}
+                        data-testid={`button-challenge-${friend.id}`}
+                      >
+                        <Swords className="w-4 h-4 mr-1" />
+                        Challenge
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => removeMutation.mutate(friend.id)}
+                        disabled={removeMutation.isPending}
+                        data-testid={`button-remove-${friend.id}`}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => removeMutation.mutate(friend.id)}
-                    disabled={removeMutation.isPending}
-                    data-testid={`button-remove-${friend.id}`}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
