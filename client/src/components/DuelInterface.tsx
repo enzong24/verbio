@@ -161,7 +161,6 @@ export default function DuelInterface({
   useEffect(() => {
     if (!isBot && matchId && playerId && multiplayerWsRef?.current) {
       const ws = multiplayerWsRef.current;
-      wsRef.current = ws;
       
       // Set up message handlers on the existing WebSocket from App.tsx
       const messageHandler = (event: MessageEvent) => {
@@ -346,8 +345,8 @@ export default function DuelInterface({
       setInput("");
       
       // Send message to opponent if multiplayer
-      if (!isBot && wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
+      if (!isBot && multiplayerWsRef?.current?.readyState === WebSocket.OPEN) {
+        multiplayerWsRef.current.send(JSON.stringify({
           type: 'player_message',
           playerId,
           text: messageToSend,
@@ -374,8 +373,8 @@ export default function DuelInterface({
       setInput("");
       
       // For multiplayer: send message and wait for opponent's answer
-      if (!isBot && wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
+      if (!isBot && multiplayerWsRef?.current?.readyState === WebSocket.OPEN) {
+        multiplayerWsRef.current.send(JSON.stringify({
           type: 'player_message',
           playerId,
           text: messageToSend,
@@ -384,7 +383,7 @@ export default function DuelInterface({
         }));
         
         // Notify opponent that it's their turn to answer
-        wsRef.current.send(JSON.stringify({
+        multiplayerWsRef.current.send(JSON.stringify({
           type: 'player_turn_complete',
           playerId,
           turnPhase: "user-answer"
@@ -432,8 +431,8 @@ export default function DuelInterface({
     inactivityCountRef.current = false;
     
     // Notify opponent if multiplayer
-    if (!isBot && wsRef.current?.readyState === WebSocket.OPEN && matchId && playerId) {
-      wsRef.current.send(JSON.stringify({
+    if (!isBot && multiplayerWsRef?.current?.readyState === WebSocket.OPEN && matchId && playerId) {
+      multiplayerWsRef.current.send(JSON.stringify({
         type: 'player_forfeit',
         playerId,
         matchId
