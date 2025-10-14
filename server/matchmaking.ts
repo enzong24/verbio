@@ -23,6 +23,8 @@ class MatchmakingQueue {
   private queue: Player[] = [];
   private matches: Map<string, Match> = new Map();
   private playerSockets: Map<WebSocket, Player> = new Map();
+  private activeMatches: Map<string, Match> = new Map();
+  private playerToMatch: Map<string, string> = new Map();
   
   addToQueue(player: Player) {
     this.queue.push(player);
@@ -31,6 +33,10 @@ class MatchmakingQueue {
     
     // Try to find a match immediately
     this.tryMatch(player);
+  }
+
+  getPlayerBySocket(ws: WebSocket): Player | undefined {
+    return this.playerSockets.get(ws);
   }
 
   removeFromQueue(ws: WebSocket) {
@@ -92,6 +98,9 @@ class MatchmakingQueue {
     };
 
     this.matches.set(matchId, match);
+    this.activeMatches.set(matchId, match);
+    this.playerToMatch.set(player1.id, matchId);
+    this.playerToMatch.set(player2.id, matchId);
 
     // Notify both players
     player1.ws.send(JSON.stringify({
@@ -123,6 +132,67 @@ class MatchmakingQueue {
     }));
 
     console.log(`Match created: ${player1.username} (${player1.elo}) vs ${player2.username} (${player2.elo}) - ${player1StartsFirst ? player1.username : player2.username} starts first`);
+  }
+
+  relayMessage(playerId: string, message: any) {
+    const matchId = this.playerToMatch.get(playerId);
+    if (!matchId) {
+      console.error(`No active match found for player ${playerId}`);
+      return;
+    }
+
+    const match = this.activeMatches.get(matchId);
+    if (!match) {
+      console.error(`Match ${matchId} not found in active matches`);
+      return;
+    }
+
+    // Determine opponent
+    const isPlayer1 = match.player1.id === playerId;
+    const opponent = isPlayer1 ? match.player2 : match.player1;
+
+    // Relay message to opponent
+    if (opponent.ws.readyState === WebSocket.OPEN) {
+      opponent.ws.send(JSON.stringify(message));
+    }
+  }
+
+  handlePlayerDisconnect(playerId: string) {
+    const matchId = this.playerToMatch.get(playerId);
+    if (!matchId) return;
+
+    const match = this.activeMatches.get(matchId);
+    if (!match) return;
+
+    // Notify opponent of disconnection
+    const isPlayer1 = match.player1.id === playerId;
+    const opponent = isPlayer1 ? match.player2 : match.player1;
+
+    if (opponent.ws.readyState === WebSocket.OPEN) {
+      opponent.ws.send(JSON.stringify({
+        type: 'opponent_disconnected',
+        reason: 'Player disconnected'
+      }));
+    }
+
+    // Clean up match
+    this.activeMatches.delete(matchId);
+    this.playerToMatch.delete(match.player1.id);
+    this.playerToMatch.delete(match.player2.id);
+
+    console.log(`Player ${playerId} disconnected from match ${matchId}`);
+  }
+
+  endMatch(matchId: string) {
+    const match = this.activeMatches.get(matchId);
+    if (!match) return;
+
+    // Clean up
+    this.activeMatches.delete(matchId);
+    this.playerToMatch.delete(match.player1.id);
+    this.playerToMatch.delete(match.player2.id);
+
+    console.log(`Match ${matchId} ended`);
   }
 
   private assignAIBot(player: Player) {
@@ -209,21 +279,70 @@ export function setupMatchmaking(httpServer: Server) {
         if (message.type === 'leave_queue') {
           queue.removeFromQueue(ws);
         }
+
+        if (message.type === 'player_message') {
+          // Relay message to opponent
+          queue.relayMessage(message.playerId, {
+            type: 'opponent_message',
+            text: message.text,
+            sender: message.sender,
+            timestamp: message.timestamp
+          });
+        }
+
+        if (message.type === 'player_turn_complete') {
+          // Relay turn completion to opponent
+          queue.relayMessage(message.playerId, {
+            type: 'opponent_turn_complete',
+            turnPhase: message.turnPhase
+          });
+        }
+
+        if (message.type === 'match_end') {
+          // End the match
+          queue.endMatch(message.matchId);
+        }
+
+        if (message.type === 'player_forfeit') {
+          // Notify opponent of forfeit
+          queue.relayMessage(message.playerId, {
+            type: 'opponent_forfeit'
+          });
+          queue.endMatch(message.matchId);
+        }
       } catch (error) {
         console.error('WebSocket message error:', error);
       }
     });
 
     ws.on('close', () => {
+      // Get player info before cleanup
+      const player = queue.getPlayerBySocket(ws);
+      
       // Clean up player from queue when connection closes
       queue.removeFromQueue(ws);
+      
+      // Handle active match disconnection
+      if (player) {
+        queue.handlePlayerDisconnect(player.id);
+      }
+      
       console.log('WebSocket connection closed - player removed from queue');
     });
 
     ws.on('error', (error) => {
       console.error('WebSocket error:', error);
+      
+      // Get player info before cleanup
+      const player = queue.getPlayerBySocket(ws);
+      
       // Also remove from queue on error
       queue.removeFromQueue(ws);
+      
+      // Handle active match disconnection
+      if (player) {
+        queue.handlePlayerDisconnect(player.id);
+      }
     });
   });
 
