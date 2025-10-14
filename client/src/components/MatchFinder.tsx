@@ -147,6 +147,27 @@ export default function MatchFinder({
 
   return (
     <div className="min-h-[calc(100vh-4rem)] w-full">
+      {/* Header */}
+      <div className="border-b border-border/40 bg-card/30 backdrop-blur-sm sticky top-16 z-10">
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img src="/favicon.png" alt="Verbio" className="w-10 h-10" />
+              <div>
+                <h1 className="text-2xl font-bold">Verbio</h1>
+                <p className="text-sm text-muted-foreground">Competitive Language Learning</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Welcome,</span>
+                <span className="font-semibold">{username || 'Guest'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-6 md:px-8 lg:px-12 py-12 lg:py-16">
         {/* Guest Rate Limit Alerts */}
         {isGuest && !canPlay && (
