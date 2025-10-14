@@ -23,6 +23,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
+  updateUserActivity(userId: string): Promise<void>;
   
   // Language-specific stats
   getUserLanguageStats(userId: string, language: string): Promise<UserLanguageStats | undefined>;
@@ -85,6 +86,8 @@ export class MemStorage implements IStorage {
       firstName: userData.firstName || null,
       lastName: userData.lastName || null,
       profileImageUrl: userData.profileImageUrl || null,
+      isOnline: existingUser?.isOnline ?? 0,
+      lastSeenAt: existingUser?.lastSeenAt || new Date(),
       createdAt: existingUser?.createdAt || new Date(),
       updatedAt: new Date(),
     };
@@ -94,6 +97,15 @@ export class MemStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return Array.from(this.users.values());
+  }
+
+  async updateUserActivity(userId: string): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.isOnline = 1;
+      user.lastSeenAt = new Date();
+      this.users.set(userId, user);
+    }
   }
 
   async getUserLanguageStats(userId: string, language: string): Promise<UserLanguageStats | undefined> {
@@ -377,6 +389,16 @@ export class DbStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+
+  async updateUserActivity(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        isOnline: 1,
+        lastSeenAt: new Date(),
+      })
+      .where(eq(users.id, userId));
   }
 
   async getUserLanguageStats(userId: string, language: string): Promise<UserLanguageStats | undefined> {

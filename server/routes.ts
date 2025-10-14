@@ -19,10 +19,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
+      
+      // Update user's online status and last seen
+      await storage.updateUserActivity(userId);
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Heartbeat endpoint to keep user marked as online
+  app.post('/api/user/heartbeat', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = req.user.claims.sub;
+      await storage.updateUserActivity(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating user activity:", error);
+      res.status(500).json({ message: "Failed to update activity" });
     }
   });
 
