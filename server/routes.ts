@@ -464,6 +464,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Join private match by invite code
+  app.post("/api/private-match/join", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const { inviteCode } = req.body;
+      
+      if (!inviteCode) {
+        return res.status(400).json({ message: "Invite code is required" });
+      }
+      
+      const invite = await storage.getPrivateMatchInvite(inviteCode);
+      
+      if (!invite) {
+        return res.status(404).json({ message: "Invite not found" });
+      }
+      
+      // Check if user is trying to join their own invite
+      if (invite.creatorId === userId) {
+        return res.status(400).json({ message: "Cannot join your own invite" });
+      }
+      
+      // Verify that joiner is friends with creator
+      const friends = await storage.getFriends(userId);
+      const isFriend = friends.some(f => 
+        (f.userId === invite.creatorId || f.friendId === invite.creatorId) && 
+        f.status === "accepted"
+      );
+      
+      if (!isFriend) {
+        return res.status(403).json({ message: "You must be friends with the creator to join this match" });
+      }
+      
+      // Check if expired
+      if (new Date() > new Date(invite.expiresAt)) {
+        return res.status(410).json({ message: "Invite expired" });
+      }
+      
+      if (invite.status !== "pending") {
+        return res.status(400).json({ message: "Invite already used" });
+      }
+      
+      // Mark invite as used
+      await storage.updatePrivateMatchInviteStatus(inviteCode, "used");
+      
+      // Return match setup data
+      res.json({
+        success: true,
+        matchData: {
+          opponentId: invite.creatorId,
+          language: invite.language,
+          difficulty: invite.difficulty,
+          topic: invite.topic,
+          isPracticeMode: false, // Private matches are always competitive
+        }
+      });
+    } catch (error) {
+      console.error("Error joining private match:", error);
+      res.status(500).json({ message: "Failed to join private match" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Setup WebSocket matchmaking

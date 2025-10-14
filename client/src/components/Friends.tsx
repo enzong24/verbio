@@ -158,6 +158,31 @@ export default function Friends() {
     },
   });
 
+  // Join private match mutation
+  const joinMatchMutation = useMutation({
+    mutationFn: async (code: string) => {
+      return await apiRequest("POST", "/api/private-match/join", {
+        inviteCode: code,
+      });
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Joined match!",
+        description: "Private match functionality will connect you with your friend.",
+      });
+      setJoinCode("");
+      // TODO: Navigate to DuelInterface with matchData
+      // For now, just show success message
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to join match",
+        description: error.message || "Could not join private match",
+        variant: "destructive",
+      });
+    },
+  });
+
   const copyInviteCode = () => {
     if (createdInvite) {
       navigator.clipboard.writeText(createdInvite);
@@ -166,6 +191,18 @@ export default function Friends() {
         description: "Invite code copied to clipboard",
       });
     }
+  };
+
+  const handleJoinMatch = () => {
+    if (!joinCode.trim()) {
+      toast({
+        title: "Code required",
+        description: "Please enter an invite code",
+        variant: "destructive",
+      });
+      return;
+    }
+    joinMatchMutation.mutate(joinCode);
   };
 
   return (
@@ -251,20 +288,15 @@ export default function Friends() {
                 placeholder="Enter invite code"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === "Enter" && handleJoinMatch()}
                 data-testid="input-join-code"
               />
               <Button
-                onClick={() => {
-                  if (joinCode.trim()) {
-                    toast({
-                      title: "Join functionality",
-                      description: "Private match joining will be integrated with matchmaking system",
-                    });
-                  }
-                }}
+                onClick={handleJoinMatch}
+                disabled={joinMatchMutation.isPending}
                 data-testid="button-join-match"
               >
-                Join Match
+                {joinMatchMutation.isPending ? "Joining..." : "Join Match"}
               </Button>
             </div>
           </div>
