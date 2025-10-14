@@ -169,7 +169,8 @@ class MatchmakingQueue {
     this.playerToMatch.set(player1.id, matchId);
     this.playerToMatch.set(player2.id, matchId);
 
-    // Notify both players with the SAME vocabulary
+    // Notify both players with the SAME vocabulary, language, and difficulty
+    // Both players get player1's language/difficulty since that's what the vocabulary was generated for
     player1.ws.send(JSON.stringify({
       type: 'match_found',
       matchId,
@@ -194,8 +195,8 @@ class MatchmakingQueue {
       },
       topic,
       vocabulary,
-      language: player2.language,
-      difficulty: player2.difficulty,
+      language: player1.language,  // Use player1's language (matches vocabulary)
+      difficulty: player1.difficulty,  // Use player1's difficulty (matches vocabulary)
       isAI: false,
       startsFirst: !player1StartsFirst,
     }));
