@@ -27,10 +27,11 @@ export default function MatchResults({
   const userScore = gradingResult.overall;
   const botScore = gradingResult.botOverall || 0;
   const botElo = gradingResult.botElo || 1000;
-  const hasOpponentScores = botScore > 0;
+  // Check if opponent scores exist (not just if > 0, since 0 is a valid score)
+  const hasOpponentScores = gradingResult.botGrammar !== undefined && gradingResult.botGrammar !== null;
   const isForfeit = gradingResult.isForfeit || false;
   
-  // Determine win/loss by comparing scores
+  // Determine win/loss by comparing scores (whoever has higher score wins)
   const isWinner = userScore > botScore;
   const isDraw = userScore === botScore;
   
