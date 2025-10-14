@@ -31,7 +31,16 @@ WebSocket is implemented for real-time multiplayer matchmaking with Fluency Scor
   - **Vocabulary Sharing in Multiplayer**: Server generates vocabulary once in matchmaking.ts and sends it in the WebSocket match_found message. Frontend receives vocabulary from useMatchmaking.ts, which is passed through MatchFinder to App.handleMatchFound. When vocabularyFromServer is provided, the frontend skips the /api/generate-vocabulary API call entirely, eliminating duplicate generation for human vs human matches.
 - **AI-Generated Vocabulary**: OpenAI GPT-4o-mini dynamically generates vocabulary based on topic and difficulty, with results cached for 24 hours to reduce costs and improve performance.
 - **Fluency Score Ranking System**: Implements a standard Elo calculation (K-factor=32) with proper expected score formula: `1 / (1 + 10^((opponentElo - userElo)/400))`. Fluency Score changes are calculated once in `handleResultsContinue` to prevent double updates.
-- **Competitive Bot Matches**: Bot opponents from "Find Match" are treated as competitive with full Fluency Score changes, human-like names (Emma Chen, Lucas Rodriguez), and varied stats (70-95% per category).
+- **Competitive Bot Matches**: Bot opponents from "Find Match" are treated as competitive with full Fluency Score changes, human-like names (Emma Chen, Lucas Rodriguez), and varied stats (70-95% per category). Bot Fluency Scores reflect difficulty level:
+  - Beginner bots: 600-800 Elo
+  - Easy bots: 800-1000 Elo
+  - Medium bots: 1100-1300 Elo
+  - Hard bots: 1300-1600 Elo
+- **Difficulty & Penalty System**: Features Beginner, Easy, Medium, and Hard difficulties with varying timers, round counts, vocabulary words. A 20-point penalty for skipping questions is applied; viewing vocabulary definitions incurs no penalty.
+  - **Beginner**: 2 rounds, 120s per turn, 2 vocab words, bot Elo 600-800, bot accuracy 40-55% (many mistakes, English mixing), extremely lenient grading (80-95+ for any attempt)
+  - **Easy**: 3 rounds, 90s per turn, 3 vocab words, bot Elo 800-1000, bot accuracy 60-70% (basic mistakes), very forgiving grading (70-90+ for genuine attempts)
+  - **Medium**: 4 rounds, 60s per turn, 5 vocab words, bot Elo 1100-1300, bot accuracy 65-75% (moderate mistakes), balanced grading
+  - **Hard**: 5 rounds, 30s per turn, 8 vocab words, bot Elo 1300-1600, bot accuracy 70-80% (subtle mistakes), strict grading standards
 - **Expanded Theme System**: Includes 21 comprehensive themes with difficulty-specific vocabulary and full language support (Chinese, Spanish, Italian). Competitive matches use random topics.
 - **Turn-Based Q&A**: Structured turn-based conversation flow with bot asking first, user answering, user asking, and bot answering, with question deduplication. Question validation ensures questions are answerable and topic-related while being supportive of language learners - rejects off-topic, nonsensical, or unanswerable questions (uses gpt-4o-mini for cost optimization).
 - **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and scrollable slide-out navigation.

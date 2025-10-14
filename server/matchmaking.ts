@@ -310,7 +310,7 @@ class MatchmakingQueue {
     console.log(`Match ${matchId} ended`);
   }
 
-  private assignAIBot(player: Player) {
+  private async assignAIBot(player: Player) {
     // Remove from queue
     this.queue = this.queue.filter(p => p.id !== player.id);
 
@@ -320,13 +320,17 @@ class MatchmakingQueue {
     // Generate random bot name
     const botName = this.getRandomBotName();
 
+    // Get difficulty-appropriate bot Elo
+    const { getBotElo } = await import('./botConfig.js');
+    const botElo = getBotElo(player.difficulty);
+
     // Notify player - they'll play against AI
     player.ws.send(JSON.stringify({
       type: 'match_found',
       matchId: `ai-${player.id}-${Date.now()}`,
       opponent: {
         username: botName,
-        elo: player.elo, // AI bot matches player's Elo for balanced difficulty
+        elo: botElo, // Bot Elo reflects difficulty level
       },
       topic,
       language: player.language,
@@ -334,7 +338,7 @@ class MatchmakingQueue {
       isAI: true,
     }));
 
-    console.log(`AI bot (${botName}) assigned to ${player.username} (${player.elo})`);
+    console.log(`AI bot (${botName}, ${botElo} Elo) assigned to ${player.username} for ${player.difficulty} difficulty`);
   }
 
   private getRandomTopic(): string {

@@ -609,11 +609,13 @@ export const THEMES: Theme[] = [
   },
 ];
 
-export function getThemeVocabulary(themeId: string, difficulty: "Easy" | "Medium" | "Hard", language: "Chinese" | "Spanish" | "Italian"): string[] {
+export function getThemeVocabulary(themeId: string, difficulty: "Beginner" | "Easy" | "Medium" | "Hard", language: "Chinese" | "Spanish" | "Italian"): string[] {
   const theme = THEMES.find(t => t.id === themeId);
   if (!theme) return [];
 
-  const vocabWords = theme.vocabulary[difficulty];
+  // For Beginner mode, use Easy vocabulary (simplest available)
+  const effectiveDifficulty = difficulty === "Beginner" ? "Easy" : difficulty;
+  const vocabWords = theme.vocabulary[effectiveDifficulty];
   
   if (language === "Chinese") {
     return vocabWords.map(w => w.chinese || "").filter(Boolean);
