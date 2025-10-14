@@ -63,9 +63,10 @@ export default function DuelInterface({
   // Get timer duration based on difficulty
   const getTimerDuration = () => {
     switch (difficulty) {
-      case "Easy": return 90;    // 1.5 minutes
-      case "Medium": return 60;  // 1 minute
-      case "Hard": return 30;    // 30 seconds
+      case "Beginner": return 120; // 2 minutes (very generous)
+      case "Easy": return 90;      // 1.5 minutes
+      case "Medium": return 60;    // 1 minute
+      case "Hard": return 30;      // 30 seconds
       default: return 60;
     }
   };
@@ -73,6 +74,7 @@ export default function DuelInterface({
   // Get max rounds based on difficulty
   const getMaxRounds = () => {
     switch (difficulty) {
+      case "Beginner": return 2;   // Only 2 rounds for beginners
       case "Easy": return 3;
       case "Medium": return 4;
       case "Hard": return 5;
