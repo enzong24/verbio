@@ -11,6 +11,7 @@ interface MatchFoundData {
   difficulty: string;
   isAI: boolean;
   startsFirst?: boolean;
+  vocabulary?: any[];
 }
 
 interface UseMatchmakingOptions {
@@ -58,6 +59,7 @@ export function useMatchmaking({ playerId, username, elo, onMatchFound }: UseMat
             difficulty: data.difficulty,
             isAI: data.isAI,
             startsFirst: data.startsFirst,
+            vocabulary: data.vocabulary, // Pass vocabulary from server
           });
         }
       } catch (error) {

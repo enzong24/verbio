@@ -92,7 +92,11 @@ export default function MatchResults({
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {!isForfeit && hasOpponentScores ? (
+            {isForfeit ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground text-lg">Match ended by forfeit</p>
+              </div>
+            ) : hasOpponentScores ? (
               <div>
                 <h3 className="font-semibold mb-4">Score Comparison</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -142,7 +146,7 @@ export default function MatchResults({
                   </div>
                 </div>
               </div>
-            ) : !isForfeit && (
+            ) : (
               <div>
                 <h3 className="font-semibold mb-4">Performance Breakdown</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
