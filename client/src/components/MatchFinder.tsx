@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Bot, Loader2, Target, BookOpen, AlertCircle, Swords, Trophy, Zap } from "lucide-react";
+import { Bot, Loader2, Target, BookOpen, AlertCircle, Swords, Trophy, Zap, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -248,14 +248,15 @@ export default function MatchFinder({
                 </div>
                 <Button
                   className="w-full text-lg font-semibold min-h-[56px] md:min-h-[48px]"
+                  variant={isSearching ? "destructive" : "default"}
                   onClick={handleFindMatch}
                   disabled={!isConnected || !canPlay}
                   data-testid="button-find-match"
                 >
                   {isSearching ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Finding opponent... (Click to cancel)
+                      <X className="w-5 h-5 mr-2" />
+                      Cancel Search
                     </>
                   ) : (
                     <>
