@@ -154,7 +154,7 @@ export default function ProfileStats({
                         <div className="font-medium flex items-center gap-2">
                           <span>vs {match.opponent}</span>
                           {match.isForfeit === 1 && (
-                            <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
+                            <Badge variant="outline" className="hidden md:inline-flex text-xs px-1.5 py-0 h-4">
                               Forfeit
                             </Badge>
                           )}

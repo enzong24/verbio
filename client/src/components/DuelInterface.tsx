@@ -164,6 +164,12 @@ export default function DuelInterface({
       
       ws.onopen = () => {
         console.log('WebSocket connected for multiplayer match');
+        // Register this WebSocket with the server for this match
+        ws.send(JSON.stringify({
+          type: 'register_match_socket',
+          playerId,
+          matchId
+        }));
       };
       
       ws.onmessage = (event) => {
