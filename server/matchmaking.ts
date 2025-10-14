@@ -140,7 +140,7 @@ class MatchmakingQueue {
         console.log(`Cache hit for vocabulary: ${topic}/${player1.language}/${player1.difficulty}`);
       } else {
         // Generate new vocabulary
-        vocabulary = await generateVocabulary(topic, player1.language, player1.difficulty as "Easy" | "Medium" | "Hard");
+        vocabulary = await generateVocabulary(topic, player1.language, player1.difficulty as "Beginner" | "Easy" | "Medium" | "Hard");
         vocabularyCache.set({ 
           topic, 
           language: player1.language, 

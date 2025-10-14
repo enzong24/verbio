@@ -427,9 +427,10 @@ interface VocabularyWord {
 export async function generateVocabulary(
   topic: string,
   language: string,
-  difficulty: "Easy" | "Medium" | "Hard"
+  difficulty: "Beginner" | "Easy" | "Medium" | "Hard"
 ): Promise<VocabularyWord[]> {
   const wordCounts = {
+    Beginner: 2,
     Easy: 3,
     Medium: 5,
     Hard: 8
@@ -438,6 +439,7 @@ export async function generateVocabulary(
   const count = wordCounts[difficulty];
   
   const difficultyInstructions: Record<string, string> = {
+    Beginner: "Generate the MOST BASIC vocabulary words possible - the absolute first words someone would learn (like 'I', 'you', 'hello', 'yes', 'no', 'good'). These should be survival-level essential words.",
     Easy: "Generate EXTREMELY simple, basic vocabulary words that absolute beginners would know (like 'go', 'eat', 'water', 'yes', 'no', 'hello'). These should be the most fundamental words in the language.",
     Medium: "Generate conversational vocabulary words that intermediate learners would use in everyday situations. Mix common verbs, adjectives, and nouns.",
     Hard: "Generate advanced vocabulary words including nuanced verbs, descriptive adjectives, and sophisticated nouns. Include idiomatic expressions or compound words when appropriate."
