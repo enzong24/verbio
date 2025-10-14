@@ -68,6 +68,9 @@ export const matches = pgTable("matches", {
   naturalnessScore: integer("naturalness_score").notNull(),
   overallScore: integer("overall_score").notNull(),
   isForfeit: integer("is_forfeit").notNull().default(0), // 0 = false, 1 = true (SQLite boolean)
+  conversation: jsonb("conversation"), // Full chat log as array of Message objects
+  detailedFeedback: jsonb("detailed_feedback"), // Detailed AI feedback with corrections and suggestions
+  topic: varchar("topic"), // Match topic for context
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -122,6 +125,25 @@ export const gradingRequestSchema = z.object({
   skippedQuestions: z.number().default(0),
 });
 
+// Detailed feedback for individual messages
+export const messageAnalysisSchema = z.object({
+  messageIndex: z.number(),
+  sender: z.enum(["user", "opponent"]),
+  originalText: z.string(),
+  grammarCorrections: z.array(z.object({
+    original: z.string(),
+    corrected: z.string(),
+    explanation: z.string(),
+  })).optional(),
+  vocabularySuggestions: z.array(z.object({
+    word: z.string(),
+    betterAlternative: z.string(),
+    reason: z.string(),
+  })).optional(),
+  strengths: z.array(z.string()).optional(),
+  improvements: z.array(z.string()).optional(),
+});
+
 export const gradingResultSchema = z.object({
   grammar: z.number().min(0).max(100),
   fluency: z.number().min(0).max(100),
@@ -137,8 +159,11 @@ export const gradingResultSchema = z.object({
   botOverall: z.number().min(0).max(100).optional(),
   botElo: z.number().optional(),
   isForfeit: z.boolean().optional(), // Track if match was forfeited
+  // Detailed per-message analysis
+  messageAnalysis: z.array(messageAnalysisSchema).optional(),
 });
 
 export type Message = z.infer<typeof messageSchema>;
 export type GradingRequest = z.infer<typeof gradingRequestSchema>;
 export type GradingResult = z.infer<typeof gradingResultSchema>;
+export type MessageAnalysis = z.infer<typeof messageAnalysisSchema>;
