@@ -50,7 +50,7 @@ class MatchmakingQueue {
     }
 
     // Remove old socket mappings for this player to prevent stale disconnect triggers
-    for (const [socket, player] of this.playerSockets.entries()) {
+    for (const [socket, player] of Array.from(this.playerSockets.entries())) {
       if (player.id === playerId) {
         this.playerSockets.delete(socket);
         console.log(`Removed old WebSocket mapping for player ${playerId}`);
