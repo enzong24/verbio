@@ -62,13 +62,13 @@ class MatchmakingQueue {
       // Create a match
       this.createMatch(newPlayer, opponent);
     } else {
-      // No match found - wait 5 seconds then assign AI bot
+      // No match found - wait 10 seconds then assign AI bot
       setTimeout(() => {
         // Check if player is still in queue (not matched with someone else)
         if (this.queue.some(p => p.id === newPlayer.id)) {
           this.assignAIBot(newPlayer);
         }
-      }, 5000); // 5 second wait time
+      }, 10000); // 10 second wait time
     }
   }
 
@@ -78,6 +78,9 @@ class MatchmakingQueue {
 
     // Randomly select topic (or use player's selected topic for practice mode)
     const topic = player1.topic || this.getRandomTopic();
+
+    // Randomly decide who starts first
+    const player1StartsFirst = Math.random() < 0.5;
 
     const matchId = `${player1.id}-${player2.id}-${Date.now()}`;
     const match: Match = {
@@ -102,6 +105,7 @@ class MatchmakingQueue {
       language: player1.language,
       difficulty: player1.difficulty,
       isAI: false,
+      startsFirst: player1StartsFirst,
     }));
 
     player2.ws.send(JSON.stringify({
@@ -115,9 +119,10 @@ class MatchmakingQueue {
       language: player2.language,
       difficulty: player2.difficulty,
       isAI: false,
+      startsFirst: !player1StartsFirst,
     }));
 
-    console.log(`Match created: ${player1.username} (${player1.elo}) vs ${player2.username} (${player2.elo})`);
+    console.log(`Match created: ${player1.username} (${player1.elo}) vs ${player2.username} (${player2.elo}) - ${player1StartsFirst ? player1.username : player2.username} starts first`);
   }
 
   private assignAIBot(player: Player) {
