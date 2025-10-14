@@ -1,4 +1,4 @@
-import { Trophy, Users, Zap, Swords } from "lucide-react";
+import { Trophy, Users, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -17,11 +17,6 @@ export default function Landing() {
         <div className="w-full max-w-6xl">
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <div className="flex justify-center mb-8">
-              <div className="w-28 h-28 rounded-3xl bg-primary flex items-center justify-center shadow-xl">
-                <Swords className="w-14 h-14 text-primary-foreground" />
-              </div>
-            </div>
             <h1 className="text-6xl lg:text-7xl font-bold text-foreground mb-6">
               Verbio
             </h1>
@@ -35,7 +30,6 @@ export default function Landing() {
                 onClick={handleSignIn}
                 data-testid="button-sign-in"
               >
-                <Swords className="w-5 h-5 mr-2" />
                 Sign In to Compete
               </Button>
               <Button 

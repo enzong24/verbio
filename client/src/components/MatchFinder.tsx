@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { THEMES } from "@shared/themes";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { canGuestPlayMatch, getRemainingGuestMatches, getGuestMatchLimit } from "@/utils/guestRateLimit";
+import { useSound } from "@/hooks/use-sound";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Easy" | "Medium" | "Hard";
@@ -52,6 +53,7 @@ export default function MatchFinder({
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const practiceLoadingRef = useRef(false);
+  const { resumeAudio } = useSound();
   
   const canPlay = !isGuest || canGuestPlayMatch();
   const remainingMatches = isGuest ? getRemainingGuestMatches() : null;
@@ -111,6 +113,9 @@ export default function MatchFinder({
   });
 
   const handleFindMatch = () => {
+    // Resume audio on user interaction
+    resumeAudio();
+    
     if (isSearching) {
       cancelSearch();
     } else {
@@ -122,6 +127,9 @@ export default function MatchFinder({
   };
 
   const handlePractice = () => {
+    // Resume audio on user interaction
+    resumeAudio();
+    
     // Immediate double-click prevention using ref
     if (practiceLoadingRef.current) return;
     practiceLoadingRef.current = true;

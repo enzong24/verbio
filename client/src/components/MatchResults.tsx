@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { GradingResult } from "@shared/schema";
+import { useEffect } from "react";
+import { useSound } from "@/hooks/use-sound";
+import { motion } from "framer-motion";
 
 interface MatchResultsProps {
   gradingResult: GradingResult;
@@ -24,6 +27,7 @@ export default function MatchResults({
   onContinue,
   onAIReview
 }: MatchResultsProps) {
+  const { playWin, playLoss } = useSound();
   const userScore = gradingResult.overall;
   const botScore = gradingResult.botOverall || 0;
   const botElo = gradingResult.botElo || 1000;
@@ -55,39 +59,113 @@ export default function MatchResults({
     naturalness: gradingResult.botNaturalness || 0,
   } : null;
 
+  // Play sound effect on mount
+  useEffect(() => {
+    if (isDraw) {
+      // No sound for draw
+      return;
+    }
+    if (isWinner) {
+      playWin();
+    } else {
+      playLoss();
+    }
+  }, [isWinner, isDraw, playWin, playLoss]);
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
       <div className="w-full max-w-4xl">
         <Card className="border-card-border">
           <CardHeader className="text-center pb-6">
             <div className="flex justify-center mb-4">
-              <div className={`w-24 h-24 rounded-md flex items-center justify-center ${
-                isWinner ? 'bg-success/20' : 'bg-destructive/20'
-              }`}>
-                <Trophy className={`w-12 h-12 ${isWinner ? 'text-success' : 'text-destructive'}`} />
-              </div>
+              <motion.div 
+                className={`w-24 h-24 rounded-md flex items-center justify-center ${
+                  isWinner ? 'bg-success/20' : 'bg-destructive/20'
+                }`}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  delay: 0.1
+                }}
+              >
+                <motion.div
+                  animate={isWinner ? { 
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 10, -10, 0]
+                  } : {}}
+                  transition={{
+                    duration: 0.6,
+                    delay: 0.4,
+                    repeat: isWinner ? 2 : 0
+                  }}
+                >
+                  <Trophy className={`w-12 h-12 ${isWinner ? 'text-success' : 'text-destructive'}`} />
+                </motion.div>
+              </motion.div>
             </div>
-            <CardTitle className="text-4xl font-bold mb-2" data-testid="text-result">
-              {isWinner ? "Victory!" : "Good Effort!"}
-            </CardTitle>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <CardTitle className="text-4xl font-bold mb-2" data-testid="text-result">
+                {isWinner ? "Victory!" : "Good Effort!"}
+              </CardTitle>
+            </motion.div>
             {eloChange === 0 ? (
-              <p className="text-muted-foreground">Practice Mode - No Fluency Score Change</p>
+              <motion.p 
+                className="text-muted-foreground"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                Practice Mode - No Fluency Score Change
+              </motion.p>
             ) : (
-              <div className="flex items-center justify-center gap-2 text-2xl font-mono font-bold">
+              <motion.div 
+                className="flex items-center justify-center gap-2 text-2xl font-mono font-bold"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, type: "spring" }}
+              >
                 {actualEloChange > 0 ? (
                   <>
                     <TrendingUp className="w-6 h-6 text-success" />
-                    <span className="text-success">+{actualEloChange}</span>
+                    <motion.span 
+                      className="text-success"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      +{actualEloChange}
+                    </motion.span>
                   </>
                 ) : (
                   <>
                     <TrendingDown className="w-6 h-6 text-destructive" />
-                    <span className="text-destructive">{actualEloChange}</span>
+                    <motion.span 
+                      className="text-destructive"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      {actualEloChange}
+                    </motion.span>
                   </>
                 )}
                 <span className="text-muted-foreground mx-2">→</span>
-                <span data-testid="text-new-elo">{newElo + actualEloChange} Fluency</span>
-              </div>
+                <motion.span 
+                  data-testid="text-new-elo"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.9 }}
+                >
+                  {newElo + actualEloChange} Fluency
+                </motion.span>
+              </motion.div>
             )}
           </CardHeader>
 
@@ -97,7 +175,11 @@ export default function MatchResults({
                 <p className="text-muted-foreground text-lg">Match ended by forfeit</p>
               </div>
             ) : hasOpponentScores ? (
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+              >
                 <h3 className="font-semibold mb-4">Score Comparison</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* User Scores */}
@@ -145,9 +227,13 @@ export default function MatchResults({
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ) : (
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+              >
                 <h3 className="font-semibold mb-4">Performance Breakdown</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {Object.entries(userScores).map(([key, value]) => (
@@ -165,10 +251,14 @@ export default function MatchResults({
                     Average: {gradingResult.overall}%
                   </Badge>
                 </div>
-              </div>
+              </motion.div>
             )}
 
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.3 }}
+            >
               <h3 className="font-semibold mb-3">Feedback</h3>
               <div className="space-y-2">
                 {gradingResult.feedback.map((item, idx) => (
@@ -178,9 +268,14 @@ export default function MatchResults({
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex flex-col gap-3 pt-4">
+            <motion.div 
+              className="flex flex-col gap-3 pt-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5 }}
+            >
               <Button 
                 variant="secondary" 
                 className="w-full gap-2" 
@@ -198,7 +293,7 @@ export default function MatchResults({
                   New Match
                 </Button>
               </div>
-            </div>
+            </motion.div>
           </CardContent>
         </Card>
       </div>
