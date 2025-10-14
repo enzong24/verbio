@@ -339,34 +339,45 @@ export async function validateQuestion(
   vocabulary: string[],
   language: string
 ): Promise<{ isValid: boolean; message: string }> {
-  const prompt = `You are a language learning assistant validating if a student's question is related to the conversation topic.
+  const prompt = `You are a very lenient language learning assistant validating if a student's question has ANY connection to the conversation topic.
 
 Topic: ${topic}
 
 Student's question: "${question}"
 
-Your ONLY job is to check if the question is related to the topic "${topic}". 
+BE VERY LENIENT - accept the question if it has even the SLIGHTEST connection to "${topic}". 
+Only reject if it's COMPLETELY unrelated (like asking about cars when topic is food, or math when topic is hobbies).
+
+Examples of what to ACCEPT:
+- Questions with loose connections to the topic
+- Questions that could be tangentially related  
+- Questions about feelings, opinions, or experiences related to the topic
+- Questions with grammar/spelling errors (ignore all language correctness)
+- Questions that are somewhat on-topic
+- Questions about related concepts or themes
+
 DO NOT check:
 - Grammar or spelling
-- Language correctness
+- Language correctness  
 - Question structure
 - Vocabulary usage
+- How specific or direct the connection is
 
-Simply determine: Is this question asking about something related to "${topic}"?
+Be generous and accept almost everything except completely off-topic questions.
 
-Respond with JSON in this exact format:
+Respond with JSON:
 {
-  "isValid": boolean,
-  "message": "Brief explanation if not related to topic (empty string if related)"
+  "isValid": boolean (true if even slightly related, false only if completely unrelated),
+  "message": string (brief explanation only if rejecting, otherwise empty string)
 }`;
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You validate if questions are topically relevant, ignoring all grammar, spelling, and structure issues."
+          content: "You are an extremely lenient validator. Accept any question with even a slight connection to the topic. Only reject truly off-topic questions. Be generous and supportive of language learners."
         },
         {
           role: "user",
@@ -374,7 +385,7 @@ Respond with JSON in this exact format:
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 100,
+      max_tokens: 50,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");

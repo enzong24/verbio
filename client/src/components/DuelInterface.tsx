@@ -461,7 +461,7 @@ export default function DuelInterface({
       botOverall: 0,
       botElo: opponentElo,
       feedback: ["Opponent forfeited. You win!"],
-      isForfeit: false // Not a forfeit for this player, they won
+      isForfeit: true // Match ended by forfeit, show forfeit message for both players
     });
   };
 
