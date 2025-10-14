@@ -227,6 +227,7 @@ export default function MatchFinder({
                     <SelectValue placeholder="Select difficulty" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="Beginner" data-testid="option-beginner">⭐ Beginner - First steps</SelectItem>
                     <SelectItem value="Easy" data-testid="option-easy">🟢 Easy - Simple vocabulary</SelectItem>
                     <SelectItem value="Medium" data-testid="option-medium">🟡 Medium - Conversational</SelectItem>
                     <SelectItem value="Hard" data-testid="option-hard">🔴 Hard - Advanced & Complex</SelectItem>
