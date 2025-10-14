@@ -95,6 +95,8 @@ export default function DuelInterface({
   const [skippedQuestions, setSkippedQuestions] = useState(0);
   const [inactivityTimeLeft, setInactivityTimeLeft] = useState(60);
   const [validationError, setValidationError] = useState("");
+  const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
+  const [translations, setTranslations] = useState<Record<number, string>>({});
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -115,6 +117,17 @@ export default function DuelInterface({
         difficulty,
         previousQuestions: botQuestions,
         isPracticeMode
+      });
+      return await response.json();
+    },
+  });
+
+  const translateMutation = useMutation({
+    mutationFn: async ({ text, fromLanguage }: { text: string; fromLanguage: string }) => {
+      const response = await apiRequest("POST", "/api/translate", {
+        text,
+        fromLanguage,
+        toLanguage: "English"
       });
       return await response.json();
     },
@@ -582,26 +595,69 @@ export default function DuelInterface({
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4" data-testid="chat-messages">
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                >
+              {messages.map((msg, idx) => {
+                const isBotMessage = msg.sender === "opponent";
+                const isBeginnerMode = difficulty === "Beginner";
+                const shouldShowTranslation = isBotMessage && isBeginnerMode;
+                const isHovered = hoveredMessageIndex === idx;
+                const translation = translations[idx];
+
+                return (
                   <div
-                    className={`max-w-[85%] md:max-w-md px-4 py-3 rounded-md text-base ${
-                      msg.sender === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
+                    key={idx}
+                    className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    {msg.text === "(Skipped)" ? (
-                      <span className="italic opacity-60">Skipped question</span>
-                    ) : (
-                      <TextWithPinyin text={msg.text} language={language} />
-                    )}
+                    <div
+                      className={`max-w-[85%] md:max-w-md px-4 py-3 rounded-md text-base ${
+                        msg.sender === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      } ${shouldShowTranslation ? "cursor-help transition-all" : ""}`}
+                      onMouseEnter={() => {
+                        if (shouldShowTranslation && msg.text !== "(Skipped)") {
+                          setHoveredMessageIndex(idx);
+                          // Fetch translation if not already cached
+                          if (!translations[idx]) {
+                            translateMutation.mutate(
+                              { text: msg.text, fromLanguage: language },
+                              {
+                                onSuccess: (data) => {
+                                  setTranslations(prev => ({ ...prev, [idx]: data.translation }));
+                                }
+                              }
+                            );
+                          }
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        if (shouldShowTranslation) {
+                          setHoveredMessageIndex(null);
+                        }
+                      }}
+                    >
+                      {msg.text === "(Skipped)" ? (
+                        <span className="italic opacity-60">Skipped question</span>
+                      ) : (
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0">
+                            <TextWithPinyin text={msg.text} language={language} />
+                          </div>
+                          {shouldShowTranslation && isHovered && translation && (
+                            <div className="flex-shrink-0 pl-3 border-l-2 border-primary/30 text-sm italic opacity-80">
+                              {translation}
+                            </div>
+                          )}
+                          {shouldShowTranslation && isHovered && !translation && translateMutation.isPending && (
+                            <div className="flex-shrink-0 pl-3 border-l-2 border-primary/30 text-sm italic opacity-60">
+                              Translating...
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {isGrading && (
                 <div className="flex justify-center">
                   <Badge className="animate-pulse text-xs md:text-sm bg-accent/20 text-accent border-accent/30">

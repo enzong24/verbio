@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { gradingRequestSchema } from "@shared/schema";
-import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary } from "./openai";
+import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary, translateText } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupMatchmaking } from "./matchmaking";
 import { vocabularyCache } from "./vocabularyCache";
@@ -100,6 +100,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Question validation error:", error);
       res.status(500).json({ 
         error: "Failed to validate question",
+        message: error.message 
+      });
+    }
+  });
+
+  // Translate text to English (for beginner mode hover translation)
+  app.post("/api/translate", async (req, res) => {
+    try {
+      const { text, fromLanguage } = req.body;
+      const translation = await translateText(text, fromLanguage);
+      res.json({ translation });
+    } catch (error: any) {
+      console.error("Translation error:", error);
+      res.status(500).json({ 
+        error: "Failed to translate text",
         message: error.message 
       });
     }

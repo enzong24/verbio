@@ -559,3 +559,28 @@ Make sure to return EXACTLY ${count} words.`;
     throw new Error("Failed to generate vocabulary");
   }
 }
+
+export async function translateText(text: string, fromLanguage: string): Promise<string> {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini", // Use cheaper model for translation
+      messages: [
+        {
+          role: "system",
+          content: `You are a professional translator. Translate the given ${fromLanguage} text to English. Provide ONLY the English translation, nothing else. Be natural and accurate.`
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+      temperature: 0.3, // Lower temperature for more consistent translations
+    });
+
+    const translation = completion.choices[0]?.message?.content?.trim() || text;
+    return translation;
+  } catch (error: any) {
+    console.error("Error translating text:", error);
+    throw new Error(`Failed to translate text: ${error.message}`);
+  }
+}
