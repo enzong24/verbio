@@ -211,6 +211,12 @@ function MainApp() {
   };
 
   const handleDuelComplete = (result: GradingResult, messages?: any[]) => {
+    // For human vs human matches, ensure botElo is set for proper Elo calculation
+    // Don't fabricate opponent scores - MatchResults will show user performance only
+    if (matchData && !matchData.isBot) {
+      result.botElo = matchData.opponentElo;
+    }
+    
     setGradingResult(result);
     if (messages) {
       setMatchMessages(messages);
@@ -263,8 +269,10 @@ function MainApp() {
       const isForfeit = gradingResult.isForfeit || false;
       
       // Determine result based on comparative scoring
-      const isWin = userScore > botScore;
-      const isDraw = userScore === botScore;
+      // For human matches (no opponent scores), use 70% threshold
+      const hasOpponentScores = botScore > 0;
+      const isWin = hasOpponentScores ? userScore > botScore : userScore >= 70;
+      const isDraw = hasOpponentScores && userScore === botScore;
       const isLoss = !isWin && !isDraw;
       
       // Calculate Elo change using standard Elo formula
@@ -403,6 +411,7 @@ function MainApp() {
             eloChange={matchData.isPracticeMode ? 0 : undefined}
             newElo={userElo}
             isBot={matchData.isBot}
+            opponentName={matchData.opponent}
             onContinue={handleResultsContinue}
             onAIReview={handleAIReview}
           />

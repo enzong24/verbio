@@ -1,4 +1,4 @@
-import { Trophy, TrendingUp, TrendingDown, ArrowRight, Bot, User, Brain } from "lucide-react";
+import { Trophy, TrendingUp, TrendingDown, ArrowRight, Bot, User, Users, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ interface MatchResultsProps {
   eloChange?: number;
   newElo?: number;
   isBot?: boolean;
+  opponentName?: string;
   onContinue?: () => void;
   onAIReview?: () => void;
 }
@@ -19,17 +20,21 @@ export default function MatchResults({
   eloChange = 15,
   newElo = 1562,
   isBot = false,
+  opponentName = "Opponent",
   onContinue,
   onAIReview
 }: MatchResultsProps) {
   const userScore = gradingResult.overall;
   const botScore = gradingResult.botOverall || 0;
   const botElo = gradingResult.botElo || 1000;
-  const hasBot = botScore > 0;
+  const hasOpponentScores = botScore > 0;
   
-  // Win/loss determined by comparative scoring
-  const isWinner = hasBot ? userScore > botScore : userScore >= 70;
-  const isDraw = userScore === botScore;
+  // For matches with opponent scores, determine win/loss by comparison
+  // For human matches without opponent scores, use performance threshold
+  const isWinnerByComparison = hasOpponentScores && userScore > botScore;
+  const isWinnerByPerformance = !hasOpponentScores && userScore >= 70;
+  const isWinner = isWinnerByComparison || isWinnerByPerformance;
+  const isDraw = hasOpponentScores && userScore === botScore;
   
   // Calculate Elo change using standard Elo formula (same as backend)
   const K_FACTOR = 32;
@@ -44,7 +49,7 @@ export default function MatchResults({
     naturalness: gradingResult.naturalness,
   };
   
-  const botScores = hasBot ? {
+  const botScores = hasOpponentScores ? {
     grammar: gradingResult.botGrammar || 0,
     fluency: gradingResult.botFluency || 0,
     vocabulary: gradingResult.botVocabulary || 0,
@@ -88,7 +93,7 @@ export default function MatchResults({
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {hasBot ? (
+            {hasOpponentScores ? (
               <div>
                 <h3 className="font-semibold mb-4">Score Comparison</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -112,11 +117,11 @@ export default function MatchResults({
                     ))}
                   </div>
 
-                  {/* Bot Scores */}
+                  {/* Opponent Scores */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-3">
-                      <Bot className="w-5 h-5" />
-                      <span className="font-semibold">AI Bot</span>
+                      {isBot ? <Bot className="w-5 h-5" /> : <Users className="w-5 h-5" />}
+                      <span className="font-semibold">{isBot ? "AI Bot" : opponentName}</span>
                       <Badge variant="outline" className="ml-auto font-mono" data-testid="text-bot-score">
                         {botScore}%
                       </Badge>

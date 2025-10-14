@@ -36,7 +36,11 @@ WebSocket is implemented for real-time multiplayer matchmaking with Fluency Scor
 - **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and scrollable slide-out navigation.
 - **Loading State Protection**: All action buttons implement loading states with disabled states to prevent duplicate actions (rapid clicking, simultaneous requests).
 - **Fluency Score Calculation Consistency**: Both MatchResults display and handleResultsContinue use identical Fluency Score formula to ensure displayed changes match applied changes. handleForfeit does NOT update Fluency Score directly; all updates happen in handleResultsContinue.
-- **Forfeit Behavior**: Forfeiting a match counts as a LOSS (user scores set to 0, lower than bot's 70-95 range), applies standard Fluency Score changes. Forfeits now appear in match history with a "Forfeit" indicator badge but still do NOT contribute to skill progress calculations (Grammar, Fluency, Vocabulary, Naturalness remain unaffected).
+- **Forfeit Behavior**: 
+  - When YOU forfeit: You lose (user scores set to 0), standard Fluency Score loss applies
+  - When OPPONENT forfeits: You win (user scores set to 90, opponent scores to 0), you gain Fluency Score
+  - Forfeits appear in match history with "Forfeit" indicator badge but do NOT contribute to skill progress calculations (Grammar, Fluency, Vocabulary, Naturalness remain unaffected)
+- **Human vs Human Match Results**: For human matches, opponent performance scores are not available (each player graded independently). MatchResults shows user's performance breakdown only for human matches, with win/loss determined by performance threshold (≥70% = win). Bot matches show full comparison with AI-generated bot scores.
 - **Guest Mode Restrictions**: Guest users do not see "Recent Matches" or "Skill Progress" sections (hidden via `isAuthenticated` conditionals). Guest stats are stored in localStorage while authenticated users use PostgreSQL.
 - **Guest Rate Limiting**: Guest accounts are limited to 5 matches per day (resets at midnight) to prevent API cost abuse. The limit is tracked in localStorage via `guestRateLimit.ts` utility. When limit is reached, guests see a prominent alert prompting them to sign in for unlimited access. Both competitive and practice matches count toward the limit.
 
