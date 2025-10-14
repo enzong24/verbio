@@ -608,7 +608,7 @@ export default function DuelInterface({
                     className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] md:max-w-md px-4 py-3 rounded-md text-base ${
+                      className={`inline-block max-w-[85%] md:max-w-2xl px-4 py-3 rounded-md text-base ${
                         msg.sender === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
