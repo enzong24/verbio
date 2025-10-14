@@ -263,8 +263,9 @@ export default function DuelInterface({
   useEffect(() => {
     if (gradingMutation.isSuccess && gradingMutation.data) {
       // Send grading result to opponent if multiplayer
-      if (!isBot && wsRef.current?.readyState === WebSocket.OPEN && matchId && playerId) {
-        wsRef.current.send(JSON.stringify({
+      if (!isBot && multiplayerWsRef?.current?.readyState === WebSocket.OPEN && matchId && playerId) {
+        console.log('DuelInterface: Sending player grading result to opponent');
+        multiplayerWsRef.current.send(JSON.stringify({
           type: 'player_grading_result',
           playerId,
           matchId,
@@ -280,7 +281,7 @@ export default function DuelInterface({
       
       onComplete?.(gradingMutation.data, messages);
     }
-  }, [gradingMutation.isSuccess, gradingMutation.data]);
+  }, [gradingMutation.isSuccess, gradingMutation.data, multiplayerWsRef]);
 
   // Timer effect
   useEffect(() => {

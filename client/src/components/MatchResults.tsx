@@ -28,6 +28,7 @@ export default function MatchResults({
   const botScore = gradingResult.botOverall || 0;
   const botElo = gradingResult.botElo || 1000;
   const hasOpponentScores = botScore > 0;
+  const isForfeit = gradingResult.isForfeit || false;
   
   // Determine win/loss by comparing scores
   const isWinner = userScore > botScore;
@@ -90,7 +91,7 @@ export default function MatchResults({
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {hasOpponentScores ? (
+            {!isForfeit && hasOpponentScores ? (
               <div>
                 <h3 className="font-semibold mb-4">Score Comparison</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -140,7 +141,7 @@ export default function MatchResults({
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : !isForfeit && (
               <div>
                 <h3 className="font-semibold mb-4">Performance Breakdown</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
