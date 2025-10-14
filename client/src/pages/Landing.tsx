@@ -23,10 +23,10 @@ export default function Landing() {
               </div>
             </div>
             <h1 className="text-6xl lg:text-7xl font-bold text-foreground mb-6">
-              LangDuel
+              Verbio
             </h1>
             <p className="text-xl lg:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              Master languages through competitive duels. Track your progress with Elo ratings and compete against players worldwide.
+              Master languages through competitive duels. Track your progress with Fluency Score ratings and compete against players worldwide.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -62,7 +62,7 @@ export default function Landing() {
                 </div>
                 <h3 className="text-xl font-bold text-center mb-3">Competitive Ranking</h3>
                 <p className="text-muted-foreground text-center">
-                  Track your progress with Elo ratings. Compete against players at your skill level and climb the leaderboard.
+                  Track your progress with Fluency Score ratings. Compete against players at your skill level and climb the leaderboard.
                 </p>
               </CardContent>
             </Card>

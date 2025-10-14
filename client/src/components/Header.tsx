@@ -113,7 +113,7 @@ export default function Header({
               <Menu className="w-5 h-5" />
             </Button>
             <h1 className="text-xl font-bold tracking-tight">
-              LangDuel
+              Verbio
             </h1>
           </div>
 
@@ -131,7 +131,7 @@ export default function Header({
           </Select>
           <div className="hidden sm:flex">
             <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
-              {elo} Elo
+              {elo} Fluency
             </Badge>
           </div>
           <Button
@@ -175,7 +175,7 @@ export default function Header({
               <div className="px-2 py-1.5">
                 <p className="text-sm font-semibold">{username}</p>
                 <p className="text-xs text-muted-foreground">
-                  {elo} Elo
+                  {elo} Fluency
                 </p>
               </div>
             </DropdownMenuContent>
