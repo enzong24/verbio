@@ -203,6 +203,12 @@ export default function DuelInterface({
             // Opponent forfeited, you win!
             handleOpponentForfeit();
           }
+          
+          if (data.type === 'opponent_grading_result') {
+            // Received opponent's grading result
+            // Store it to use when displaying results
+            sessionStorage.setItem(`opponent_result_${matchId}`, JSON.stringify(data.gradingResult));
+          }
         } catch (error) {
           console.error('WebSocket message error:', error);
         }
@@ -277,6 +283,22 @@ export default function DuelInterface({
   // Update when grading is complete
   useEffect(() => {
     if (gradingMutation.isSuccess && gradingMutation.data) {
+      // Send grading result to opponent if multiplayer
+      if (!isBot && wsRef.current?.readyState === WebSocket.OPEN && matchId && playerId) {
+        wsRef.current.send(JSON.stringify({
+          type: 'player_grading_result',
+          playerId,
+          matchId,
+          gradingResult: {
+            grammar: gradingMutation.data.grammar,
+            fluency: gradingMutation.data.fluency,
+            vocabulary: gradingMutation.data.vocabulary,
+            naturalness: gradingMutation.data.naturalness,
+            overall: gradingMutation.data.overall
+          }
+        }));
+      }
+      
       onComplete?.(gradingMutation.data, messages);
     }
   }, [gradingMutation.isSuccess, gradingMutation.data]);

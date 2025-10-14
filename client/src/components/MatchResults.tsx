@@ -29,12 +29,9 @@ export default function MatchResults({
   const botElo = gradingResult.botElo || 1000;
   const hasOpponentScores = botScore > 0;
   
-  // For matches with opponent scores, determine win/loss by comparison
-  // For human matches without opponent scores, use performance threshold
-  const isWinnerByComparison = hasOpponentScores && userScore > botScore;
-  const isWinnerByPerformance = !hasOpponentScores && userScore >= 70;
-  const isWinner = isWinnerByComparison || isWinnerByPerformance;
-  const isDraw = hasOpponentScores && userScore === botScore;
+  // Determine win/loss by comparing scores
+  const isWinner = userScore > botScore;
+  const isDraw = userScore === botScore;
   
   // Calculate Elo change using standard Elo formula (same as backend)
   const K_FACTOR = 32;

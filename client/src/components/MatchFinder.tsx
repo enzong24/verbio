@@ -71,6 +71,16 @@ export default function MatchFinder({
   const playerId = getSessionId();
 
   const handleWebSocketMatch = useCallback((matchData: any) => {
+    // Convert server vocabulary to VocabWord format if provided
+    let vocabulary: any[] | undefined = undefined;
+    if (matchData.vocabulary && matchData.vocabulary.length > 0) {
+      vocabulary = matchData.vocabulary.map((item: any) => ({
+        word: item.word,
+        romanization: item.pinyin || item.word,
+        definition: `${item.english} (${item.type})`
+      }));
+    }
+    
     onMatchFound?.(
       matchData.opponent.username,
       matchData.isAI,
@@ -80,7 +90,8 @@ export default function MatchFinder({
       matchData.opponent.elo,
       false,
       matchData.startsFirst,
-      matchData.matchId
+      matchData.matchId,
+      vocabulary
     );
   }, [onMatchFound]);
 

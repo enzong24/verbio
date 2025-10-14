@@ -122,10 +122,39 @@ function MainApp() {
     return playerId;
   };
 
-  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean, matchId?: string) => {
+  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean, matchId?: string, vocabularyFromServer?: any[]) => {
     // Use selected topic or random if not specified
     const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
+    let vocabulary: VocabWord[];
+    
+    // If vocabulary was provided by server (for multiplayer matches), use it directly
+    if (vocabularyFromServer && vocabularyFromServer.length > 0) {
+      vocabulary = vocabularyFromServer;
+      
+      // Increment guest match counter
+      if (isGuestMode) {
+        incrementGuestMatches();
+      }
+      
+      setMatchData({
+        opponent,
+        opponentElo: opponentElo || (isBot ? 1000 : 1200),
+        isBot,
+        isPracticeMode,
+        topic: getThemeTitle(theme.id),
+        vocabulary,
+        language,
+        difficulty,
+        startsFirst,
+        matchId,
+        playerId: getPlayerId(),
+      });
+      setCurrentPage("match");
+      return;
+    }
+    
+    // Otherwise generate vocabulary (for bot matches or practice mode)
     try {
       // Generate vocabulary using AI
       const response = await apiRequest("POST", "/api/generate-vocabulary", {
@@ -137,7 +166,7 @@ function MainApp() {
       const data = await response.json();
       
       // Convert AI vocabulary to VocabWord format
-      const vocabulary: VocabWord[] = data.vocabulary.map((item: any) => ({
+      vocabulary = data.vocabulary.map((item: any) => ({
         word: item.word,
         romanization: item.pinyin || item.word,
         definition: `${item.english} (${item.type})`
@@ -211,10 +240,30 @@ function MainApp() {
   };
 
   const handleDuelComplete = (result: GradingResult, messages?: any[]) => {
-    // For human vs human matches, ensure botElo is set for proper Elo calculation
-    // Don't fabricate opponent scores - MatchResults will show user performance only
-    if (matchData && !matchData.isBot) {
-      result.botElo = matchData.opponentElo;
+    // For human vs human matches, try to get opponent's grading result
+    if (matchData && !matchData.isBot && matchData.matchId) {
+      const opponentResultStr = sessionStorage.getItem(`opponent_result_${matchData.matchId}`);
+      if (opponentResultStr) {
+        try {
+          const opponentResult = JSON.parse(opponentResultStr);
+          // Populate opponent scores for comparison
+          result.botGrammar = opponentResult.grammar;
+          result.botFluency = opponentResult.fluency;
+          result.botVocabulary = opponentResult.vocabulary;
+          result.botNaturalness = opponentResult.naturalness;
+          result.botOverall = opponentResult.overall;
+          result.botElo = matchData.opponentElo;
+          
+          // Clean up
+          sessionStorage.removeItem(`opponent_result_${matchData.matchId}`);
+        } catch (error) {
+          console.error('Failed to parse opponent result:', error);
+          result.botElo = matchData.opponentElo;
+        }
+      } else {
+        // Opponent result not yet received, set botElo for Elo calculation
+        result.botElo = matchData.opponentElo;
+      }
     }
     
     setGradingResult(result);
@@ -269,11 +318,10 @@ function MainApp() {
       const isForfeit = gradingResult.isForfeit || false;
       
       // Determine result based on comparative scoring
-      // For human matches (no opponent scores), use 70% threshold
       const hasOpponentScores = botScore > 0;
-      const isWin = hasOpponentScores ? userScore > botScore : userScore >= 70;
-      const isDraw = hasOpponentScores && userScore === botScore;
-      const isLoss = !isWin && !isDraw;
+      const isWin = userScore > botScore;
+      const isDraw = userScore === botScore;
+      const isLoss = userScore < botScore;
       
       // Calculate Elo change using standard Elo formula
       const K_FACTOR = 32;
