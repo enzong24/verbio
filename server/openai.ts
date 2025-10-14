@@ -6,16 +6,6 @@ import { getBotElo, getBotTargetAccuracy } from "./botConfig";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function gradeConversation(request: GradingRequest): Promise<GradingResult> {
-  const userMessages = request.messages
-    .filter(m => m.sender === "user")
-    .map(m => m.text)
-    .join("\n");
-  
-  const botMessages = request.messages
-    .filter(m => m.sender === "opponent")
-    .map(m => m.text)
-    .join("\n");
-
   const difficultyGuidelines: Record<string, string> = {
     Beginner: "Grade with ABSOLUTE MAXIMUM encouragement. This is for complete beginners - celebrate ANY word or sound in the target language! Give extremely high scores (80-95+) for trying AT ALL. Even if they write in English or use translator, give encouragement. Focus purely on participation and effort.",
     Easy: "Grade with MAXIMUM encouragement and patience. This is absolute beginner level - accept ANY attempt at communication, even single words or very broken sentences. Focus ONLY on effort and attempting to communicate. Give high scores (70-90+) for any genuine attempt.",
@@ -23,7 +13,12 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     Hard: "Grade with balanced standards. Expect correct grammar, appropriate vocabulary, and natural language flow for intermediate level."
   };
   
-  const prompt = `You are an expert ${request.language} language teacher evaluating a conversation between a student and another language learner (bot) at ${request.difficulty} difficulty level.
+  // Format messages with indices for detailed analysis
+  const formattedMessages = request.messages.map((msg, idx) => 
+    `[${idx}] ${msg.sender === "user" ? "Student" : "Bot"}: ${msg.text}`
+  ).join("\n");
+  
+  const prompt = `You are an expert ${request.language} language teacher providing detailed, message-by-message feedback for a conversation at ${request.difficulty} difficulty level.
 
 Topic: ${request.topic}
 Target vocabulary: ${request.vocabulary.join(", ")}
@@ -31,30 +26,36 @@ Difficulty level: ${request.difficulty}
 
 ${difficultyGuidelines[request.difficulty] || difficultyGuidelines.Medium}
 
-Student's messages:
-${userMessages}
+CONVERSATION (with message indices):
+${formattedMessages}
 
-Bot's messages (another learner):
-${botMessages}
+Provide TWO types of analysis:
 
-Evaluate both participants honestly based on their actual performance:
+1. OVERALL SCORES for both participants:
+- Student: grammar, fluency, vocabulary, naturalness, overall (0-100 each)
+- Bot: botGrammar, botFluency, botVocabulary, botNaturalness, botOverall (0-100 each)
+- General feedback: 3-5 summary points for the student
 
-1. STUDENT scores:
-- Grammar score (0-100): Accuracy of grammar, verb conjugations, sentence structure
-- Fluency score (0-100): Natural flow, coherence, and ease of expression
-- Vocabulary score (0-100): Appropriate use of vocabulary, especially target words
-- Naturalness score (0-100): How natural and native-like the language sounds
-- Feedback: 3-5 specific points about what they did well or could improve
+2. DETAILED MESSAGE-BY-MESSAGE ANALYSIS (messageAnalysis array):
+For EACH student message, provide:
+- messageIndex: the message number [0, 1, 2...]
+- sender: "user" or "opponent"
+- originalText: the exact message text
+- grammarCorrections: array of {original: "text with error", corrected: "fixed text", explanation: "why"}
+  (only if there are grammar errors - can be empty array)
+- vocabularySuggestions: array of {word: "used word", betterAlternative: "better word", reason: "why it's better"}
+  (only if there are better vocabulary choices - can be empty array)
+- strengths: array of 1-2 things done well in this specific message
+- improvements: array of 1-2 specific things to improve in this message
 
-2. BOT scores (evaluate the actual quality, not an imagined target):
-- Grammar score (0-100): Evaluate the actual grammar quality you see
-- Fluency score (0-100): Evaluate the actual fluency you observe
-- Vocabulary score (0-100): Evaluate the actual vocabulary usage
-- Naturalness score (0-100): Evaluate how natural it actually sounds
+IMPORTANT: 
+- Analyze ONLY the student's messages (sender: "user") in detail
+- For grammarCorrections, extract the specific part with the error, not the whole sentence
+- For vocabularySuggestions, suggest more natural or advanced alternatives
+- Keep each analysis constructive and encouraging
+- Empty arrays are fine if no corrections/suggestions needed
 
-IMPORTANT: Grade the bot based on what you actually see in their messages. If they make mistakes, reflect that in lower scores. If they speak well, reflect that in higher scores. Be honest and accurate.
-
-Respond with JSON in this exact format:
+Respond with JSON in this EXACT format:
 {
   "grammar": number,
   "fluency": number,
@@ -66,7 +67,18 @@ Respond with JSON in this exact format:
   "botFluency": number,
   "botVocabulary": number,
   "botNaturalness": number,
-  "botOverall": number
+  "botOverall": number,
+  "messageAnalysis": [
+    {
+      "messageIndex": 0,
+      "sender": "user",
+      "originalText": "original message text",
+      "grammarCorrections": [{"original": "错误部分", "corrected": "正确部分", "explanation": "why"}],
+      "vocabularySuggestions": [{"word": "used word", "betterAlternative": "better word", "reason": "why"}],
+      "strengths": ["strength 1", "strength 2"],
+      "improvements": ["improvement 1"]
+    }
+  ]
 }`;
 
   try {
@@ -83,7 +95,7 @@ Respond with JSON in this exact format:
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 1024,
+      max_tokens: 3000, // Increased for detailed analysis
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -121,6 +133,7 @@ Respond with JSON in this exact format:
       botNaturalness: Math.max(0, Math.min(100, result.botNaturalness || 0)),
       botOverall: Math.max(0, Math.min(100, result.botOverall || 0)),
       botElo,
+      messageAnalysis: result.messageAnalysis || [],
     };
   } catch (error: any) {
     console.error("Error grading conversation:", error);

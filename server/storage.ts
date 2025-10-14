@@ -152,6 +152,9 @@ export class MemStorage implements IStorage {
       naturalnessScore: matchData.naturalnessScore!,
       overallScore: matchData.overallScore!,
       isForfeit: matchData.isForfeit ?? 0,
+      conversation: matchData.conversation ?? null,
+      detailedFeedback: matchData.detailedFeedback ?? null,
+      topic: matchData.topic ?? null,
       createdAt: new Date(),
     };
     this.matches.set(match.id, match);

@@ -191,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const userId = req.user.claims.sub;
-      const { opponent, result, eloChange, language, difficulty, scores, isForfeit } = req.body;
+      const { opponent, result, eloChange, language, difficulty, scores, isForfeit, conversation, detailedFeedback, topic } = req.body;
       
       const match = await storage.createMatch({
         userId,
@@ -206,6 +206,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         naturalnessScore: scores.naturalness,
         overallScore: scores.overall,
         isForfeit: isForfeit ? 1 : 0, // Convert boolean to integer for SQLite-style storage
+        conversation: conversation || null, // Full chat log
+        detailedFeedback: detailedFeedback || null, // Detailed AI feedback with corrections
+        topic: topic || null, // Match topic
       });
 
       // Update win streak
