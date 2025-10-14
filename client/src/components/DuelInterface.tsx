@@ -368,7 +368,7 @@ export default function DuelInterface({
       const validation = await validateQuestionMutation.mutateAsync(messageToSend);
       
       if (!validation.isValid) {
-        setValidationError(validation.reason || "Invalid question. Please ask using the vocabulary words.");
+        setValidationError(validation.message || "Invalid question. Please try asking something related to the topic.");
         return;
       }
 

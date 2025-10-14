@@ -339,36 +339,40 @@ export async function validateQuestion(
   vocabulary: string[],
   language: string
 ): Promise<{ isValid: boolean; message: string }> {
-  const prompt = `You are a very lenient language learning assistant validating if a student's question has ANY connection to the conversation topic.
+  const prompt = `You are a language learning assistant validating if a student's question is answerable and relevant to the conversation topic.
 
 Topic: ${topic}
 
 Student's question: "${question}"
 
-BE VERY LENIENT - accept the question if it has even the SLIGHTEST connection to "${topic}". 
-Only reject if it's COMPLETELY unrelated (like asking about cars when topic is food, or math when topic is hobbies).
+Validation criteria - the question should be:
+1. Related to "${topic}" (can be loosely connected, but must have some relevance)
+2. Actually answerable - someone should be able to provide a meaningful response
+3. Clear enough to understand what's being asked (even with grammar/spelling errors)
 
-Examples of what to ACCEPT:
-- Questions with loose connections to the topic
-- Questions that could be tangentially related  
-- Questions about feelings, opinions, or experiences related to the topic
-- Questions with grammar/spelling errors (ignore all language correctness)
-- Questions that are somewhat on-topic
-- Questions about related concepts or themes
+ACCEPT questions that:
+- Are related or loosely connected to the topic
+- Make sense and can be answered, even if imperfectly worded
+- Have grammar/spelling errors but the intent is clear
+- Ask about opinions, experiences, or information related to the topic
 
-DO NOT check:
-- Grammar or spelling
-- Language correctness  
-- Question structure
-- Vocabulary usage
-- How specific or direct the connection is
+REJECT questions that:
+- Are completely off-topic (e.g., asking about cars when topic is food)
+- Are too vague or nonsensical to answer meaningfully
+- Don't actually ask anything (just statements or gibberish)
+- Are impossible to respond to with a real answer
 
-Be generous and accept almost everything except completely off-topic questions.
+IGNORE (don't check):
+- Grammar or spelling quality
+- Perfect language correctness
+- Vocabulary sophistication
+
+The key test: "Could a reasonable person provide a meaningful answer to this question about ${topic}?"
 
 Respond with JSON:
 {
-  "isValid": boolean (true if even slightly related, false only if completely unrelated),
-  "message": string (brief explanation only if rejecting, otherwise empty string)
+  "isValid": boolean (true if answerable and topic-related, false otherwise),
+  "message": string (brief, encouraging explanation if rejecting - suggest what kind of question would work)
 }`;
 
   try {
@@ -377,7 +381,7 @@ Respond with JSON:
       messages: [
         {
           role: "system",
-          content: "You are an extremely lenient validator. Accept any question with even a slight connection to the topic. Only reject truly off-topic questions. Be generous and supportive of language learners."
+          content: "You are a supportive validator helping language learners ask better questions. Accept questions that are answerable and topic-related, even if imperfectly worded. Reject only if truly off-topic or impossible to answer meaningfully."
         },
         {
           role: "user",
@@ -385,7 +389,7 @@ Respond with JSON:
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 50,
+      max_tokens: 100,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
