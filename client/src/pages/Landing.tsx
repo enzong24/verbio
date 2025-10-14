@@ -13,12 +13,25 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen w-full">
+      {/* Header */}
+      <div className="border-b border-border/40 bg-card/30 backdrop-blur-sm">
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
+          <div className="flex items-center gap-4">
+            <img src="/favicon.png" alt="Verbio" className="w-12 h-12" />
+            <div>
+              <h2 className="text-2xl font-bold">Verbio</h2>
+              <p className="text-sm text-muted-foreground">Competitive Language Learning</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-6xl">
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h1 className="text-6xl lg:text-7xl font-bold text-foreground mb-6">
-              Verbio
+              Welcome to Verbio
             </h1>
             <p className="text-xl lg:text-2xl text-muted-foreground mb-10 max-w-3xl mx-auto">
               Master languages through competitive duels. Track your progress with Fluency Score ratings and compete against players worldwide.
