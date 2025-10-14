@@ -126,8 +126,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const language = req.params.language;
       
-      const stats = await storage.getUserLanguageStats(userId, language);
-      res.json(stats || { elo: 1000, wins: 0, losses: 0 });
+      // Update daily login streak
+      const stats = await storage.updateDailyLoginStreak(userId, language);
+      res.json(stats);
     } catch (error) {
       console.error("Error fetching user stats:", error);
       res.status(500).json({ message: "Failed to fetch user stats" });
@@ -187,6 +188,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         overallScore: scores.overall,
         isForfeit: isForfeit ? 1 : 0, // Convert boolean to integer for SQLite-style storage
       });
+
+      // Update win streak
+      await storage.updateWinStreak(userId, language, result === 'win', isForfeit || false);
 
       res.json(match);
     } catch (error) {

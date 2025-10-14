@@ -32,6 +32,10 @@ export interface IStorage {
     vocabulary: number;
     naturalness: number;
   }>;
+  
+  // Streaks
+  updateWinStreak(userId: string, language: string, isWin: boolean, isForfeit: boolean): Promise<UserLanguageStats>;
+  updateDailyLoginStreak(userId: string, language: string): Promise<UserLanguageStats>;
 }
 
 export class MemStorage implements IStorage {
@@ -82,6 +86,10 @@ export class MemStorage implements IStorage {
       elo: statsData.elo ?? existing?.elo ?? 1000,
       wins: statsData.wins ?? existing?.wins ?? 0,
       losses: statsData.losses ?? existing?.losses ?? 0,
+      winStreak: statsData.winStreak ?? existing?.winStreak ?? 0,
+      bestWinStreak: statsData.bestWinStreak ?? existing?.bestWinStreak ?? 0,
+      dailyLoginStreak: statsData.dailyLoginStreak ?? existing?.dailyLoginStreak ?? 0,
+      lastLoginDate: statsData.lastLoginDate ?? existing?.lastLoginDate ?? null,
       createdAt: existing?.createdAt || new Date(),
       updatedAt: new Date(),
     };
@@ -107,6 +115,7 @@ export class MemStorage implements IStorage {
       vocabularyScore: matchData.vocabularyScore!,
       naturalnessScore: matchData.naturalnessScore!,
       overallScore: matchData.overallScore!,
+      isForfeit: matchData.isForfeit ?? 0,
       createdAt: new Date(),
     };
     this.matches.set(match.id, match);
@@ -149,6 +158,49 @@ export class MemStorage implements IStorage {
       vocabulary: Math.round(totals.vocabulary / userMatches.length),
       naturalness: Math.round(totals.naturalness / userMatches.length),
     };
+  }
+
+  async updateWinStreak(userId: string, language: string, isWin: boolean, isForfeit: boolean): Promise<UserLanguageStats> {
+    const stats = await this.getUserLanguageStats(userId, language) || await this.upsertUserLanguageStats({ userId, language });
+    
+    if (isForfeit) {
+      // Forfeits don't affect win streaks
+      return stats;
+    }
+    
+    if (isWin) {
+      const newStreak = stats.winStreak + 1;
+      const newBestStreak = Math.max(newStreak, stats.bestWinStreak);
+      return this.upsertUserLanguageStats({
+        ...stats,
+        winStreak: newStreak,
+        bestWinStreak: newBestStreak,
+      });
+    } else {
+      return this.upsertUserLanguageStats({
+        ...stats,
+        winStreak: 0,
+      });
+    }
+  }
+
+  async updateDailyLoginStreak(userId: string, language: string): Promise<UserLanguageStats> {
+    const stats = await this.getUserLanguageStats(userId, language) || await this.upsertUserLanguageStats({ userId, language });
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    if (stats.lastLoginDate === today) {
+      // Already logged in today, no update needed
+      return stats;
+    }
+    
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const isConsecutive = stats.lastLoginDate === yesterday;
+    
+    return this.upsertUserLanguageStats({
+      ...stats,
+      dailyLoginStreak: isConsecutive ? stats.dailyLoginStreak + 1 : 1,
+      lastLoginDate: today,
+    });
   }
 }
 
@@ -287,6 +339,75 @@ export class DbStorage implements IStorage {
       vocabulary: Math.round(totals.vocabulary / userMatches.length),
       naturalness: Math.round(totals.naturalness / userMatches.length),
     };
+  }
+
+  async updateWinStreak(userId: string, language: string, isWin: boolean, isForfeit: boolean): Promise<UserLanguageStats> {
+    const stats = await this.getUserLanguageStats(userId, language) || await this.upsertUserLanguageStats({ userId, language });
+    
+    if (isForfeit) {
+      // Forfeits don't affect win streaks
+      return stats;
+    }
+    
+    if (isWin) {
+      const newStreak = stats.winStreak + 1;
+      const newBestStreak = Math.max(newStreak, stats.bestWinStreak);
+      
+      const result = await db
+        .update(userLanguageStats)
+        .set({
+          winStreak: newStreak,
+          bestWinStreak: newBestStreak,
+          updatedAt: new Date(),
+        })
+        .where(and(
+          eq(userLanguageStats.userId, userId),
+          eq(userLanguageStats.language, language)
+        ))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db
+        .update(userLanguageStats)
+        .set({
+          winStreak: 0,
+          updatedAt: new Date(),
+        })
+        .where(and(
+          eq(userLanguageStats.userId, userId),
+          eq(userLanguageStats.language, language)
+        ))
+        .returning();
+      return result[0];
+    }
+  }
+
+  async updateDailyLoginStreak(userId: string, language: string): Promise<UserLanguageStats> {
+    const stats = await this.getUserLanguageStats(userId, language) || await this.upsertUserLanguageStats({ userId, language });
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    if (stats.lastLoginDate === today) {
+      // Already logged in today, no update needed
+      return stats;
+    }
+    
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const isConsecutive = stats.lastLoginDate === yesterday;
+    const newStreak = isConsecutive ? stats.dailyLoginStreak + 1 : 1;
+    
+    const result = await db
+      .update(userLanguageStats)
+      .set({
+        dailyLoginStreak: newStreak,
+        lastLoginDate: today,
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(userLanguageStats.userId, userId),
+        eq(userLanguageStats.language, language)
+      ))
+      .returning();
+    return result[0];
   }
 }
 

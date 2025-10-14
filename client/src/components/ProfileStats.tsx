@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { TrendingUp, Trophy, Target, Calendar } from "lucide-react";
+import { TrendingUp, Trophy, Target, Calendar, Flame, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -15,6 +15,9 @@ interface ProfileStatsProps {
   losses?: number;
   currentLanguage?: string;
   isAuthenticated?: boolean;
+  winStreak?: number;
+  bestWinStreak?: number;
+  dailyLoginStreak?: number;
 }
 
 export default function ProfileStats({
@@ -25,6 +28,9 @@ export default function ProfileStats({
   losses = 0,
   currentLanguage = "Chinese",
   isAuthenticated = false,
+  winStreak = 0,
+  bestWinStreak = 0,
+  dailyLoginStreak = 0,
 }: ProfileStatsProps) {
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
@@ -57,7 +63,7 @@ export default function ProfileStats({
             </Avatar>
             <div className="flex-1">
               <CardTitle className="text-2xl" data-testid="text-username">{username}</CardTitle>
-              <div className="flex items-center gap-3 mt-1">
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
                 <Badge variant="outline" className="font-mono font-semibold text-base">
                   {elo} Fluency
                 </Badge>
@@ -65,6 +71,12 @@ export default function ProfileStats({
                   <TrendingUp className="w-3 h-3" />
                   {currentLanguage}
                 </Badge>
+                {bestWinStreak > 0 && (
+                  <Badge variant="outline" className="gap-1 bg-orange-500/10 border-orange-500/20 text-orange-500">
+                    <Trophy className="w-3 h-3" />
+                    Best: {bestWinStreak}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -103,12 +115,12 @@ export default function ProfileStats({
         <Card className="border-card-border">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-success/10 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-success" />
+              <div className="w-10 h-10 rounded-md bg-orange-500/10 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-orange-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold font-mono">{winRate}%</div>
-                <div className="text-sm text-muted-foreground">Win Rate</div>
+                <div className="text-2xl font-bold font-mono">{winStreak}</div>
+                <div className="text-sm text-muted-foreground">Win Streak</div>
               </div>
             </div>
           </CardContent>
@@ -117,12 +129,12 @@ export default function ProfileStats({
         <Card className="border-card-border">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-warning/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-warning" />
+              <div className="w-10 h-10 rounded-md bg-blue-500/10 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold font-mono">{totalMatches}</div>
-                <div className="text-sm text-muted-foreground">Total</div>
+                <div className="text-2xl font-bold font-mono">{dailyLoginStreak}</div>
+                <div className="text-sm text-muted-foreground">Day Streak</div>
               </div>
             </div>
           </CardContent>

@@ -574,6 +574,9 @@ function MainApp() {
             totalMatches={userWins + userLosses}
             currentLanguage={currentLanguage}
             isAuthenticated={isAuthenticated}
+            winStreak={isAuthenticated ? (languageStats?.winStreak ?? 0) : 0}
+            bestWinStreak={isAuthenticated ? (languageStats?.bestWinStreak ?? 0) : 0}
+            dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
           />
         )}
         

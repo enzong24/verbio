@@ -38,6 +38,10 @@ export const userLanguageStats = pgTable(
     elo: integer("elo").notNull().default(1000),
     wins: integer("wins").notNull().default(0),
     losses: integer("losses").notNull().default(0),
+    winStreak: integer("win_streak").notNull().default(0),
+    bestWinStreak: integer("best_win_streak").notNull().default(0),
+    dailyLoginStreak: integer("daily_login_streak").notNull().default(0),
+    lastLoginDate: varchar("last_login_date"), // Store as YYYY-MM-DD for easy comparison
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
@@ -67,6 +71,38 @@ export const matches = pgTable("matches", {
 
 export type Match = typeof matches.$inferSelect;
 export type InsertMatch = typeof matches.$inferInsert;
+
+// Friends table for managing friend relationships
+export const friends = pgTable(
+  "friends",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id").notNull().references(() => users.id),
+    friendId: varchar("friend_id").notNull().references(() => users.id),
+    status: varchar("status").notNull().default("pending"), // 'pending', 'accepted', 'rejected'
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [unique("unique_friendship").on(table.userId, table.friendId)],
+);
+
+export type Friend = typeof friends.$inferSelect;
+export type InsertFriend = typeof friends.$inferInsert;
+
+// Private match invites for friend challenges
+export const privateMatchInvites = pgTable("private_match_invites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  inviteCode: varchar("invite_code").notNull().unique(),
+  creatorId: varchar("creator_id").notNull().references(() => users.id),
+  language: varchar("language").notNull(),
+  difficulty: varchar("difficulty").notNull(),
+  topic: varchar("topic"),
+  status: varchar("status").notNull().default("pending"), // 'pending', 'active', 'completed', 'expired'
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type PrivateMatchInvite = typeof privateMatchInvites.$inferSelect;
+export type InsertPrivateMatchInvite = typeof privateMatchInvites.$inferInsert;
 
 // Match/Duel schemas
 export const messageSchema = z.object({
