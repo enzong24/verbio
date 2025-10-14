@@ -148,6 +148,7 @@ export default function DuelInterface({
     mutationFn: async (messagesToGrade: Message[]) => {
       const response = await apiRequest("POST", "/api/grade", {
         messages: messagesToGrade,
+        topic,
         vocabulary: vocabulary.map(v => v.word),
         language,
         difficulty,
