@@ -11,6 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 import VocabularyBadge from "@/components/VocabularyBadge";
 import TextWithPinyin from "@/components/TextWithPinyin";
 import AccentKeyboard from "@/components/AccentKeyboard";
+import { useToast } from "@/hooks/use-toast";
 import type { Message, GradingResult } from "@shared/schema";
 
 interface VocabWord {
@@ -60,6 +61,8 @@ export default function DuelInterface({
   playerId,
   multiplayerWsRef
 }: DuelInterfaceProps) {
+  const { toast } = useToast();
+
   // Get timer duration based on difficulty
   const getTimerDuration = () => {
     switch (difficulty) {
@@ -97,6 +100,10 @@ export default function DuelInterface({
   const [validationError, setValidationError] = useState("");
   const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
   const [translations, setTranslations] = useState<Record<number, string>>({});
+  const [showExample, setShowExample] = useState(false);
+  const [exampleText, setExampleText] = useState("");
+  const [helpPenalty, setHelpPenalty] = useState(0);
+  const [helpUsedThisTurn, setHelpUsedThisTurn] = useState(false);
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -131,6 +138,49 @@ export default function DuelInterface({
       });
       return await response.json();
     },
+  });
+
+  const exampleMutation = useMutation({
+    mutationFn: async () => {
+      // Prevent duplicate requests during the same turn
+      if (helpUsedThisTurn) {
+        throw new Error("Help already used this turn");
+      }
+
+      const vocabStrings = vocabulary.map(v => v.word);
+      const currentBotQuestion = messages.filter(m => m.sender === "opponent").slice(-1)[0]?.text || "";
+      const requestedRound = round; // Capture round when request is made
+      const requestedPhase = turnPhase; // Capture phase when request is made
+      
+      const response = await apiRequest("POST", "/api/generate-example", {
+        language,
+        difficulty,
+        topic,
+        vocabulary: vocabStrings,
+        phase: turnPhase === "user-question" ? "user-question" : "user-answer",
+        context: turnPhase === "user-answer" ? currentBotQuestion : undefined
+      });
+      const result = await response.json();
+      return { ...result, requestedRound, requestedPhase }; // Return with round and phase markers
+    },
+    onSuccess: (data) => {
+      // Only apply help if we're still on the same round and phase
+      if (data.requestedRound === round && data.requestedPhase === turnPhase) {
+        setExampleText(data.example);
+        setShowExample(true);
+        setHelpUsedThisTurn(true);
+        setHelpPenalty(prev => prev + 15); // 15 point penalty for using help
+      }
+      // Otherwise, ignore stale response from a previous turn
+    },
+    onError: (error: any) => {
+      console.error("Failed to generate example:", error);
+      toast({
+        title: "Failed to generate example",
+        description: "Please try again or continue without help.",
+        variant: "destructive"
+      });
+    }
   });
 
   const botAnswerMutation = useMutation({
@@ -279,6 +329,12 @@ export default function DuelInterface({
   // Update when grading is complete
   useEffect(() => {
     if (gradingMutation.isSuccess && gradingMutation.data) {
+      // Apply help penalty to the grading result
+      const adjustedResult = {
+        ...gradingMutation.data,
+        overall: Math.max(0, gradingMutation.data.overall - helpPenalty)
+      };
+
       // Send grading result to opponent if multiplayer
       if (!isBot && multiplayerWsRef?.current?.readyState === WebSocket.OPEN && matchId && playerId) {
         console.log('DuelInterface: Sending player grading result to opponent');
@@ -287,18 +343,25 @@ export default function DuelInterface({
           playerId,
           matchId,
           gradingResult: {
-            grammar: gradingMutation.data.grammar,
-            fluency: gradingMutation.data.fluency,
-            vocabulary: gradingMutation.data.vocabulary,
-            naturalness: gradingMutation.data.naturalness,
-            overall: gradingMutation.data.overall
+            grammar: adjustedResult.grammar,
+            fluency: adjustedResult.fluency,
+            vocabulary: adjustedResult.vocabulary,
+            naturalness: adjustedResult.naturalness,
+            overall: adjustedResult.overall
           }
         }));
       }
       
-      onComplete?.(gradingMutation.data, messages);
+      onComplete?.(adjustedResult, messages);
     }
-  }, [gradingMutation.isSuccess, gradingMutation.data, multiplayerWsRef]);
+  }, [gradingMutation.isSuccess, gradingMutation.data, multiplayerWsRef, helpPenalty]);
+
+  // Reset example when turn phase changes
+  useEffect(() => {
+    setShowExample(false);
+    setExampleText("");
+    setHelpUsedThisTurn(false);
+  }, [turnPhase]);
 
   // Timer effect
   useEffect(() => {
@@ -670,6 +733,44 @@ export default function DuelInterface({
             {/* Input Area */}
             <div className="p-3 md:p-4 border-t bg-card pb-safe-bottom">
               <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
+              
+              {/* Need Help Button for Beginner Mode */}
+              {difficulty === "Beginner" && isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
+                <div className="mb-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exampleMutation.mutate()}
+                    disabled={exampleMutation.isPending || helpUsedThisTurn}
+                    data-testid="button-need-help"
+                    className="w-full"
+                  >
+                    <HelpCircle className="w-4 h-4 mr-2" />
+                    {exampleMutation.isPending ? "Generating example..." : "Need help? Show me an example (-15pts)"}
+                  </Button>
+                </div>
+              )}
+
+              {/* Example Display */}
+              {showExample && exampleText && (
+                <Card className="mb-3 border-highlight/30 bg-highlight/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4" />
+                      Example {turnPhase === "user-question" ? "Question" : "Answer"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-foreground">
+                      <TextWithPinyin text={exampleText} language={language} />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2 italic">
+                      Use this as inspiration! (-15 points applied)
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+
               {validationError && (
                 <div className="mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs md:text-sm" data-testid="validation-error">
                   {validationError}

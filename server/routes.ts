@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { gradingRequestSchema } from "@shared/schema";
-import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary, translateText } from "./openai";
+import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary, translateText, generateExampleResponse } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupMatchmaking } from "./matchmaking";
 import { vocabularyCache } from "./vocabularyCache";
@@ -115,6 +115,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Translation error:", error);
       res.status(500).json({ 
         error: "Failed to translate text",
+        message: error.message 
+      });
+    }
+  });
+
+  // Generate example response for beginner mode help
+  app.post("/api/generate-example", async (req, res) => {
+    try {
+      const { language, difficulty, topic, vocabulary, phase, context } = req.body;
+      const example = await generateExampleResponse({
+        language,
+        difficulty,
+        topic,
+        vocabulary,
+        phase,
+        context
+      });
+      res.json({ example });
+    } catch (error: any) {
+      console.error("Example generation error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate example",
         message: error.message 
       });
     }

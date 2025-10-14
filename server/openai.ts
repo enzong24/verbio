@@ -584,3 +584,62 @@ export async function translateText(text: string, fromLanguage: string): Promise
     throw new Error(`Failed to translate text: ${error.message}`);
   }
 }
+
+export async function generateExampleResponse(params: {
+  language: string;
+  difficulty: string;
+  topic: string;
+  vocabulary: string[];
+  phase: "user-question" | "user-answer";
+  context?: string; // The bot's question if user is answering
+}): Promise<string> {
+  const { language, difficulty, topic, vocabulary, phase, context } = params;
+
+  const phaseInstruction = phase === "user-question" 
+    ? `Generate an example QUESTION in ${language} about the topic "${topic}".`
+    : `Generate an example ANSWER in ${language} to this question: "${context}"`;
+
+  const prompt = `You are a ${language} language teacher helping a BEGINNER student who is stuck and needs an example.
+
+${phaseInstruction}
+
+Topic: ${topic}
+Difficulty: ${difficulty}
+Available vocabulary to use: ${vocabulary.join(", ")}
+
+Create a GOOD example response that:
+- Is appropriate for ${difficulty} level (simple and clear for beginners)
+- Uses at least ONE word from the vocabulary list
+- Is grammatically correct and natural
+- Is helpful but not overly complex
+- Shows what a good response looks like
+${phase === "user-answer" ? "- Actually answers the question asked" : "- Asks a relevant, clear question"}
+
+IMPORTANT: Generate a HELPFUL, CLEAR example that a beginner can learn from. Keep it simple!
+
+Respond with ONLY the example ${phase === "user-question" ? "question" : "answer"} in ${language}, nothing else.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful ${language} language teacher creating clear examples for beginners.`
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 150,
+    });
+
+    const example = response.choices[0]?.message?.content?.trim() || "";
+    return example;
+  } catch (error: any) {
+    console.error("Error generating example response:", error);
+    throw new Error(`Failed to generate example: ${error.message}`);
+  }
+}
