@@ -1,15 +1,27 @@
-import { Trophy, Users, Zap, Globe } from "lucide-react";
+import { Trophy, Users, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+
+const LANGUAGES = [
+  { code: "chinese", flag: "🇨🇳", name: "Chinese" },
+  { code: "spanish", flag: "🇪🇸", name: "Spanish" },
+  { code: "italian", flag: "🇮🇹", name: "Italian" },
+];
 
 export default function Landing() {
+  const [currentLangIndex, setCurrentLangIndex] = useState(0);
+
   const handleSignIn = () => {
     window.location.href = "/api/login";
   };
 
   const handleGuestPlay = () => {
     window.location.href = "/?guest=true";
+  };
+
+  const toggleLanguage = () => {
+    setCurrentLangIndex((prev) => (prev + 1) % LANGUAGES.length);
   };
 
   return (
@@ -26,24 +38,15 @@ export default function Landing() {
               </div>
             </div>
             
-            {/* Language Preview */}
-            <div className="flex items-center gap-3">
-              <Globe className="w-4 h-4 text-muted-foreground hidden sm:block" />
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="gap-1.5 font-normal">
-                  <span className="text-base">🇨🇳</span>
-                  <span>Chinese</span>
-                </Badge>
-                <Badge variant="outline" className="gap-1.5 font-normal">
-                  <span className="text-base">🇪🇸</span>
-                  <span>Spanish</span>
-                </Badge>
-                <Badge variant="outline" className="gap-1.5 font-normal">
-                  <span className="text-base">🇮🇹</span>
-                  <span>Italian</span>
-                </Badge>
-              </div>
-            </div>
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center justify-center w-12 h-12 rounded-lg hover-elevate active-elevate-2 border border-border/40 transition-transform"
+              title={`Switch language (Current: ${LANGUAGES[currentLangIndex].name})`}
+              data-testid="button-language-toggle"
+            >
+              <span className="text-2xl">{LANGUAGES[currentLangIndex].flag}</span>
+            </button>
           </div>
         </div>
       </div>
