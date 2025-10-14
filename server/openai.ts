@@ -134,9 +134,10 @@ export async function generateBotQuestion(
   vocabulary: string[],
   language: string = "Chinese",
   difficulty: string = "Medium",
-  previousQuestions: string[] = []
+  previousQuestions: string[] = [],
+  isPracticeMode: boolean = false
 ): Promise<string> {
-  const targetAccuracy = getBotTargetAccuracy(difficulty);
+  const targetAccuracy = isPracticeMode ? 100 : getBotTargetAccuracy(difficulty);
   
   const mistakeGuidelines: Record<string, string> = {
     Chinese: `Common learner mistakes for Chinese:
@@ -188,7 +189,23 @@ export async function generateBotQuestion(
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
 
-  const prompt = `You are roleplaying as a human ${language} language LEARNER (not a teacher) asking a question during a Q&A session about ${topic}.
+  const prompt = isPracticeMode 
+    ? `You are a NATIVE ${language} speaker asking a question during a Q&A session about ${topic}.
+
+Target vocabulary to incorporate: ${vocabulary.join(", ")}
+${previousQuestions.length > 0 ? `\nPrevious questions you asked:\n${previousQuestions.join("\n")}\n\nMake sure to ask a DIFFERENT question.` : ""}
+
+Generate ONE PERFECT question in ${language} that:
+- Uses at least one vocabulary word from the list
+- Is relevant to the topic "${topic}"
+- Uses PERFECT grammar, vocabulary, and natural phrasing
+- Sounds like a native speaker would speak
+- Is clear and natural
+
+IMPORTANT: Generate PERFECT ${language}. No mistakes. This is for language practice.
+
+Respond with ONLY the question in ${language}, nothing else.`
+    : `You are roleplaying as a human ${language} language LEARNER (not a teacher) asking a question during a Q&A session about ${topic}.
 
 Your proficiency level: ${difficulty} (approximately ${targetAccuracy}% accuracy)
 ${difficultyInstructions[difficulty] || difficultyInstructions.Medium}
@@ -215,7 +232,9 @@ Respond with ONLY the question in ${language}, nothing else.`;
       messages: [
         {
           role: "system",
-          content: `You are roleplaying as a ${language} language learner at ${difficulty} level with ${targetAccuracy}% proficiency. You make realistic, believable mistakes that real learners make. You are NOT a teacher - you are a student with imperfect language skills.`
+          content: isPracticeMode
+            ? `You are a NATIVE ${language} speaker. Generate PERFECT ${language} with no mistakes. This is for language practice.`
+            : `You are roleplaying as a ${language} language learner at ${difficulty} level with ${targetAccuracy}% proficiency. You make realistic, believable mistakes that real learners make. You are NOT a teacher - you are a student with imperfect language skills.`
         },
         {
           role: "user",
@@ -237,9 +256,10 @@ export async function generateBotAnswer(
   topic: string,
   vocabulary: string[],
   language: string = "Chinese",
-  difficulty: string = "Medium"
+  difficulty: string = "Medium",
+  isPracticeMode: boolean = false
 ): Promise<string> {
-  const targetAccuracy = getBotTargetAccuracy(difficulty);
+  const targetAccuracy = isPracticeMode ? 100 : getBotTargetAccuracy(difficulty);
   
   const mistakeGuidelines: Record<string, string> = {
     Chinese: `Common learner mistakes for Chinese:
@@ -291,7 +311,24 @@ export async function generateBotAnswer(
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
 
-  const prompt = `You are roleplaying as a human ${language} language LEARNER (not a native speaker) answering a question during a Q&A session about ${topic}.
+  const prompt = isPracticeMode
+    ? `You are a NATIVE ${language} speaker answering a question during a Q&A session about ${topic}.
+
+Question you're answering: ${userQuestion}
+
+Target vocabulary to incorporate: ${vocabulary.join(", ")}
+
+Answer the question in ${language} with 1-2 sentences that:
+- Directly answer the question
+- Naturally incorporate at least one vocabulary word from the list
+- Uses PERFECT grammar, vocabulary, and natural phrasing
+- Sounds like a native speaker would speak
+- Is clear and natural
+
+IMPORTANT: Generate PERFECT ${language}. No mistakes. This is for language practice.
+
+Respond with ONLY the answer in ${language}, nothing else.`
+    : `You are roleplaying as a human ${language} language LEARNER (not a native speaker) answering a question during a Q&A session about ${topic}.
 
 Your proficiency level: ${difficulty} (approximately ${targetAccuracy}% accuracy)
 ${difficultyInstructions[difficulty] || difficultyInstructions.Medium}
@@ -319,7 +356,9 @@ Respond with ONLY the answer in ${language}, nothing else.`;
       messages: [
         {
           role: "system",
-          content: `You are roleplaying as a ${language} language learner at ${difficulty} level with ${targetAccuracy}% proficiency. You make realistic, believable mistakes that real learners make. You are NOT a native speaker - you are a student with imperfect language skills.`
+          content: isPracticeMode 
+            ? `You are a NATIVE ${language} speaker. Generate PERFECT ${language} with no mistakes. This is for language practice.`
+            : `You are roleplaying as a ${language} language learner at ${difficulty} level with ${targetAccuracy}% proficiency. You make realistic, believable mistakes that real learners make. You are NOT a native speaker - you are a student with imperfect language skills.`
         },
         {
           role: "user",

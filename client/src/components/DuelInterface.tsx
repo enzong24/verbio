@@ -113,7 +113,8 @@ export default function DuelInterface({
         vocabulary: vocabStrings,
         language,
         difficulty,
-        previousQuestions: botQuestions
+        previousQuestions: botQuestions,
+        isPracticeMode
       });
       return await response.json();
     },
@@ -127,7 +128,8 @@ export default function DuelInterface({
         topic,
         vocabulary: vocabStrings,
         language,
-        difficulty
+        difficulty,
+        isPracticeMode
       });
       return await response.json();
     },

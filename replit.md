@@ -23,9 +23,10 @@ WebSocket is implemented for real-time multiplayer matchmaking with Fluency Scor
 
 ### System Design Choices
 - **Practice vs Competitive Modes**: 
-  - **Practice Mode** (via "Practice with AI Bot" button): No Fluency Score changes, opponent Fluency Score hidden, risk-free learning
-  - **Competitive Mode** (via "Find Match" button): Full Fluency Score changes apply (even for bot opponents), opponent Fluency Score visible
+  - **Practice Mode** (via "Practice with AI Bot" button): Perfect native-level AI bot speaks with 0 mistakes, no Fluency Score changes, no win/loss display, shows only player performance and feedback
+  - **Competitive Mode** (via "Find Match" button): Full Fluency Score changes apply (even for bot opponents), opponent Fluency Score visible, win/loss comparison shown
   - The `isPracticeMode` flag distinguishes modes independent of opponent type (bot or human)
+  - Practice mode bots are generated with isPracticeMode=true flag, resulting in perfect grammar, vocabulary, and native-level responses for optimal learning
 - **Real Multiplayer Matchmaking**: WebSocket-based matchmaking pairs players by Fluency Score, language, and difficulty, with AI bot fallback after 10-second timeout. Random turn order determines who starts first when two players match. Both players play with the same language, difficulty, topic, and vocabulary (vocabulary is generated once for player1's settings and shared with both players). Players communicate in real-time via WebSocket message relay.
   - **WebSocket Lifecycle Management**: App.tsx owns and manages the multiplayer WebSocket connection, persisting it across DuelInterface mounts/unmounts with a 30-second timeout to wait for opponent grading results. DuelInterface uses `multiplayerWsRef` for ALL multiplayer operations (player_message, player_turn_complete, player_forfeit, player_grading_result) to avoid staleness issues.
   - **Vocabulary Sharing in Multiplayer**: Server generates vocabulary once in matchmaking.ts and sends it in the WebSocket match_found message. Frontend receives vocabulary from useMatchmaking.ts, which is passed through MatchFinder to App.handleMatchFound. When vocabularyFromServer is provided, the frontend skips the /api/generate-vocabulary API call entirely, eliminating duplicate generation for human vs human matches.

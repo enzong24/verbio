@@ -272,7 +272,7 @@ export default function MatchFinder({
               <CardContent className="p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">Practice Mode</h3>
-                  <p className="text-sm text-muted-foreground">Choose your topic • No Fluency Score changes</p>
+                  <p className="text-sm text-muted-foreground">Perfect native-level AI • Choose your topic • No scoring or competition</p>
                 </div>
                 <div className="flex items-center gap-3 mb-4">
                   <BookOpen className="w-5 h-5 text-muted-foreground" />

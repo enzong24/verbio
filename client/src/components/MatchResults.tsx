@@ -14,6 +14,7 @@ interface MatchResultsProps {
   newElo?: number;
   isBot?: boolean;
   opponentName?: string;
+  isPracticeMode?: boolean;
   onContinue?: () => void;
   onAIReview?: () => void;
 }
@@ -24,6 +25,7 @@ export default function MatchResults({
   newElo = 1562,
   isBot = false,
   opponentName = "Opponent",
+  isPracticeMode = false,
   onContinue,
   onAIReview
 }: MatchResultsProps) {
@@ -59,8 +61,12 @@ export default function MatchResults({
     naturalness: gradingResult.botNaturalness || 0,
   } : null;
 
-  // Play sound effect on mount
+  // Play sound effect on mount (but not in practice mode)
   useEffect(() => {
+    if (isPracticeMode) {
+      // No win/loss sounds in practice mode
+      return;
+    }
     if (isDraw) {
       // No sound for draw
       return;
@@ -70,7 +76,7 @@ export default function MatchResults({
     } else {
       playLoss();
     }
-  }, [isWinner, isDraw, playWin, playLoss]);
+  }, [isWinner, isDraw, isPracticeMode, playWin, playLoss]);
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-4">
@@ -80,7 +86,7 @@ export default function MatchResults({
             <div className="flex justify-center mb-4">
               <motion.div 
                 className={`w-24 h-24 rounded-md flex items-center justify-center ${
-                  isWinner ? 'bg-success/20' : 'bg-destructive/20'
+                  isPracticeMode ? 'bg-primary/20' : (isWinner ? 'bg-success/20' : 'bg-destructive/20')
                 }`}
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
@@ -92,17 +98,21 @@ export default function MatchResults({
                 }}
               >
                 <motion.div
-                  animate={isWinner ? { 
+                  animate={!isPracticeMode && isWinner ? { 
                     scale: [1, 1.2, 1],
                     rotate: [0, 10, -10, 0]
                   } : {}}
                   transition={{
                     duration: 0.6,
                     delay: 0.4,
-                    repeat: isWinner ? 2 : 0
+                    repeat: !isPracticeMode && isWinner ? 2 : 0
                   }}
                 >
-                  <Trophy className={`w-12 h-12 ${isWinner ? 'text-success' : 'text-destructive'}`} />
+                  {isPracticeMode ? (
+                    <Brain className="w-12 h-12 text-primary" />
+                  ) : (
+                    <Trophy className={`w-12 h-12 ${isWinner ? 'text-success' : 'text-destructive'}`} />
+                  )}
                 </motion.div>
               </motion.div>
             </div>
@@ -112,7 +122,7 @@ export default function MatchResults({
               transition={{ delay: 0.3 }}
             >
               <CardTitle className="text-4xl font-bold mb-2" data-testid="text-result">
-                {isWinner ? "Victory!" : "Good Effort!"}
+                {isPracticeMode ? "Practice Complete!" : (isWinner ? "Victory!" : "Good Effort!")}
               </CardTitle>
             </motion.div>
             {eloChange === 0 ? (
@@ -174,6 +184,32 @@ export default function MatchResults({
               <div className="text-center py-8">
                 <p className="text-muted-foreground text-lg">Match ended by forfeit</p>
               </div>
+            ) : isPracticeMode ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+              >
+                <h3 className="font-semibold mb-4">Your Performance</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <User className="w-5 h-5" />
+                    <span className="font-semibold">You</span>
+                    <Badge variant="outline" className="ml-auto font-mono" data-testid="text-user-score">
+                      {userScore}%
+                    </Badge>
+                  </div>
+                  {Object.entries(userScores).map(([key, value]) => (
+                    <div key={key} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm capitalize text-muted-foreground">{key}</span>
+                        <span className="font-mono text-sm">{value}%</span>
+                      </div>
+                      <Progress value={value} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
             ) : hasOpponentScores ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

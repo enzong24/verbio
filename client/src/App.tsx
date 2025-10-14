@@ -366,7 +366,9 @@ function MainApp() {
       console.error("Failed to generate vocabulary:", error);
       // Fallback to static vocabulary if API fails
       const vocabStrings = getThemeVocabulary(theme.id, difficulty, language);
-      const themeVocab = theme.vocabulary[difficulty];
+      // For Beginner, use Easy vocabulary from theme
+      const effectiveDifficulty = difficulty === "Beginner" ? "Easy" : difficulty;
+      const themeVocab = theme.vocabulary[effectiveDifficulty];
       
       const vocabulary: VocabWord[] = vocabStrings.map((word, i) => {
         const matchingWord = themeVocab[i];
@@ -653,6 +655,7 @@ function MainApp() {
             newElo={userElo}
             isBot={matchData.isBot}
             opponentName={matchData.opponent}
+            isPracticeMode={matchData.isPracticeMode}
             onContinue={handleResultsContinue}
             onAIReview={handleAIReview}
           />

@@ -44,8 +44,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate bot question
   app.post("/api/bot-question", async (req, res) => {
     try {
-      const { topic, vocabulary, language = "Chinese", difficulty = "Medium", previousQuestions = [] } = req.body;
-      const question = await generateBotQuestion(topic, vocabulary, language, difficulty, previousQuestions);
+      const { topic, vocabulary, language = "Chinese", difficulty = "Medium", previousQuestions = [], isPracticeMode = false } = req.body;
+      const question = await generateBotQuestion(topic, vocabulary, language, difficulty, previousQuestions, isPracticeMode);
       res.json({ question });
     } catch (error: any) {
       console.error("Bot question error:", error);
@@ -59,8 +59,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate bot answer
   app.post("/api/bot-answer", async (req, res) => {
     try {
-      const { userQuestion, topic, vocabulary, language = "Chinese", difficulty = "Medium" } = req.body;
-      const answer = await generateBotAnswer(userQuestion, topic, vocabulary, language, difficulty);
+      const { userQuestion, topic, vocabulary, language = "Chinese", difficulty = "Medium", isPracticeMode = false } = req.body;
+      const answer = await generateBotAnswer(userQuestion, topic, vocabulary, language, difficulty, isPracticeMode);
       res.json({ answer });
     } catch (error: any) {
       console.error("Bot answer error:", error);
