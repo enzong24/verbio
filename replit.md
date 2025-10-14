@@ -1,7 +1,7 @@
-# LangDuel - Competitive Language Learning Platform
+# Verbio - Competitive Language Learning Platform
 
 ## Overview
-LangDuel is an AI-powered, competitive language learning platform designed to gamify language acquisition. It enables users to engage in themed conversations with opponents or AI bots, receive instant AI feedback on their performance, and track their progress through an Elo-ranked competitive system. The platform aims to transform language learning into an engaging, measurable experience akin to competitive online gaming. Key features include real-time multiplayer duels, AI-generated vocabulary for dynamic matches, a comprehensive Elo ranking system inspired by Chess.com, and a fully responsive user interface across devices.
+Verbio is an AI-powered, competitive language learning platform designed to gamify language acquisition. It enables users to engage in themed conversations with opponents or AI bots, receive instant AI feedback on their performance, and track their progress through a Fluency Score-ranked competitive system. The platform aims to transform language learning into an engaging, measurable experience akin to competitive online gaming. Key features include real-time multiplayer duels, AI-generated vocabulary for dynamic matches, a comprehensive Fluency Score ranking system inspired by Chess.com, and a fully responsive user interface across devices.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -19,24 +19,24 @@ The backend uses **Express.js** with **Node.js** and **TypeScript** (ESM modules
 - **GPT-4o-mini** for bot question/answer generation (cost-efficient, ~80% cheaper)
 - **Vocabulary Caching System**: In-memory cache stores up to 5 different vocabulary sets per topic/language/difficulty combination. Cache entries last 24 hours and are randomly selected to provide variety while reducing API calls. When a vocabulary set is requested, the system first checks cache and only generates new vocabulary on cache miss.
 
-WebSocket is implemented for real-time multiplayer matchmaking with Elo-based pairing and AI bot fallback.
+WebSocket is implemented for real-time multiplayer matchmaking with Fluency Score-based pairing and AI bot fallback.
 
 ### System Design Choices
 - **Practice vs Competitive Modes**: 
-  - **Practice Mode** (via "Practice with AI Bot" button): No Elo changes, opponent Elo hidden, risk-free learning
-  - **Competitive Mode** (via "Find Match" button): Full Elo changes apply (even for bot opponents), opponent Elo visible
+  - **Practice Mode** (via "Practice with AI Bot" button): No Fluency Score changes, opponent Fluency Score hidden, risk-free learning
+  - **Competitive Mode** (via "Find Match" button): Full Fluency Score changes apply (even for bot opponents), opponent Fluency Score visible
   - The `isPracticeMode` flag distinguishes modes independent of opponent type (bot or human)
-- **Real Multiplayer Matchmaking**: WebSocket-based matchmaking pairs players by Elo, language, and difficulty, with AI bot fallback.
+- **Real Multiplayer Matchmaking**: WebSocket-based matchmaking pairs players by Fluency Score, language, and difficulty, with AI bot fallback.
 - **AI-Generated Vocabulary**: OpenAI GPT-4o-mini dynamically generates vocabulary based on topic and difficulty, with results cached for 24 hours to reduce costs and improve performance.
-- **Elo Ranking System**: Implements a standard Elo calculation (K-factor=32) with proper expected score formula: `1 / (1 + 10^((opponentElo - userElo)/400))`. Elo changes are calculated once in `handleResultsContinue` to prevent double updates.
-- **Competitive Bot Matches**: Bot opponents from "Find Match" are treated as competitive with full Elo changes, human-like names (Emma Chen, Lucas Rodriguez), and varied stats (70-95% per category).
+- **Fluency Score Ranking System**: Implements a standard Elo calculation (K-factor=32) with proper expected score formula: `1 / (1 + 10^((opponentElo - userElo)/400))`. Fluency Score changes are calculated once in `handleResultsContinue` to prevent double updates.
+- **Competitive Bot Matches**: Bot opponents from "Find Match" are treated as competitive with full Fluency Score changes, human-like names (Emma Chen, Lucas Rodriguez), and varied stats (70-95% per category).
 - **Difficulty & Penalty System**: Features Easy, Medium, and Hard difficulties with varying timers, round counts. A 20-point penalty for skipping questions is applied; viewing vocabulary definitions incurs no penalty.
 - **Expanded Theme System**: Includes 21 comprehensive themes with difficulty-specific vocabulary and full language support (Chinese, Spanish, Italian). Competitive matches use random topics.
 - **Turn-Based Q&A**: Structured turn-based conversation flow with bot asking first, user answering, user asking, and bot answering, with question deduplication.
 - **Mobile Responsiveness**: Fully responsive UI with mobile-optimized typing interface and scrollable slide-out navigation.
 - **Loading State Protection**: All action buttons implement loading states with disabled states to prevent duplicate actions (rapid clicking, simultaneous requests).
-- **Elo Calculation Consistency**: Both MatchResults display and handleResultsContinue use identical Elo formula to ensure displayed changes match applied changes. handleForfeit does NOT update Elo directly; all updates happen in handleResultsContinue.
-- **Forfeit Behavior**: Forfeiting a match counts as a LOSS (user scores set to 0, lower than bot's 70-95 range), applies standard Elo changes. Forfeits now appear in match history with a "Forfeit" indicator badge but still do NOT contribute to skill progress calculations (Grammar, Fluency, Vocabulary, Naturalness remain unaffected).
+- **Fluency Score Calculation Consistency**: Both MatchResults display and handleResultsContinue use identical Fluency Score formula to ensure displayed changes match applied changes. handleForfeit does NOT update Fluency Score directly; all updates happen in handleResultsContinue.
+- **Forfeit Behavior**: Forfeiting a match counts as a LOSS (user scores set to 0, lower than bot's 70-95 range), applies standard Fluency Score changes. Forfeits now appear in match history with a "Forfeit" indicator badge but still do NOT contribute to skill progress calculations (Grammar, Fluency, Vocabulary, Naturalness remain unaffected).
 - **Guest Mode Restrictions**: Guest users do not see "Recent Matches" or "Skill Progress" sections (hidden via `isAuthenticated` conditionals). Guest stats are stored in localStorage while authenticated users use PostgreSQL.
 - **Guest Rate Limiting**: Guest accounts are limited to 5 matches per day (resets at midnight) to prevent API cost abuse. The limit is tracked in localStorage via `guestRateLimit.ts` utility. When limit is reached, guests see a prominent alert prompting them to sign in for unlimited access. Both competitive and practice matches count toward the limit.
 
