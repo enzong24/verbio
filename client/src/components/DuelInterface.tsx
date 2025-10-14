@@ -195,13 +195,13 @@ export default function DuelInterface({
           }
           
           if (data.type === 'opponent_disconnected') {
-            // Opponent disconnected, end the match as forfeit
-            handleForfeit();
+            // Opponent disconnected, you win by forfeit
+            handleOpponentForfeit();
           }
           
           if (data.type === 'opponent_forfeit') {
             // Opponent forfeited, you win!
-            handleForfeit();
+            handleOpponentForfeit();
           }
         } catch (error) {
           console.error('WebSocket message error:', error);
@@ -439,6 +439,29 @@ export default function DuelInterface({
     }
     
     onForfeit?.();
+  };
+
+  const handleOpponentForfeit = () => {
+    shouldCountRef.current = false;
+    inactivityCountRef.current = false;
+    
+    // When opponent forfeits, complete the match with a win for the current player
+    // Set opponent scores to 0 and user scores high to ensure a win
+    onComplete?.({
+      grammar: 90,
+      fluency: 90,
+      vocabulary: 90,
+      naturalness: 90,
+      overall: 90,
+      botGrammar: 0,
+      botFluency: 0,
+      botVocabulary: 0,
+      botNaturalness: 0,
+      botOverall: 0,
+      botElo: opponentElo,
+      feedback: ["Opponent forfeited. You win!"],
+      isForfeit: false // Not a forfeit for this player, they won
+    });
   };
 
   const handleAccentClick = (accent: string) => {
