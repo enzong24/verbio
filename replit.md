@@ -46,6 +46,21 @@ WebSocket is implemented for real-time multiplayer matchmaking with Fluency Scor
 - **Human vs Human Match Results**: For human matches, both players' scores are exchanged via WebSocket and displayed in a comparison table. MatchResults shows side-by-side score comparison for both human and bot matches. Win/loss is determined by score comparison - whoever has the higher overall score wins.
 - **Guest Mode Restrictions**: Guest users do not see "Recent Matches" or "Skill Progress" sections (hidden via `isAuthenticated` conditionals). Guest stats are stored in localStorage while authenticated users use PostgreSQL.
 - **Guest Rate Limiting**: Guest accounts are limited to 5 matches per day (resets at midnight) to prevent API cost abuse. The limit is tracked in localStorage via `guestRateLimit.ts` utility. When limit is reached, guests see a prominent alert prompting them to sign in for unlimited access. Both competitive and practice matches count toward the limit.
+- **Win Streaks & Daily Login Streaks**: 
+  - **Win Streak**: Tracks consecutive competitive wins (resets on loss), updates on match completion. Both current and best (lifetime high) win streaks are stored per language. Forfeits do not affect streak calculations.
+  - **Daily Login Streak**: Increments on first stats fetch each day (consecutive calendar days), resets if a day is missed. Tracks current and best streaks.
+  - Both displayed in ProfileStats with Flame (win streak) and Calendar (daily login) icons.
+- **Friend System**: 
+  - **Bidirectional Relationships**: Friend requests create pending relationships, acceptance makes them bidirectional (both users see each other as friends).
+  - **Authorization**: Accept/reject operations verify the authenticated user is the request recipient. Remove operation allows either friendship participant to end the relationship.
+  - **Friend Discovery**: Users send requests by email address, view pending requests, and see friend lists with Fluency Score stats.
+  - **Friend Stats Viewing**: Friends page displays each friend's Fluency Score, wins, and losses for their primary language.
+- **Private Match Invites**: 
+  - **Invite Creation**: Authenticated users create invites with language/difficulty/topic settings, generating unique 6-character codes valid for 24 hours.
+  - **Friend-Only Access**: Join endpoint verifies an active friendship exists between invite creator and joiner before allowing match access.
+  - **Authorization Checks**: Prevents self-joins, validates invite expiry and status (pending/used), marks invites as used upon successful join.
+  - **UI Integration**: Friends page includes invite creation with code display/copy functionality and join-by-code input. Frontend mutation handles validation errors (invalid code, expired, not friends, already used).
+  - **Future Enhancement**: Returned matchData (opponentId, language, difficulty, topic) ready for WebSocket/DuelInterface integration to enable true friend-vs-friend matches.
 
 ## External Dependencies
 
@@ -57,7 +72,13 @@ WebSocket is implemented for real-time multiplayer matchmaking with Fluency Scor
 ### Database
 - **Neon Postgres via `@neondatabase/serverless`**: Serverless PostgreSQL for persistent storage.
 - **Drizzle ORM**: Type-safe SQL query builder for database interactions.
-- **Tables**: `Sessions` (Replit Auth data), `Users` (user profiles), `UserLanguageStats` (language-specific stats), `Matches` (match history with isForfeit flag).
+- **Tables**: 
+  - `Sessions`: Replit Auth session data
+  - `Users`: User profiles with authentication info
+  - `UserLanguageStats`: Language-specific stats including Fluency Score, wins/losses, skill progress, and streaks (currentWinStreak, bestWinStreak, currentDailyLoginStreak, bestDailyLoginStreak, lastLoginDate)
+  - `Matches`: Match history with scores, isForfeit flag, and match metadata
+  - `Friends`: Friendship relationships with status (pending/accepted), supporting bidirectional friend connections
+  - `PrivateMatchInvites`: Private match invites with unique codes, creator, settings, expiry, and status tracking
 - **drizzle-kit**: For schema migrations.
 
 ### UI Component Libraries
