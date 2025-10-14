@@ -39,6 +39,8 @@ function MainApp() {
     language: Language;
     difficulty: Difficulty;
     startsFirst?: boolean;
+    matchId?: string;
+    playerId?: string;
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
   const [matchMessages, setMatchMessages] = useState<any[]>([]);
@@ -110,7 +112,17 @@ function MainApp() {
     return <Landing />;
   }
 
-  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean) => {
+  // Helper to get/generate playerId
+  const getPlayerId = () => {
+    let playerId = localStorage.getItem('matchmaking_session_id');
+    if (!playerId) {
+      playerId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('matchmaking_session_id', playerId);
+    }
+    return playerId;
+  };
+
+  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean, matchId?: string) => {
     // Use selected topic or random if not specified
     const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
@@ -146,6 +158,8 @@ function MainApp() {
         language,
         difficulty,
         startsFirst,
+        matchId,
+        playerId: getPlayerId(),
       });
       setCurrentPage("match");
     } catch (error) {
@@ -189,6 +203,8 @@ function MainApp() {
         language,
         difficulty,
         startsFirst,
+        matchId,
+        playerId: getPlayerId(),
       });
       setCurrentPage("match");
     }
@@ -376,6 +392,8 @@ function MainApp() {
             onComplete={handleDuelComplete}
             onForfeit={handleForfeit}
             startsFirst={matchData.startsFirst}
+            matchId={matchData.matchId}
+            playerId={matchData.playerId}
           />
         )}
         

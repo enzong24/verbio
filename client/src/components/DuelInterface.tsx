@@ -32,6 +32,8 @@ interface DuelInterfaceProps {
   onComplete?: (result: GradingResult, messages?: Message[]) => void;
   onForfeit?: () => void;
   startsFirst?: boolean;
+  matchId?: string;
+  playerId?: string;
 }
 
 type TurnPhase = "bot-question" | "user-answer" | "user-question" | "bot-answer";
@@ -52,7 +54,9 @@ export default function DuelInterface({
   difficulty = "Medium",
   onComplete,
   onForfeit,
-  startsFirst = false
+  startsFirst = false,
+  matchId,
+  playerId
 }: DuelInterfaceProps) {
   // Get timer duration based on difficulty
   const getTimerDuration = () => {
@@ -95,6 +99,7 @@ export default function DuelInterface({
   const currentTurnPhaseRef = useRef<TurnPhase>(initialTurnPhase);
   const inputRef = useRef<HTMLInputElement>(null);
   const inactivityCountRef = useRef(false);
+  const wsRef = useRef<WebSocket | null>(null);
 
   const botQuestionMutation = useMutation({
     mutationFn: async () => {
@@ -150,12 +155,77 @@ export default function DuelInterface({
     },
   });
 
-  // Initialize with bot question only if bot starts first
+  // Setup WebSocket for human vs human matches
   useEffect(() => {
-    if (!startsFirst) {
+    if (!isBot && matchId && playerId) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/matchmaking`;
+      const ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected for multiplayer match');
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'opponent_message') {
+            // Receive opponent's message
+            setMessages(prev => [...prev, { 
+              sender: "opponent", 
+              text: data.text, 
+              timestamp: data.timestamp 
+            }]);
+          }
+          
+          if (data.type === 'opponent_turn_complete') {
+            // Opponent completed their turn, now it's our turn
+            setTurnPhase(data.turnPhase);
+            currentTurnPhaseRef.current = data.turnPhase;
+            shouldCountRef.current = true;
+            setTimeLeft(getTimerDuration());
+            resetInactivity();
+          }
+          
+          if (data.type === 'opponent_disconnected') {
+            // Opponent disconnected, end the match as forfeit
+            handleForfeit();
+          }
+          
+          if (data.type === 'opponent_forfeit') {
+            // Opponent forfeited, you win!
+            handleForfeit();
+          }
+        } catch (error) {
+          console.error('WebSocket message error:', error);
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket closed');
+      };
+      
+      wsRef.current = ws;
+      
+      return () => {
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.close();
+        }
+      };
+    }
+  }, [isBot, matchId, playerId]);
+
+  // Initialize with bot question only if bot starts first (only for AI opponents)
+  useEffect(() => {
+    if (isBot && !startsFirst) {
       botQuestionMutation.mutate();
-    } else {
-      // User starts first, enable timer and inactivity tracking immediately
+    } else if (startsFirst || !isBot) {
+      // User starts first or human match, enable timer and inactivity tracking immediately
       shouldCountRef.current = true;
       inactivityCountRef.current = true;
       setTimeLeft(getTimerDuration());
@@ -259,17 +329,32 @@ export default function DuelInterface({
   const handleSend = async () => {
     if (!input.trim() || !isUserTurn || isGrading) return;
 
+    const messageToSend = input;
+    const timestamp = Date.now();
+
     if (turnPhase === "user-answer") {
       shouldCountRef.current = false;
-      setMessages(prev => [...prev, { sender: "user", text: input, timestamp: Date.now() }]);
+      setMessages(prev => [...prev, { sender: "user", text: messageToSend, timestamp }]);
       setInput("");
+      
+      // Send message to opponent if multiplayer
+      if (!isBot && wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'player_message',
+          playerId,
+          text: messageToSend,
+          sender: "user",
+          timestamp
+        }));
+      }
+      
       setTurnPhase("user-question");
       currentTurnPhaseRef.current = "user-question";
       setTimeLeft(getTimerDuration());
       shouldCountRef.current = true;
       resetInactivity();
     } else if (turnPhase === "user-question") {
-      const validation = await validateQuestionMutation.mutateAsync(input);
+      const validation = await validateQuestionMutation.mutateAsync(messageToSend);
       
       if (!validation.isValid) {
         setValidationError(validation.reason || "Invalid question. Please ask using the vocabulary words.");
@@ -277,12 +362,36 @@ export default function DuelInterface({
       }
 
       shouldCountRef.current = false;
-      setMessages(prev => [...prev, { sender: "user", text: input, timestamp: Date.now() }]);
-      const userQuestion = input;
+      setMessages(prev => [...prev, { sender: "user", text: messageToSend, timestamp }]);
       setInput("");
-      setTurnPhase("bot-answer");
-      currentTurnPhaseRef.current = "bot-answer";
-      botAnswerMutation.mutate(userQuestion);
+      
+      // For multiplayer: send message and wait for opponent's answer
+      if (!isBot && wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'player_message',
+          playerId,
+          text: messageToSend,
+          sender: "user",
+          timestamp
+        }));
+        
+        // Notify opponent that it's their turn to answer
+        wsRef.current.send(JSON.stringify({
+          type: 'player_turn_complete',
+          playerId,
+          turnPhase: "user-answer"
+        }));
+        
+        // Wait for opponent's answer
+        setTurnPhase("bot-answer");
+        currentTurnPhaseRef.current = "bot-answer";
+        shouldCountRef.current = false;
+      } else {
+        // For AI: use bot answer mutation
+        setTurnPhase("bot-answer");
+        currentTurnPhaseRef.current = "bot-answer";
+        botAnswerMutation.mutate(messageToSend);
+      }
       resetInactivity();
     }
   };
@@ -313,6 +422,16 @@ export default function DuelInterface({
   const handleForfeit = () => {
     shouldCountRef.current = false;
     inactivityCountRef.current = false;
+    
+    // Notify opponent if multiplayer
+    if (!isBot && wsRef.current?.readyState === WebSocket.OPEN && matchId && playerId) {
+      wsRef.current.send(JSON.stringify({
+        type: 'player_forfeit',
+        playerId,
+        matchId
+      }));
+    }
+    
     onForfeit?.();
   };
 
