@@ -5,6 +5,7 @@ import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useSound } from "@/hooks/use-sound";
 import Header from "@/components/Header";
 import Landing from "@/pages/Landing";
 import MatchFinder, { type Language, type Difficulty } from "@/components/MatchFinder";
@@ -14,6 +15,7 @@ import Leaderboard from "@/components/Leaderboard";
 import ProfileStats from "@/components/ProfileStats";
 import AIReview from "@/components/AIReview";
 import Friends from "@/components/Friends";
+import { StreakNotification } from "@/components/StreakNotification";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 import { incrementGuestMatches } from "@/utils/guestRateLimit";
@@ -28,6 +30,7 @@ interface VocabWord {
 
 function MainApp() {
   const { user, isLoading, isAuthenticated } = useAuth();
+  const { playStreak } = useSound();
   const [currentPage, setCurrentPage] = useState<Page>("duel");
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [matchData, setMatchData] = useState<{
@@ -47,6 +50,15 @@ function MainApp() {
   const [matchMessages, setMatchMessages] = useState<any[]>([]);
   const multiplayerWsRef = useRef<WebSocket | null>(null);
   const [waitingForOpponentResult, setWaitingForOpponentResult] = useState(false);
+  
+  // Streak notification state
+  const [streakNotification, setStreakNotification] = useState<{
+    type: "win" | "daily";
+    count: number;
+    visible: boolean;
+  } | null>(null);
+  const previousStreaksRef = useRef<{ winStreak: number; dailyLoginStreak: number } | null>(null);
+  const streakTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track current language (persisted to localStorage)
   const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
@@ -64,6 +76,76 @@ function MainApp() {
     queryKey: [`/api/user/stats/${currentLanguage}`],
     enabled: isAuthenticated,
   });
+
+  // Detect streak increases and show notifications
+  useEffect(() => {
+    if (!languageStats || !isAuthenticated) return;
+
+    const currentWinStreak = languageStats.winStreak ?? 0;
+    const currentDailyStreak = languageStats.dailyLoginStreak ?? 0;
+
+    // Initialize previous values on first load
+    if (previousStreaksRef.current === null) {
+      previousStreaksRef.current = {
+        winStreak: currentWinStreak,
+        dailyLoginStreak: currentDailyStreak
+      };
+      return;
+    }
+
+    const previousWinStreak = previousStreaksRef.current.winStreak;
+    const previousDailyStreak = previousStreaksRef.current.dailyLoginStreak;
+
+    // Clear any existing timeout
+    if (streakTimeoutRef.current) {
+      clearTimeout(streakTimeoutRef.current);
+      streakTimeoutRef.current = null;
+    }
+
+    // Check if win streak increased
+    if (currentWinStreak > previousWinStreak && currentWinStreak > 1) {
+      playStreak();
+      setStreakNotification({
+        type: "win",
+        count: currentWinStreak,
+        visible: true
+      });
+      // Auto-hide after 4 seconds
+      streakTimeoutRef.current = setTimeout(() => {
+        setStreakNotification(null);
+        streakTimeoutRef.current = null;
+      }, 4000);
+    }
+    // Check if daily streak increased (only if win streak didn't trigger)
+    else if (currentDailyStreak > previousDailyStreak && currentDailyStreak > 1) {
+      playStreak();
+      setStreakNotification({
+        type: "daily",
+        count: currentDailyStreak,
+        visible: true
+      });
+      // Auto-hide after 4 seconds
+      streakTimeoutRef.current = setTimeout(() => {
+        setStreakNotification(null);
+        streakTimeoutRef.current = null;
+      }, 4000);
+    }
+
+    // Update previous values
+    previousStreaksRef.current = {
+      winStreak: currentWinStreak,
+      dailyLoginStreak: currentDailyStreak
+    };
+  }, [languageStats, isAuthenticated, playStreak]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (streakTimeoutRef.current) {
+        clearTimeout(streakTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Get stats from languageStats for authenticated, or localStorage for guest
   const getGuestStats = (language: Language) => {
@@ -504,6 +586,16 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Streak Notification */}
+      {streakNotification && (
+        <StreakNotification
+          type={streakNotification.type}
+          streakCount={streakNotification.count}
+          isVisible={streakNotification.visible}
+          onClose={() => setStreakNotification(null)}
+        />
+      )}
+      
       <Header 
         username={username} 
         elo={userElo} 

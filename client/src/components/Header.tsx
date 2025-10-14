@@ -1,6 +1,7 @@
-import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap } from "lucide-react";
+import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useSound } from "@/hooks/use-sound";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,9 +68,17 @@ export default function Header({
   bestDailyLoginStreak = 0
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { setEnabled, isEnabled } = useSound();
+  const [soundEnabled, setSoundEnabled] = useState(isEnabled());
 
   const totalMatches = wins + losses;
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+  const toggleSound = () => {
+    const newState = !soundEnabled;
+    setSoundEnabled(newState);
+    setEnabled(newState);
+  };
 
   // Fetch recent matches for authenticated users
   const { data: matches } = useQuery<Match[]>({
@@ -278,6 +287,26 @@ export default function Header({
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Sound Toggle */}
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3"
+                  onClick={toggleSound}
+                  data-testid="button-toggle-sound"
+                >
+                  {soundEnabled ? (
+                    <>
+                      <Volume2 className="w-4 h-4" />
+                      <span>Sound On</span>
+                    </>
+                  ) : (
+                    <>
+                      <VolumeX className="w-4 h-4" />
+                      <span>Sound Off</span>
+                    </>
+                  )}
+                </Button>
 
                 {isAuthenticated && (
                   <>
