@@ -21,8 +21,7 @@ export default function Landing() {
               <img 
                 src="/favicon.png" 
                 alt="Verbio" 
-                className="w-12 h-12 rounded-md" 
-                style={{ imageRendering: 'auto' }}
+                className="w-12 h-12"
               />
               <div>
                 <h2 className="text-2xl font-bold">Verbio</h2>
