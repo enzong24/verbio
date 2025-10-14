@@ -147,7 +147,7 @@ export default function MatchFinder({
 
   return (
     <div className="min-h-[calc(100vh-4rem)] w-full">
-      <div className="container mx-auto px-4 py-12 lg:py-16">
+      <div className="container mx-auto px-6 md:px-8 lg:px-12 py-12 lg:py-16">
         {/* Guest Rate Limit Alerts */}
         {isGuest && !canPlay && (
           <Alert variant="destructive" className="max-w-4xl mx-auto mb-8" data-testid="alert-rate-limit">
