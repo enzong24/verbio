@@ -140,19 +140,6 @@ export default function MatchFinder({
   return (
     <div className="min-h-[calc(100vh-4rem)] w-full">
       <div className="container mx-auto px-4 py-12 lg:py-16">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary mb-6">
-            <Swords className="w-10 h-10 text-primary-foreground" />
-          </div>
-          <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-4">
-            Ready to Duel?
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Challenge opponents at your skill level and master {currentLanguage} through competitive conversation
-          </p>
-        </div>
-
         {/* Guest Rate Limit Alerts */}
         {isGuest && !canPlay && (
           <Alert variant="destructive" className="max-w-4xl mx-auto mb-8" data-testid="alert-rate-limit">
