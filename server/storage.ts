@@ -24,6 +24,7 @@ import { eq, and, desc, or } from "drizzle-orm";
 // Storage interface for Replit Auth
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
   updateUserActivity(userId: string): Promise<void>;
@@ -92,6 +93,11 @@ export class MemStorage implements IStorage {
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const allUsers = Array.from(this.users.values());
+    return allUsers.find(user => user.email === email);
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
@@ -457,6 +463,11 @@ export class MemStorage implements IStorage {
 export class DbStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
     return result[0];
   }
 
