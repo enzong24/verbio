@@ -849,11 +849,11 @@ export default function DuelInterface({
             </div>
 
             {/* Vocabulary Checklist */}
-            <Card className="mb-3 border-success/30 bg-success/5">
+            <Card className="mb-3 border-success/30 bg-success/5" data-testid="vocabulary-checklist-card">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center justify-between">
                   <span>Vocabulary Used</span>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs" data-testid="vocabulary-counter">
                     {usedVocabulary.size}/{vocabulary.length}
                   </Badge>
                 </CardTitle>
@@ -870,18 +870,33 @@ export default function DuelInterface({
                         }`}
                         data-testid={`vocab-item-${vocabItem.word}`}
                       >
-                        <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                          isUsed 
-                            ? 'bg-success border-success' 
-                            : 'border-muted-foreground/30'
-                        }`}>
+                        <div 
+                          className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            isUsed 
+                              ? 'bg-success border-success' 
+                              : 'border-muted-foreground/30'
+                          }`}
+                          data-testid={`vocab-checkbox-${vocabItem.word}`}
+                          aria-checked={isUsed}
+                          role="checkbox"
+                        >
                           {isUsed && (
-                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg 
+                              className="w-3 h-3 text-white" 
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                              data-testid={`vocab-checkmark-${vocabItem.word}`}
+                            >
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
                         </div>
-                        <div className={`flex-1 ${isUsed ? 'line-through' : ''}`}>
+                        <div 
+                          className={`flex-1 ${isUsed ? 'line-through' : ''}`}
+                          data-testid={`vocab-text-${vocabItem.word}`}
+                          aria-label={isUsed ? 'used' : 'unused'}
+                        >
                           <TextWithPinyin text={vocabItem.word} language={language} />
                         </div>
                       </div>
