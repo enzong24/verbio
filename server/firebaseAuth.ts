@@ -47,17 +47,26 @@ export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
       return next();
     }
 
-    // Check if user exists in database, create if not
+    // Check if user exists in database by ID first
     let user = await storage.getUser(userId);
     
     if (!user) {
-      // Create new user from Firebase data using upsertUser
-      user = await storage.upsertUser({
-        id: userId,
-        email: email,
-        firstName: name?.split(' ')[0] || email.split('@')[0],
-        lastName: name?.split(' ').slice(1).join(' ') || '',
-      });
+      // Check if a user with this email already exists (from different auth method)
+      const existingUserByEmail = await storage.getUserByEmail(email);
+      
+      if (existingUserByEmail) {
+        // User exists with same email but different Firebase ID - use existing user
+        user = existingUserByEmail;
+        console.log(`Linked existing user ${existingUserByEmail.id} to Firebase ID ${userId}`);
+      } else {
+        // Create new user from Firebase data using upsertUser
+        user = await storage.upsertUser({
+          id: userId,
+          email: email,
+          firstName: name?.split(' ')[0] || email.split('@')[0],
+          lastName: name?.split(' ').slice(1).join(' ') || '',
+        });
+      }
     }
 
     // Check if email is in premium whitelist and auto-grant premium
