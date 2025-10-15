@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Flag, Clock, HelpCircle, Swords, Type } from "lucide-react";
+import { Send, Flag, Clock, HelpCircle, Swords, Type, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -106,6 +106,7 @@ export default function DuelInterface({
   const [helpUsedThisTurn, setHelpUsedThisTurn] = useState(false);
   const [usedVocabulary, setUsedVocabulary] = useState<Set<string>>(new Set());
   const [showAccentKeyboard, setShowAccentKeyboard] = useState(false);
+  const [showTopicHeader, setShowTopicHeader] = useState(true);
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -620,63 +621,79 @@ export default function DuelInterface({
         <div className="max-w-7xl mx-auto h-full flex flex-col md:flex-row">
           <div className="flex-1 flex flex-col min-h-0">
             {/* Topic Header */}
-            <div className="p-2 md:p-4 border-b bg-card">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-accent items-center justify-center hidden md:flex">
-                  <Swords className="w-4 h-4 text-white" />
+            <div className="border-b bg-card">
+              <div className="p-2 md:p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-accent items-center justify-center hidden md:flex">
+                    <Swords className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-xs md:text-base">Topic:</span>
+                    <Badge className="ml-1 md:ml-2 text-[10px] md:text-sm bg-accent/20 text-accent border-accent/30">{topic}</Badge>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-semibold text-xs md:text-base">Topic:</span>
-                  <Badge className="ml-1 md:ml-2 text-[10px] md:text-sm bg-accent/20 text-accent border-accent/30">{topic}</Badge>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTopicHeader(!showTopicHeader)}
+                  data-testid="button-toggle-topic-header"
+                  className="h-8 w-8 p-0"
+                >
+                  {showTopicHeader ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </Button>
               </div>
-              <div className="flex flex-wrap gap-1 md:gap-2">
-                {vocabulary.map((vocabItem) => {
-                  const isUsed = usedVocabulary.has(vocabItem.word);
-                  return (
-                    <div 
-                      key={vocabItem.word}
-                      className={`transition-all ${isUsed ? 'opacity-40 line-through' : ''}`}
-                      data-testid={`vocab-badge-${vocabItem.word}`}
-                      aria-label={isUsed ? 'used' : 'unused'}
-                    >
-                      <VocabularyBadge 
-                        chinese={vocabItem.word}
-                        pinyin={vocabItem.romanization}
-                        language={language}
-                        className="text-[10px] md:text-xs"
-                        definition={vocabItem.definition}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-2 text-[10px] md:text-sm font-medium">
-                {turnPhase === "user-answer" && (
-                  <>
-                    <span className="md:hidden text-primary">⏳ Answer</span>
-                    <span className="hidden md:inline text-primary">⏳ Your turn to answer the question</span>
-                  </>
-                )}
-                {turnPhase === "user-question" && (
-                  <>
-                    <span className="md:hidden text-accent">❓ Ask</span>
-                    <span className="hidden md:inline text-accent">❓ Your turn to ask a question using vocabulary</span>
-                  </>
-                )}
-                {turnPhase === "bot-question" && (
-                  <span className="text-muted-foreground">
-                    <span className="md:hidden">{isBot ? "🤖" : "⏳"}</span>
-                    <span className="hidden md:inline">{isBot ? "🤖 Bot is thinking..." : "⏳ Opponent is thinking..."}</span>
-                  </span>
-                )}
-                {turnPhase === "bot-answer" && (
-                  <span className="text-success">
-                    <span className="md:hidden">{isBot ? "🤖" : "💬"}</span>
-                    <span className="hidden md:inline">{isBot ? "🤖 Bot is answering..." : "💬 Opponent is answering..."}</span>
-                  </span>
-                )}
-              </div>
+              
+              {showTopicHeader && (
+                <>
+                  <div className="px-2 md:px-4 pb-2 flex flex-wrap gap-1 md:gap-2">
+                    {vocabulary.map((vocabItem) => {
+                      const isUsed = usedVocabulary.has(vocabItem.word);
+                      return (
+                        <div 
+                          key={vocabItem.word}
+                          className={`transition-all ${isUsed ? 'opacity-40 line-through' : ''}`}
+                          data-testid={`vocab-badge-${vocabItem.word}`}
+                          aria-label={isUsed ? 'used' : 'unused'}
+                        >
+                          <VocabularyBadge 
+                            chinese={vocabItem.word}
+                            pinyin={vocabItem.romanization}
+                            language={language}
+                            className="text-[10px] md:text-xs"
+                            definition={vocabItem.definition}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="px-2 md:px-4 pb-2 text-[10px] md:text-sm font-medium">
+                    {turnPhase === "user-answer" && (
+                      <>
+                        <span className="md:hidden text-primary">⏳ Answer</span>
+                        <span className="hidden md:inline text-primary">⏳ Your turn to answer the question</span>
+                      </>
+                    )}
+                    {turnPhase === "user-question" && (
+                      <>
+                        <span className="md:hidden text-accent">❓ Ask</span>
+                        <span className="hidden md:inline text-accent">❓ Your turn to ask a question using vocabulary</span>
+                      </>
+                    )}
+                    {turnPhase === "bot-question" && (
+                      <span className="text-muted-foreground">
+                        <span className="md:hidden">{isBot ? "🤖" : "⏳"}</span>
+                        <span className="hidden md:inline">{isBot ? "🤖 Bot is thinking..." : "⏳ Opponent is thinking..."}</span>
+                      </span>
+                    )}
+                    {turnPhase === "bot-answer" && (
+                      <span className="text-success">
+                        <span className="md:hidden">{isBot ? "🤖" : "💬"}</span>
+                        <span className="hidden md:inline">{isBot ? "🤖 Bot is answering..." : "💬 Opponent is answering..."}</span>
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Messages */}
@@ -776,24 +793,17 @@ export default function DuelInterface({
               
               {/* Need Help Button */}
               {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
-                <div className="mb-2">
+                <div className="mb-3">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => exampleMutation.mutate()}
                     disabled={exampleMutation.isPending || helpUsedThisTurn}
                     data-testid="button-need-help"
-                    className="w-full md:w-auto"
+                    className="w-full"
                   >
-                    <HelpCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-                    <span className="text-xs md:text-sm">
-                      {exampleMutation.isPending ? "Generating..." : (
-                        <>
-                          <span className="md:hidden">Help (-15pts)</span>
-                          <span className="hidden md:inline">Need help? Show me an example (-15pts)</span>
-                        </>
-                      )}
-                    </span>
+                    <HelpCircle className="w-4 h-4 mr-2" />
+                    {exampleMutation.isPending ? "Generating example..." : "Need help? Show me an example (-15pts)"}
                   </Button>
                 </div>
               )}
