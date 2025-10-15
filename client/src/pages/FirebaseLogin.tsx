@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function FirebaseLogin() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isEmailSignIn, setIsEmailSignIn] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -19,29 +19,34 @@ export default function FirebaseLogin() {
 
   useEffect(() => {
     // Handle redirect result when user returns from Google/Facebook sign-in
-    handleRedirectResult()
-      .then((result) => {
+    const checkRedirectResult = async () => {
+      try {
+        const result = await handleRedirectResult();
         if (result) {
           // User successfully signed in, get ID token and send to backend
-          result.user.getIdToken().then((idToken) => {
-            // Store token for API requests
-            localStorage.setItem('firebaseToken', idToken);
-            // Redirect to home
-            window.location.href = '/';
-          });
-        } else {
-          setIsLoading(false);
+          const idToken = await result.user.getIdToken();
+          // Store token for API requests
+          localStorage.setItem('firebaseToken', idToken);
+          // Redirect to home
+          window.location.href = '/';
         }
-      })
-      .catch((error) => {
+      } catch (error: any) {
         console.error('Sign-in error:', error);
-        toast({
-          title: "Sign-in failed",
-          description: error.message || "Failed to sign in",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      });
+        // Only show toast for non-API-key errors (user-facing errors)
+        if (error.code && !error.code.includes('api-key')) {
+          toast({
+            title: "Sign-in failed",
+            description: error.message || "Failed to sign in",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        // Always stop loading after a short delay
+        setTimeout(() => setIsCheckingAuth(false), 500);
+      }
+    };
+    
+    checkRedirectResult();
   }, [toast]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -117,12 +122,12 @@ export default function FirebaseLogin() {
     }
   };
 
-  if (isLoading) {
+  if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">Processing sign-in...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
