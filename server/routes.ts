@@ -1,11 +1,20 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { gradingRequestSchema } from "@shared/schema";
+import { gradingRequestSchema, users } from "@shared/schema";
 import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary, translateText, generateExampleResponse } from "./openai";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupMatchmaking } from "./matchmaking";
 import { vocabularyCache } from "./vocabularyCache";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import Stripe from "stripe"; // From blueprint:javascript_stripe
+
+// Initialize Stripe (from blueprint:javascript_stripe)
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth
@@ -651,6 +660,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error joining private match:", error);
       res.status(500).json({ message: "Failed to join private match" });
+    }
+  });
+
+  // Stripe subscription endpoint (from blueprint:javascript_stripe)
+  app.post('/api/create-subscription', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      const userId = req.user.claims.sub;
+      let user = await storage.getUser(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // If user already has a subscription, return existing client secret
+      if (user.stripeSubscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+          expand: ['latest_invoice.payment_intent'],
+        });
+        const latestInvoice: any = subscription.latest_invoice;
+        
+        return res.json({
+          subscriptionId: subscription.id,
+          clientSecret: latestInvoice?.payment_intent?.client_secret,
+        });
+      }
+
+      if (!user.email) {
+        return res.status(400).json({ message: 'User email required' });
+      }
+
+      // Create Stripe customer
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+        metadata: {
+          userId: userId,
+        },
+      });
+
+      // Create a price for the subscription
+      const price = await stripe.prices.create({
+        currency: 'usd',
+        unit_amount: 999, // $9.99 in cents
+        recurring: {
+          interval: 'month',
+        },
+        product_data: {
+          name: 'Verbio Premium',
+        },
+      });
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{ price: price.id }],
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update user with Stripe IDs
+      await storage.updateUserStripeInfo(userId, customer.id, subscription.id);
+
+      const invoice = subscription.latest_invoice as any;
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: invoice.payment_intent.client_secret,
+      });
+    } catch (error: any) {
+      console.error('Stripe subscription error:', error);
+      res.status(500).json({ message: error.message || 'Failed to create subscription' });
+    }
+  });
+
+  // Stripe webhook endpoint (from blueprint:javascript_stripe)
+  app.post('/api/stripe-webhook', async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    
+    if (!sig) {
+      return res.status(400).send('Missing stripe-signature header');
+    }
+
+    try {
+      // req.body is raw Buffer from express.raw() middleware in server/index.ts
+      const event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET || ''
+      );
+
+      // Handle subscription events
+      if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
+        const subscription = event.data.object as any;
+        
+        // Find user by Stripe customer ID
+        const allUsers = await storage.getAllUsers();
+        const user = allUsers.find(u => u.stripeCustomerId === subscription.customer);
+        
+        if (user) {
+          // Update premium status based on subscription status
+          const isPremium = subscription.status === 'active' ? 1 : 0;
+          const subscriptionEndDate = subscription.current_period_end 
+            ? new Date(subscription.current_period_end * 1000) 
+            : null;
+          
+          await db.update(users).set({
+            isPremium,
+            subscriptionEndDate,
+            updatedAt: new Date(),
+          }).where(eq(users.id, user.id));
+        }
+      }
+
+      if (event.type === 'customer.subscription.deleted') {
+        const subscription = event.data.object as any;
+        
+        const allUsers = await storage.getAllUsers();
+        const user = allUsers.find(u => u.stripeCustomerId === subscription.customer);
+        
+        if (user) {
+          await db.update(users).set({
+            isPremium: 0,
+            subscriptionEndDate: null,
+            updatedAt: new Date(),
+          }).where(eq(users.id, user.id));
+        }
+      }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error('Webhook error:', error);
+      res.status(400).send(`Webhook Error: ${error.message}`);
     }
   });
 

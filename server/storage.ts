@@ -61,6 +61,9 @@ export interface IStorage {
   // Premium features
   checkDailyMediumHardLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }>;
   incrementDailyMediumHardCount(userId: string, today: string): Promise<void>;
+  
+  // Stripe integration (from blueprint:javascript_stripe)
+  updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User>;
 }
 
 export class MemStorage implements IStorage {
@@ -98,6 +101,8 @@ export class MemStorage implements IStorage {
       subscriptionEndDate: existingUser?.subscriptionEndDate || null,
       dailyMediumHardCount: existingUser?.dailyMediumHardCount ?? 0,
       lastMediumHardDate: existingUser?.lastMediumHardDate || null,
+      stripeCustomerId: existingUser?.stripeCustomerId || null,
+      stripeSubscriptionId: existingUser?.stripeSubscriptionId || null,
     };
     this.users.set(user.id, user);
     return user;
@@ -399,6 +404,17 @@ export class MemStorage implements IStorage {
       user.lastMediumHardDate = today;
       this.users.set(userId, user);
     }
+  }
+
+  async updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User ${userId} not found`);
+    }
+    user.stripeCustomerId = customerId;
+    user.stripeSubscriptionId = subscriptionId;
+    this.users.set(userId, user);
+    return user;
   }
 }
 
@@ -823,6 +839,24 @@ export class DbStorage implements IStorage {
         })
         .where(eq(users.id, userId));
     }
+  }
+
+  async updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User> {
+    const result = await db
+      .update(users)
+      .set({
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!result[0]) {
+      throw new Error(`User ${userId} not found`);
+    }
+    
+    return result[0];
   }
 }
 

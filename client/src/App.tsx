@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSound } from "@/hooks/use-sound";
 import Header from "@/components/Header";
 import Landing from "@/pages/Landing";
+import Subscribe from "@/pages/Subscribe";
 import MatchFinder, { type Language, type Difficulty } from "@/components/MatchFinder";
 import DuelInterface from "@/components/DuelInterface";
 import MatchResults from "@/components/MatchResults";
@@ -711,6 +712,7 @@ function MainApp() {
 function Router() {
   return (
     <Switch>
+      <Route path="/subscribe" component={Subscribe} />
       <Route path="/" component={MainApp} />
       <Route path="/:rest*" component={MainApp} />
     </Switch>

@@ -31,6 +31,7 @@ The backend uses Express.js with Node.js and TypeScript, featuring RESTful APIs 
 - **Streaks**: Tracks competitive win streaks and daily login streaks, displayed in user profiles.
 - **Friend System**: Supports bidirectional friend relationships, friend discovery via email, and display of friend stats (Fluency Score, wins/losses).
 - **Private Match Invites**: Authenticated users can create time-limited, unique code-based invites for friends to join private matches.
+- **Premium Subscription System**: Stripe-powered payment processing for premium memberships. Premium users get unlimited Medium/Hard matches, topic selection in practice mode, and detailed AI feedback. Free users limited to 3 Medium and 2 Hard matches per day. Webhook integration for automatic subscription status updates.
 
 ## External Dependencies
 
@@ -60,3 +61,9 @@ The backend uses Express.js with Node.js and TypeScript, featuring RESTful APIs 
 - **openid-client**: OpenID Connect client library.
 - **Passport.js**: Authentication middleware.
 - **express-session**: Session management with `connect-pg-simple`.
+
+### Payment Processing
+- **Stripe**: Payment processing for premium subscriptions.
+- **@stripe/stripe-js**: Stripe JavaScript SDK for frontend.
+- **@stripe/react-stripe-js**: React components for Stripe Elements.
+- **Webhook Integration**: Uses express.raw() middleware before express.json() to preserve raw body for signature verification.

@@ -233,9 +233,9 @@ export default function MatchFinder({
             <Lock className="h-4 w-4" />
             <AlertDescription>
               {difficultyAccess.message || `You've reached the daily limit of ${difficultyAccess.limit || 3} ${selectedDifficulty} matches. Upgrade to Premium for unlimited access!`}
-              <button className="ml-2 font-semibold underline hover:no-underline" data-testid="button-upgrade">
+              <a href="/subscribe" className="ml-2 font-semibold underline hover:no-underline" data-testid="button-upgrade">
                 Upgrade to Premium
-              </button>
+              </a>
             </AlertDescription>
           </Alert>
         )}
@@ -244,9 +244,9 @@ export default function MatchFinder({
             <Crown className="h-4 w-4 text-accent" />
             <AlertDescription>
               Free tier: {difficultyAccess.remaining} {selectedDifficulty} {difficultyAccess.remaining === 1 ? 'match' : 'matches'} remaining today.
-              <button className="ml-2 font-semibold underline text-accent hover:no-underline" data-testid="button-upgrade-accent">
+              <a href="/subscribe" className="ml-2 font-semibold underline text-accent hover:no-underline" data-testid="button-upgrade-accent">
                 Upgrade to Premium
-              </button>
+              </a>
             </AlertDescription>
           </Alert>
         )}
