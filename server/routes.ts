@@ -16,21 +16,39 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Helper function to get user ID from either Firebase or Replit Auth
+function getUserId(req: any): string | undefined {
+  // Check Firebase auth first
+  if (req.firebaseUser) {
+    return req.firebaseUser.id;
+  }
+  // Fallback to Replit Auth
+  if (req.isAuthenticated() && req.user?.claims?.sub) {
+    return req.user.claims.sub;
+  }
+  return undefined;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth
   await setupAuth(app);
 
   // Auth route - get current user (returns null if not authenticated)
+  // Supports both Firebase and Replit Auth
   app.get('/api/auth/user', async (req: any, res) => {
     try {
-      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+      const userId = getUserId(req);
+      
+      if (!userId) {
         return res.json(null);
       }
-      const userId = req.user.claims.sub;
+      
       const user = await storage.getUser(userId);
       
       // Update user's online status and last seen
-      await storage.updateUserActivity(userId);
+      if (user) {
+        await storage.updateUserActivity(userId);
+      }
       
       res.json(user);
     } catch (error) {
@@ -42,10 +60,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Heartbeat endpoint to keep user marked as online
   app.post('/api/user/heartbeat', async (req: any, res) => {
     try {
-      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+      const userId = getUserId(req);
+      
+      if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
-      const userId = req.user.claims.sub;
+      
       await storage.updateUserActivity(userId);
       res.json({ success: true });
     } catch (error) {
@@ -738,9 +758,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin endpoint to manually grant premium status (for testing/admin purposes)
+  // Admin endpoint to manually grant premium status
+  // WARNING: This endpoint is for DEVELOPMENT ONLY and should be secured or removed in production
+  // TODO: Add proper admin authentication before deploying to production
   app.post('/api/admin/grant-premium', async (req, res) => {
     try {
+      // Basic security check - only allow in development
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ message: 'Admin endpoints disabled in production' });
+      }
+      
       const { email, isPremium } = req.body;
       
       if (!email) {

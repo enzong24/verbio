@@ -1,12 +1,16 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { verifyFirebaseToken } from "./firebaseAuth";
 
 const app = express();
 // Stripe webhook needs raw body for signature verification - must come before express.json()
 app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add Firebase authentication middleware
+app.use(verifyFirebaseToken);
 
 app.use((req, res, next) => {
   const start = Date.now();

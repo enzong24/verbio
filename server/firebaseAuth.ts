@@ -1,6 +1,11 @@
-// Firebase Admin SDK for backend authentication verification
+// Firebase authentication verification
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
+
+// IMPORTANT: This is a simplified JWT decoder for development
+// In production, use Firebase Admin SDK to properly verify token signatures
+// Install: npm install firebase-admin
+// Then use: admin.auth().verifyIdToken(idToken)
 
 // Middleware to verify Firebase ID token and sync with database
 export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
@@ -14,15 +19,27 @@ export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
 
     const idToken = authHeader.split('Bearer ')[1];
     
-    // For now, we'll decode the JWT manually without verification
-    // In production, you should use Firebase Admin SDK to verify the token
-    const payload = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64').toString());
-    
-    const userId = payload.sub || payload.user_id;
-    const email = payload.email;
-    const name = payload.name;
-    
-    if (!userId || !email) {
+    try {
+      // Decode JWT payload (WARNING: This does NOT verify signature!)
+      // For production, replace this with Firebase Admin SDK verification
+      const payload = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64').toString());
+      
+      // Check expiry
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < now) {
+        console.warn('Firebase token expired');
+        return next();
+      }
+      
+      const userId = payload.sub || payload.user_id;
+      const email = payload.email;
+      const name = payload.name;
+      
+      if (!userId || !email) {
+        return next();
+      }
+    } catch (decodeError) {
+      console.error('Failed to decode Firebase token:', decodeError);
       return next();
     }
 
@@ -30,15 +47,12 @@ export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
     let user = await storage.getUser(userId);
     
     if (!user) {
-      // Create new user from Firebase data
-      user = await storage.createUser({
+      // Create new user from Firebase data using upsertUser
+      user = await storage.upsertUser({
         id: userId,
         email: email,
         firstName: name?.split(' ')[0] || email.split('@')[0],
         lastName: name?.split(' ').slice(1).join(' ') || '',
-        isPremium: 0,
-        fluencyScore: 1200,
-        createdAt: new Date(),
       });
     }
 
