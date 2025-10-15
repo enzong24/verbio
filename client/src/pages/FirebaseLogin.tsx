@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { signInWithGoogle, signInWithEmail, signUpWithEmail } from "@/lib/firebaseAuth";
+import { signInWithGoogle, signInWithEmail, signUpWithEmail, establishBackendSession } from "@/lib/firebaseAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 export default function FirebaseLogin() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -33,8 +34,16 @@ export default function FirebaseLogin() {
       
       console.log('[FirebaseLogin] Email auth successful, user:', result.user.email);
       
+      // Manually establish backend session to ensure user is synced to database
+      console.log('[FirebaseLogin] Manually establishing backend session...');
+      await establishBackendSession();
+      
+      // Force refetch user data to update UI
+      console.log('[FirebaseLogin] Invalidating auth query to update UI...');
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
       setIsEmailSignIn(false);
-      // Firebase auth state updated, useAuth will detect it, establish backend session, and show main app
+      console.log('[FirebaseLogin] Sign-in complete, UI should update now');
     } catch (error: any) {
       console.error('Email auth error:', error);
       let errorMessage = error.message || "Authentication failed";
@@ -70,8 +79,17 @@ export default function FirebaseLogin() {
       const result = await signInWithGoogle();
       console.log('[FirebaseLogin] Google sign-in successful:', result.user.email);
       
+      // IMPORTANT: In iframe environments, onAuthStateChanged doesn't always fire after popup closes
+      // Manually establish backend session to ensure user is synced to database
+      console.log('[FirebaseLogin] Manually establishing backend session...');
+      await establishBackendSession();
+      
+      // Force refetch user data to update UI
+      console.log('[FirebaseLogin] Invalidating auth query to update UI...');
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
       setIsSigningIn(false);
-      // Firebase auth state updated, useAuth will detect it, establish backend session, and show main app
+      console.log('[FirebaseLogin] Sign-in complete, UI should update now');
     } catch (error: any) {
       console.error('[FirebaseLogin] Google sign-in error:', error);
       toast({
