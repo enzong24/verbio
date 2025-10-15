@@ -300,13 +300,13 @@ export default function DuelInterface({
   // Cleanup scroll lock on unmount
   useEffect(() => {
     return () => {
-      // Restore body styles and scroll position if component unmounts while scroll is locked
+      // Restore body position styles if component unmounts while scroll is locked
+      // DON'T restore overflow - App.tsx manages it for the entire match
       if (scrollLockActiveRef.current) {
         const scrollY = document.body.style.top;
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        document.body.style.overflow = '';
         if (scrollY) {
           window.scrollTo(0, parseInt(scrollY) * -1);
         }
@@ -950,18 +950,17 @@ export default function DuelInterface({
                       document.body.style.position = 'fixed';
                       document.body.style.top = `-${scrollY}px`;
                       document.body.style.width = '100%';
-                      document.body.style.overflow = 'hidden';
                       scrollLockActiveRef.current = true;
                     }
                   }}
                   onBlur={() => {
-                    // Restore scroll position when keyboard closes
+                    // Release position lock when keyboard closes, but keep overflow:hidden from App.tsx
                     if (scrollLockActiveRef.current) {
                       const scrollY = document.body.style.top;
                       document.body.style.position = '';
                       document.body.style.top = '';
                       document.body.style.width = '';
-                      document.body.style.overflow = '';
+                      // DON'T remove overflow - App.tsx manages it for the entire match
                       if (scrollY) {
                         window.scrollTo(0, parseInt(scrollY) * -1);
                       }
@@ -1005,7 +1004,7 @@ export default function DuelInterface({
           </div>
 
           {/* Side Panel - Progress */}
-          <div className="w-full md:w-64 border-t md:border-t-0 md:border-l bg-card p-3 md:p-4">
+          <div className="hidden md:block md:w-64 md:border-l bg-card p-3 md:p-4">
             <div className="mb-4 hidden md:block">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold">Match Progress</span>
