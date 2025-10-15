@@ -56,27 +56,54 @@ export async function setupAuth(app: Express) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          const email = profile.emails?.[0]?.value;
+          
           // Check if user exists by Google ID
-          const [existingUser] = await db
+          let [user] = await db
             .select()
             .from(users)
             .where(eq(users.googleId, profile.id));
 
-          if (existingUser) {
+          if (user) {
             // Update user info
             const [updatedUser] = await db
               .update(users)
               .set({
-                email: profile.emails?.[0]?.value,
+                email,
                 firstName: profile.name?.givenName,
                 lastName: profile.name?.familyName,
                 profileImageUrl: profile.photos?.[0]?.value,
                 updatedAt: new Date(),
               })
-              .where(eq(users.googleId, profile.id))
+              .where(eq(users.id, user.id))
               .returning();
             
             return done(null, updatedUser as any);
+          }
+
+          // Check if user exists by email (from previous auth system)
+          if (email) {
+            const [existingByEmail] = await db
+              .select()
+              .from(users)
+              .where(eq(users.email, email));
+
+            if (existingByEmail) {
+              // Update existing user with Google ID
+              const [updatedUser] = await db
+                .update(users)
+                .set({
+                  googleId: profile.id,
+                  firstName: profile.name?.givenName || existingByEmail.firstName,
+                  lastName: profile.name?.familyName || existingByEmail.lastName,
+                  profileImageUrl: profile.photos?.[0]?.value || existingByEmail.profileImageUrl,
+                  updatedAt: new Date(),
+                })
+                .where(eq(users.id, existingByEmail.id))
+                .returning();
+              
+              return done(null, updatedUser as any);
+            }
           }
 
           // Create new user
@@ -84,7 +111,7 @@ export async function setupAuth(app: Express) {
             .insert(users)
             .values({
               googleId: profile.id,
-              email: profile.emails?.[0]?.value,
+              email,
               firstName: profile.name?.givenName,
               lastName: profile.name?.familyName,
               profileImageUrl: profile.photos?.[0]?.value,
@@ -93,6 +120,7 @@ export async function setupAuth(app: Express) {
 
           return done(null, newUser as any);
         } catch (error) {
+          console.error('Google OAuth error:', error);
           return done(error as Error);
         }
       }
