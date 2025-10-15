@@ -649,7 +649,12 @@ export default function DuelInterface({
           <div className="flex-1 flex flex-col min-h-0">
             {/* Topic Header */}
             <div className="border-b bg-card">
-              <div className="p-2 md:p-4 flex items-center justify-between">
+              <button 
+                className="w-full p-2 md:p-4 flex items-center justify-between cursor-pointer hover-elevate text-left"
+                onClick={() => setShowTopicHeader(!showTopicHeader)}
+                data-testid="button-toggle-topic-header"
+                aria-expanded={showTopicHeader}
+              >
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-accent items-center justify-center hidden md:flex">
                     <Swords className="w-4 h-4 text-white" />
@@ -659,16 +664,10 @@ export default function DuelInterface({
                     <Badge className="ml-1 md:ml-2 text-[10px] md:text-sm bg-accent/20 text-accent border-accent/30">{topic}</Badge>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowTopicHeader(!showTopicHeader)}
-                  data-testid="button-toggle-topic-header"
-                  className="h-8 w-8 p-0"
-                >
+                <div className="flex-shrink-0">
                   {showTopicHeader ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </Button>
-              </div>
+                </div>
+              </button>
               
               {showTopicHeader && (
                 <>
@@ -801,18 +800,17 @@ export default function DuelInterface({
             {/* Input Area */}
             <div className="border-t bg-card pb-safe-bottom">
               {/* Help Area Toggle */}
-              <div className="p-2 md:p-3 flex items-center justify-between border-b">
+              <button 
+                className="w-full p-2 md:p-3 flex items-center justify-between border-b cursor-pointer hover-elevate text-left"
+                onClick={() => setShowHelpArea(!showHelpArea)}
+                data-testid="button-toggle-help-area"
+                aria-expanded={showHelpArea}
+              >
                 <span className="text-xs text-muted-foreground">Help & Tools</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowHelpArea(!showHelpArea)}
-                  data-testid="button-toggle-help-area"
-                  className="h-6 w-6 p-0"
-                >
+                <div className="flex-shrink-0">
                   {showHelpArea ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-                </Button>
-              </div>
+                </div>
+              </button>
 
               {showHelpArea && (
                 <div className="p-3 md:p-4 border-b">
