@@ -9,11 +9,14 @@ import {
   type InsertFriend,
   type PrivateMatchInvite,
   type InsertPrivateMatchInvite,
+  type PremiumWhitelist,
+  type InsertPremiumWhitelist,
   users,
   userLanguageStats,
   matches,
   friends,
-  privateMatchInvites
+  privateMatchInvites,
+  premiumWhitelist
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, or } from "drizzle-orm";
@@ -64,6 +67,12 @@ export interface IStorage {
   
   // Stripe integration (from blueprint:javascript_stripe)
   updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User>;
+  
+  // Premium whitelist management
+  addToWhitelist(email: string, addedBy?: string): Promise<PremiumWhitelist>;
+  removeFromWhitelist(email: string): Promise<void>;
+  isEmailWhitelisted(email: string): Promise<boolean>;
+  getAllWhitelistedEmails(): Promise<PremiumWhitelist[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -415,6 +424,32 @@ export class MemStorage implements IStorage {
     user.stripeSubscriptionId = subscriptionId;
     this.users.set(userId, user);
     return user;
+  }
+
+  // Premium whitelist methods (MemStorage - in-memory only)
+  private whitelist: Map<string, PremiumWhitelist> = new Map();
+
+  async addToWhitelist(email: string, addedBy?: string): Promise<PremiumWhitelist> {
+    const entry: PremiumWhitelist = {
+      id: crypto.randomUUID(),
+      email: email.toLowerCase(),
+      addedBy: addedBy || null,
+      createdAt: new Date(),
+    };
+    this.whitelist.set(email.toLowerCase(), entry);
+    return entry;
+  }
+
+  async removeFromWhitelist(email: string): Promise<void> {
+    this.whitelist.delete(email.toLowerCase());
+  }
+
+  async isEmailWhitelisted(email: string): Promise<boolean> {
+    return this.whitelist.has(email.toLowerCase());
+  }
+
+  async getAllWhitelistedEmails(): Promise<PremiumWhitelist[]> {
+    return Array.from(this.whitelist.values());
   }
 }
 
@@ -857,6 +892,37 @@ export class DbStorage implements IStorage {
     }
     
     return result[0];
+  }
+
+  // Premium whitelist methods (DbStorage - database-backed)
+  async addToWhitelist(email: string, addedBy?: string): Promise<PremiumWhitelist> {
+    const result = await db
+      .insert(premiumWhitelist)
+      .values({
+        email: email.toLowerCase(),
+        addedBy: addedBy || null,
+      })
+      .returning();
+    return result[0];
+  }
+
+  async removeFromWhitelist(email: string): Promise<void> {
+    await db
+      .delete(premiumWhitelist)
+      .where(eq(premiumWhitelist.email, email.toLowerCase()));
+  }
+
+  async isEmailWhitelisted(email: string): Promise<boolean> {
+    const result = await db
+      .select()
+      .from(premiumWhitelist)
+      .where(eq(premiumWhitelist.email, email.toLowerCase()))
+      .limit(1);
+    return result.length > 0;
+  }
+
+  async getAllWhitelistedEmails(): Promise<PremiumWhitelist[]> {
+    return await db.select().from(premiumWhitelist);
   }
 }
 

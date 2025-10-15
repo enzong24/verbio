@@ -118,6 +118,17 @@ export const privateMatchInvites = pgTable("private_match_invites", {
 export type PrivateMatchInvite = typeof privateMatchInvites.$inferSelect;
 export type InsertPrivateMatchInvite = typeof privateMatchInvites.$inferInsert;
 
+// Premium whitelist for automatic premium access without payment
+export const premiumWhitelist = pgTable("premium_whitelist", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull().unique(),
+  addedBy: varchar("added_by"), // Admin user who added this email
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type PremiumWhitelist = typeof premiumWhitelist.$inferSelect;
+export type InsertPremiumWhitelist = typeof premiumWhitelist.$inferInsert;
+
 // Match/Duel schemas
 export const messageSchema = z.object({
   sender: z.enum(["user", "opponent"]),
