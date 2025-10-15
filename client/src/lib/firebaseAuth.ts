@@ -1,7 +1,6 @@
 // Firebase authentication helpers (from blueprint:firebase_barebones_javascript)
 import { 
-  signInWithRedirect, 
-  getRedirectResult, 
+  signInWithPopup,
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -37,35 +36,15 @@ export async function signUpWithEmail(email: string, password: string) {
   }
 }
 
-// Google sign in
-export function signInWithGoogle() {
-  console.log('[firebaseAuth] Starting Google sign-in redirect');
+// Google sign in with POPUP (works better in Replit's iframe environment)
+export async function signInWithGoogle() {
+  console.log('[firebaseAuth] Starting Google sign-in popup');
   try {
-    signInWithRedirect(auth, googleProvider);
-    console.log('[firebaseAuth] Google redirect initiated');
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log('[firebaseAuth] Google sign-in successful:', result.user.email);
+    return result;
   } catch (error) {
     console.error('[firebaseAuth] Google sign-in error:', error);
-    throw error;
-  }
-}
-
-// Call this function on page load to handle redirect result
-export async function handleRedirectResult() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result) {
-      // The signed-in user info
-      const user = result.user;
-      
-      // Try to get credential from Google
-      const googleCredential = GoogleAuthProvider.credentialFromResult(result);
-      const token = googleCredential?.accessToken;
-      
-      return { user, token };
-    }
-    return null;
-  } catch (error: any) {
-    console.error('Firebase redirect error:', error);
     throw error;
   }
 }

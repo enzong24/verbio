@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { signInWithGoogle, signInWithEmail, signUpWithEmail, handleRedirectResult } from "@/lib/firebaseAuth";
+import { signInWithGoogle, signInWithEmail, signUpWithEmail } from "@/lib/firebaseAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,8 +68,10 @@ export default function FirebaseLogin() {
     console.log('[FirebaseLogin] Google sign-in button clicked');
     setIsSigningIn(true);
     try {
-      await signInWithGoogle();
-      console.log('[FirebaseLogin] Google sign-in initiated successfully');
+      const result = await signInWithGoogle();
+      console.log('[FirebaseLogin] Google sign-in successful:', result.user.email);
+      // Firebase auth state updated, useAuth will detect it and show main app
+      setIsSigningIn(false);
     } catch (error: any) {
       console.error('[FirebaseLogin] Google sign-in error:', error);
       toast({
