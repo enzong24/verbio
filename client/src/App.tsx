@@ -724,6 +724,26 @@ function Router() {
 }
 
 export default function App() {
+  // Handle Firebase redirect result globally on app load
+  useEffect(() => {
+    const handleFirebaseRedirect = async () => {
+      try {
+        const { handleRedirectResult } = await import("@/lib/firebaseAuth");
+        const result = await handleRedirectResult();
+        
+        if (result) {
+          console.log('[App] Firebase redirect detected, user:', result.user.email);
+          // Firebase auth state is now set, force reload to update UI
+          window.location.replace('/');
+        }
+      } catch (error) {
+        console.error('[App] Firebase redirect error:', error);
+      }
+    };
+    
+    handleFirebaseRedirect();
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
