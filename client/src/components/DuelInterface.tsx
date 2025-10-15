@@ -849,7 +849,7 @@ export default function DuelInterface({
 
           {/* Side Panel - Progress */}
           <div className="w-full md:w-64 border-t md:border-t-0 md:border-l bg-card p-3 md:p-4">
-            <div className="mb-4">
+            <div className="mb-4 hidden md:block">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold">Match Progress</span>
                 <span className="text-xs text-muted-foreground">{Math.round(progress)}%</span>
