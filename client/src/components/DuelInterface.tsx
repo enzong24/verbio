@@ -898,11 +898,10 @@ export default function DuelInterface({
                     onClick={handleDontKnow} 
                     disabled={isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                     data-testid="button-dont-know"
-                    className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-4"
+                    className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-3 md:px-4"
                   >
-                    <HelpCircle className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:inline">Skip (-20pts)</span>
-                    <span className="md:hidden">Skip</span>
+                    <HelpCircle className="w-4 h-4 mr-1 md:mr-2" />
+                    <span className="text-xs md:text-sm">Skip (-20pts)</span>
                   </Button>
                 )}
                 <Button 
