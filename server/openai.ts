@@ -5,7 +5,7 @@ import { getBotElo, getBotTargetAccuracy } from "./botConfig";
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function gradeConversation(request: GradingRequest): Promise<GradingResult> {
+export async function gradeConversation(request: GradingRequest, isPremium: boolean = false): Promise<GradingResult> {
   const difficultyGuidelines: Record<string, string> = {
     Beginner: "Grade with ABSOLUTE MAXIMUM encouragement. This is for complete beginners - celebrate ANY word or sound in the target language! Give extremely high scores (80-95+) for trying AT ALL. Even if they write in English or use translator, give encouragement. Focus purely on participation and effort.",
     Easy: "Grade with MAXIMUM encouragement and patience. This is absolute beginner level - accept ANY attempt at communication, even single words or very broken sentences. Focus ONLY on effort and attempting to communicate. Give high scores (70-90+) for any genuine attempt.",
@@ -18,24 +18,8 @@ export async function gradeConversation(request: GradingRequest): Promise<Gradin
     `[${idx}] ${msg.sender === "user" ? "Student" : "Bot"}: ${msg.text}`
   ).join("\n");
   
-  const prompt = `You are an expert ${request.language} language teacher providing detailed, message-by-message feedback for a conversation at ${request.difficulty} difficulty level.
-
-Topic: ${request.topic}
-Target vocabulary: ${request.vocabulary.join(", ")}
-Difficulty level: ${request.difficulty}
-
-${difficultyGuidelines[request.difficulty] || difficultyGuidelines.Medium}
-
-CONVERSATION (with message indices):
-${formattedMessages}
-
-Provide TWO types of analysis:
-
-1. OVERALL SCORES for both participants:
-- Student: grammar, fluency, vocabulary, naturalness, overall (0-100 each)
-- Bot: botGrammar, botFluency, botVocabulary, botNaturalness, botOverall (0-100 each)
-- General feedback: 3-5 summary points for the student
-
+  // Different prompts based on premium status
+  const detailedAnalysisSection = isPremium ? `
 2. DETAILED MESSAGE-BY-MESSAGE ANALYSIS (messageAnalysis array):
 For EACH student message, provide:
 - messageIndex: the message number [0, 1, 2...]
@@ -53,9 +37,29 @@ IMPORTANT:
 - For grammarCorrections, extract the specific part with the error, not the whole sentence
 - For vocabularySuggestions, suggest more natural or advanced alternatives
 - Keep each analysis constructive and encouraging
-- Empty arrays are fine if no corrections/suggestions needed
+- Empty arrays are fine if no corrections/suggestions needed` : '';
+  
+  const prompt = `You are an expert ${request.language} language teacher providing ${isPremium ? 'detailed, message-by-message' : 'general'} feedback for a conversation at ${request.difficulty} difficulty level.
 
-Respond with JSON in this EXACT format:
+Topic: ${request.topic}
+Target vocabulary: ${request.vocabulary.join(", ")}
+Difficulty level: ${request.difficulty}
+
+${difficultyGuidelines[request.difficulty] || difficultyGuidelines.Medium}
+
+CONVERSATION (with message indices):
+${formattedMessages}
+
+Provide ${isPremium ? 'TWO types of' : 'ONE type of'} analysis:
+
+1. OVERALL SCORES for both participants:
+- Student: grammar, fluency, vocabulary, naturalness, overall (0-100 each)
+- Bot: botGrammar, botFluency, botVocabulary, botNaturalness, botOverall (0-100 each)
+- General feedback: 3-5 summary points for the student
+
+${detailedAnalysisSection}
+
+Respond with JSON in this ${isPremium ? 'EXACT' : 'format (NO messageAnalysis field for free users)'} format:
 {
   "grammar": number,
   "fluency": number,
@@ -67,7 +71,7 @@ Respond with JSON in this EXACT format:
   "botFluency": number,
   "botVocabulary": number,
   "botNaturalness": number,
-  "botOverall": number,
+  "botOverall": number${isPremium ? `,
   "messageAnalysis": [
     {
       "messageIndex": 0,
@@ -78,7 +82,7 @@ Respond with JSON in this EXACT format:
       "strengths": ["strength 1", "strength 2"],
       "improvements": ["improvement 1"]
     }
-  ]
+  ]` : ''}
 }`;
 
   try {
@@ -87,7 +91,7 @@ Respond with JSON in this EXACT format:
       messages: [
         {
           role: "system",
-          content: "You are an expert language teacher providing detailed, constructive feedback. Always respond with valid JSON."
+          content: `You are an expert language teacher providing ${isPremium ? 'detailed, constructive' : 'general'} feedback. Always respond with valid JSON.`
         },
         {
           role: "user",
@@ -95,7 +99,7 @@ Respond with JSON in this EXACT format:
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 3000, // Increased for detailed analysis
+      max_tokens: isPremium ? 3000 : 1500, // Less tokens for basic feedback
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");

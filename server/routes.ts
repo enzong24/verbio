@@ -45,11 +45,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check if user can play medium/hard mode
+  app.post('/api/user/check-difficulty-access', async (req: any, res) => {
+    try {
+      const { difficulty } = req.body;
+      
+      // Beginner and Easy are always allowed
+      if (difficulty === 'Beginner' || difficulty === 'Easy') {
+        return res.json({ allowed: true, isPremium: false });
+      }
+      
+      // Check if user is authenticated and premium
+      if (req.isAuthenticated() && req.user?.claims?.sub) {
+        const userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        
+        // Premium users have unlimited access
+        if (user?.isPremium === 1) {
+          return res.json({ allowed: true, isPremium: true });
+        }
+        
+        // Free users: check daily limit (3 matches for Medium/Hard)
+        const today = new Date().toISOString().split('T')[0];
+        const canPlay = await storage.checkDailyMediumHardLimit(userId, today);
+        
+        return res.json({ 
+          allowed: canPlay.allowed, 
+          isPremium: false,
+          remaining: canPlay.remaining,
+          limit: canPlay.limit
+        });
+      }
+      
+      // Guest users cannot play Medium/Hard
+      return res.json({ allowed: false, isPremium: false, message: "Sign in required for Medium/Hard modes" });
+    } catch (error) {
+      console.error("Error checking difficulty access:", error);
+      res.status(500).json({ message: "Failed to check access" });
+    }
+  });
+
+  // Track medium/hard match start
+  app.post('/api/user/track-medium-hard-match', async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const userId = req.user.claims.sub;
+      const today = new Date().toISOString().split('T')[0];
+      
+      await storage.incrementDailyMediumHardCount(userId, today);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error tracking match:", error);
+      res.status(500).json({ message: "Failed to track match" });
+    }
+  });
+
   // Grade conversation
-  app.post("/api/grade", async (req, res) => {
+  app.post("/api/grade", async (req: any, res) => {
     try {
       const request = gradingRequestSchema.parse(req.body);
-      const result = await gradeConversation(request);
+      
+      // Check if user is premium (for detailed feedback)
+      let isPremium = false;
+      if (req.isAuthenticated() && req.user?.claims?.sub) {
+        const user = await storage.getUser(req.user.claims.sub);
+        isPremium = user?.isPremium === 1;
+      }
+      
+      const result = await gradeConversation(request, isPremium);
       res.json(result);
     } catch (error: any) {
       console.error("Grading error:", error);

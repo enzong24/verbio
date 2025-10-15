@@ -57,6 +57,10 @@ export interface IStorage {
   createPrivateMatchInvite(invite: InsertPrivateMatchInvite): Promise<PrivateMatchInvite>;
   getPrivateMatchInvite(inviteCode: string): Promise<PrivateMatchInvite | undefined>;
   updatePrivateMatchInviteStatus(inviteCode: string, status: string): Promise<void>;
+  
+  // Premium features
+  checkDailyMediumHardLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }>;
+  incrementDailyMediumHardCount(userId: string, today: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -90,6 +94,10 @@ export class MemStorage implements IStorage {
       lastSeenAt: existingUser?.lastSeenAt || new Date(),
       createdAt: existingUser?.createdAt || new Date(),
       updatedAt: new Date(),
+      isPremium: existingUser?.isPremium ?? 0,
+      subscriptionEndDate: existingUser?.subscriptionEndDate || null,
+      dailyMediumHardCount: existingUser?.dailyMediumHardCount ?? 0,
+      lastMediumHardDate: existingUser?.lastMediumHardDate || null,
     };
     this.users.set(user.id, user);
     return user;
@@ -354,6 +362,42 @@ export class MemStorage implements IStorage {
     if (invite) {
       invite.status = status;
       this.privateInvites.set(inviteCode, invite);
+    }
+  }
+
+  async checkDailyMediumHardLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }> {
+    const user = this.users.get(userId);
+    const limit = 3;
+    
+    if (!user) {
+      return { allowed: false, remaining: 0, limit };
+    }
+    
+    // Reset count if it's a new day
+    if (user.lastMediumHardDate !== today) {
+      user.dailyMediumHardCount = 0;
+      user.lastMediumHardDate = today;
+      this.users.set(userId, user);
+    }
+    
+    const remaining = Math.max(0, limit - user.dailyMediumHardCount);
+    return {
+      allowed: user.dailyMediumHardCount < limit,
+      remaining,
+      limit
+    };
+  }
+
+  async incrementDailyMediumHardCount(userId: string, today: string): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      // Reset count if it's a new day
+      if (user.lastMediumHardDate !== today) {
+        user.dailyMediumHardCount = 0;
+      }
+      user.dailyMediumHardCount += 1;
+      user.lastMediumHardDate = today;
+      this.users.set(userId, user);
     }
   }
 }
@@ -727,6 +771,58 @@ export class DbStorage implements IStorage {
       .update(privateMatchInvites)
       .set({ status })
       .where(eq(privateMatchInvites.inviteCode, inviteCode));
+  }
+
+  async checkDailyMediumHardLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }> {
+    const user = await this.getUser(userId);
+    const limit = 3;
+    
+    if (!user) {
+      return { allowed: false, remaining: 0, limit };
+    }
+    
+    // Reset count if it's a new day
+    if (user.lastMediumHardDate !== today) {
+      await db
+        .update(users)
+        .set({
+          dailyMediumHardCount: 0,
+          lastMediumHardDate: today,
+        })
+        .where(eq(users.id, userId));
+      
+      return { allowed: true, remaining: limit, limit };
+    }
+    
+    const remaining = Math.max(0, limit - user.dailyMediumHardCount);
+    return {
+      allowed: user.dailyMediumHardCount < limit,
+      remaining,
+      limit
+    };
+  }
+
+  async incrementDailyMediumHardCount(userId: string, today: string): Promise<void> {
+    const user = await this.getUser(userId);
+    if (!user) return;
+    
+    // Reset count if it's a new day
+    if (user.lastMediumHardDate !== today) {
+      await db
+        .update(users)
+        .set({
+          dailyMediumHardCount: 1,
+          lastMediumHardDate: today,
+        })
+        .where(eq(users.id, userId));
+    } else {
+      await db
+        .update(users)
+        .set({
+          dailyMediumHardCount: user.dailyMediumHardCount + 1,
+        })
+        .where(eq(users.id, userId));
+    }
   }
 }
 

@@ -25,6 +25,12 @@ export const users = pgTable("users", {
   lastSeenAt: timestamp("last_seen_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // Premium subscription fields
+  isPremium: integer("is_premium").notNull().default(0), // 0 = free, 1 = premium
+  subscriptionEndDate: timestamp("subscription_end_date"), // When premium expires
+  // Daily match tracking for free users (Medium/Hard limit)
+  dailyMediumHardCount: integer("daily_medium_hard_count").notNull().default(0),
+  lastMediumHardDate: varchar("last_medium_hard_date"), // Store as YYYY-MM-DD
 });
 
 export type UpsertUser = typeof users.$inferInsert;
