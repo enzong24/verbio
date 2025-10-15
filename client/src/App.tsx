@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useSound } from "@/hooks/use-sound";
+import { handleRedirectResult } from "@/lib/firebaseAuth";
 import Header from "@/components/Header";
 import Landing from "@/pages/Landing";
 import Subscribe from "@/pages/Subscribe";
@@ -169,6 +170,23 @@ function MainApp() {
   const userWins = isAuthenticated ? (languageStats?.wins ?? 0) : guestStats.wins;
   const userLosses = isAuthenticated ? (languageStats?.losses ?? 0) : guestStats.losses;
   const username = user?.firstName || user?.email?.split('@')[0] || "Guest";
+
+  // Handle Google OAuth redirect result globally
+  useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        const result = await handleRedirectResult();
+        if (result) {
+          console.log('[App] Google OAuth redirect successful, user:', result.user.email);
+          // Force refresh to update auth state
+          queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        }
+      } catch (error) {
+        console.error('[App] Google OAuth redirect error:', error);
+      }
+    };
+    checkRedirect();
+  }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);

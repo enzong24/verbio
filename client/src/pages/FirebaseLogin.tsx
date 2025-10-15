@@ -64,11 +64,13 @@ export default function FirebaseLogin() {
         ? await signUpWithEmail(email, password)
         : await signInWithEmail(email, password);
       
-      // Get ID token and store it
-      const idToken = await result.user.getIdToken();
-      localStorage.setItem('firebaseToken', idToken);
+      console.log('[FirebaseLogin] Email auth successful, user:', result.user.email);
       
-      // Redirect to home
+      // Firebase auth state is now updated and persisted automatically
+      // Wait a moment for Firebase to fully persist the state
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Force reload to ensure auth state is picked up
       window.location.href = '/';
     } catch (error: any) {
       console.error('Email auth error:', error);

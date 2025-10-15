@@ -5,10 +5,13 @@ import type { User } from "@shared/schema";
 
 export function useAuth() {
   const [firebaseReady, setFirebaseReady] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   
-  // Wait for Firebase auth to initialize
+  // Wait for Firebase auth to initialize and get current user
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      console.log('[useAuth] Firebase auth state changed:', user ? user.email : 'null');
+      setFirebaseUser(user as any);
       setFirebaseReady(true);
     });
     return () => unsubscribe();
@@ -25,5 +28,6 @@ export function useAuth() {
     user: user ?? null,
     isLoading: isLoading || !firebaseReady,
     isAuthenticated: !!user,
+    firebaseUser, // Expose Firebase user for debugging
   };
 }
