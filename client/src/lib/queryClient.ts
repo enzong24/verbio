@@ -13,20 +13,21 @@ async function getAuthHeaders(): Promise<HeadersInit> {
   const headers: HeadersInit = {};
   
   try {
-    const currentUser = auth.currentUser;
+    // Wait for Firebase to be ready if needed
+    let currentUser = auth.currentUser;
+    
+    // If currentUser is null, wait a bit for Firebase to initialize
+    if (!currentUser) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      currentUser = auth.currentUser;
+    }
+    
     console.log('[QueryClient] Getting auth headers, currentUser:', currentUser ? currentUser.email : 'null');
     
     if (currentUser) {
       const idToken = await currentUser.getIdToken();
       console.log('[QueryClient] Got token from currentUser, length:', idToken.length);
       headers['Authorization'] = `Bearer ${idToken}`;
-    } else {
-      // Fallback to stored token
-      const storedToken = localStorage.getItem('firebaseToken');
-      console.log('[QueryClient] No currentUser, stored token:', storedToken ? `exists (${storedToken.length} chars)` : 'null');
-      if (storedToken) {
-        headers['Authorization'] = `Bearer ${storedToken}`;
-      }
     }
   } catch (error) {
     console.error('[QueryClient] Failed to get Firebase token:', error);
