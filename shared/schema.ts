@@ -3,7 +3,7 @@ import { pgTable, text, varchar, integer, jsonb, timestamp, index, unique } from
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table for Replit Auth
+// Session storage table for Passport.js authentication
 export const sessions = pgTable(
   "sessions",
   {
@@ -14,9 +14,10 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// User storage table with Google OAuth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  googleId: varchar("google_id").unique(), // Google OAuth user ID
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
