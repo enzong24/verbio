@@ -612,8 +612,8 @@ export default function DuelInterface({
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 4rem - env(safe-area-inset-top, 0px))', marginTop: '4rem' }}>
-      {/* Header - Hidden on mobile when keyboard likely active */}
+    <div className="flex flex-col h-[calc(100vh-4rem-env(safe-area-inset-top))]">
+      {/* Desktop Header - opponent info, timer, forfeit */}
       <div className="border-b bg-card p-2 md:p-4 shadow-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
           <div className="flex items-center gap-2 md:gap-3 min-w-0">
