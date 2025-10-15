@@ -618,7 +618,7 @@ function MainApp() {
         bestDailyLoginStreak={0}
       />
       
-      <main className="pt-16">
+      <main className="pt-16" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
         {currentPage === "duel" && (
           <MatchFinder 
             onMatchFound={handleMatchFound}

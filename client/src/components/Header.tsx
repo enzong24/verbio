@@ -117,8 +117,8 @@ export default function Header({
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 h-16 bg-background border-b border-border z-50">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 bg-background border-b border-border z-50" style={{ paddingTop: 'env(safe-area-inset-top)', height: 'calc(4rem + env(safe-area-inset-top))' }}>
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
