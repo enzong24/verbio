@@ -302,14 +302,11 @@ export default function DuelInterface({
     return () => {
       // Restore body position styles if component unmounts while scroll is locked
       // DON'T restore overflow - App.tsx manages it for the entire match
+      // DON'T call window.scrollTo - it might re-enable scrolling
       if (scrollLockActiveRef.current) {
-        const scrollY = document.body.style.top;
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
-        if (scrollY) {
-          window.scrollTo(0, parseInt(scrollY) * -1);
-        }
         scrollLockActiveRef.current = false;
       }
     };
@@ -615,7 +612,7 @@ export default function DuelInterface({
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem-env(safe-area-inset-top))]">
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 4rem - env(safe-area-inset-top, 0px))', marginTop: '4rem' }}>
       {/* Header - Hidden on mobile when keyboard likely active */}
       <div className="border-b bg-card p-2 md:p-4 shadow-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
@@ -956,14 +953,11 @@ export default function DuelInterface({
                   onBlur={() => {
                     // Release position lock when keyboard closes, but keep overflow:hidden from App.tsx
                     if (scrollLockActiveRef.current) {
-                      const scrollY = document.body.style.top;
                       document.body.style.position = '';
                       document.body.style.top = '';
                       document.body.style.width = '';
                       // DON'T remove overflow - App.tsx manages it for the entire match
-                      if (scrollY) {
-                        window.scrollTo(0, parseInt(scrollY) * -1);
-                      }
+                      // DON'T call window.scrollTo - it might re-enable scrolling
                       scrollLockActiveRef.current = false;
                     }
                   }}
