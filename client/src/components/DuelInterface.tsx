@@ -424,6 +424,20 @@ export default function DuelInterface({
     }
   };
 
+  // Helper function to mark vocabulary as used in a message (case-insensitive)
+  const markVocabularyAsUsed = (text: string) => {
+    const lowerText = text.toLowerCase();
+    const newUsedVocab = new Set(usedVocabulary);
+    
+    vocabulary.forEach((vocabItem) => {
+      if (lowerText.includes(vocabItem.word.toLowerCase())) {
+        newUsedVocab.add(vocabItem.word);
+      }
+    });
+    
+    setUsedVocabulary(newUsedVocab);
+  };
+
   const handleSend = async () => {
     // Prevent sending during any loading state
     if (!input.trim() || !isUserTurn || isGrading || 
@@ -438,6 +452,9 @@ export default function DuelInterface({
       shouldCountRef.current = false;
       setMessages(prev => [...prev, { sender: "user", text: messageToSend, timestamp }]);
       setInput("");
+      
+      // Mark vocabulary as permanently used
+      markVocabularyAsUsed(messageToSend);
       
       // Send message to opponent if multiplayer
       if (!isBot && multiplayerWsRef?.current?.readyState === WebSocket.OPEN) {
@@ -466,6 +483,9 @@ export default function DuelInterface({
       shouldCountRef.current = false;
       setMessages(prev => [...prev, { sender: "user", text: messageToSend, timestamp }]);
       setInput("");
+      
+      // Mark vocabulary as permanently used
+      markVocabularyAsUsed(messageToSend);
       
       // For multiplayer: send message and wait for opponent's answer
       if (!isBot && multiplayerWsRef?.current?.readyState === WebSocket.OPEN) {
@@ -891,20 +911,18 @@ export default function DuelInterface({
                     resetInactivity();
                     if (validationError) setValidationError("");
                     
-                    // Check for vocabulary words in real-time
-                    const newUsedVocab = new Set<string>();
+                    // Check for vocabulary words in real-time (case-insensitive)
+                    const newUsedVocab = new Set(usedVocabulary); // Start with already used words
+                    const lowerInput = newInput.toLowerCase();
+                    
                     vocabulary.forEach((vocabItem) => {
-                      // For Chinese and other character-based languages, check if the word appears anywhere
-                      // For alphabetic languages, we could add word boundary checks if needed
-                      if (newInput.includes(vocabItem.word)) {
+                      // Case-insensitive check
+                      if (lowerInput.includes(vocabItem.word.toLowerCase())) {
                         newUsedVocab.add(vocabItem.word);
                       }
                     });
                     
-                    // Update used vocabulary if changed
-                    if (newUsedVocab.size > 0 || usedVocabulary.size > 0) {
-                      setUsedVocabulary(newUsedVocab);
-                    }
+                    setUsedVocabulary(newUsedVocab);
                   }}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={
