@@ -15,30 +15,5 @@
   <body style="background-color: hsl(222, 47%, 11%);">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // 1) Older iOS Safari fallback for dynamic viewport height
-      (function () {
-        const setVH = () => {
-          const vh = window.innerHeight * 0.01; // visual height at the moment
-          document.documentElement.style.setProperty('--vh', `${vh}px`);
-        };
-        setVH();
-        window.addEventListener('resize', setVH);
-      })();
-
-      // 2) OPTIONAL: Keep a fixed footer from jumping with keyboard using VisualViewport
-      (function () {
-        const footer = document.querySelector('.app-footer'); // your fixed/sticky bottom bar
-        if (!footer || !window.visualViewport) return;
-
-        const onVVChange = () => {
-          const vv = window.visualViewport;
-          const covered = window.innerHeight - vv.height - vv.offsetTop;
-          footer.style.transform = covered > 0 ? `translateY(-${covered}px)` : '';
-        };
-        visualViewport.addEventListener('resize', onVVChange);
-        visualViewport.addEventListener('scroll', onVVChange);
-      })();
-    </script>
   </body>
 </html>

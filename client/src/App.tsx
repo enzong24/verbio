@@ -591,7 +591,7 @@ function MainApp() {
 
 
   return (
-    <div className="app bg-background text-foreground" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <div className={`min-h-screen bg-background text-foreground ${currentPage === "match" ? "h-screen overflow-hidden" : ""}`} style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       {/* Streak Notification */}
       {streakNotification && (
         <StreakNotification

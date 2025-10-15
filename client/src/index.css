@@ -349,76 +349,9 @@
   }
 }
 
-/* ===== MOBILE VIEWPORT STABILIZATION ===== */
-
-/* Make sizing predictable */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-/* Body stays fixed to avoid rubber-banding when keyboard opens */
-html, body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  overflow: hidden; /* IMPORTANT: scrolling happens in .app, not body */
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Main app wrapper uses dynamic viewport height */
-.app {
-  height: calc(var(--vh, 1vh) * 100); /* fallback using custom property for older iOS */
-  max-width: 100vw;
-  overflow: auto; /* this scrolls instead of body */
-  -webkit-overflow-scrolling: touch;
-}
-
-@supports (height: 100dvh) {
-  .app {
-    height: 100dvh; /* prevents jump on modern iOS */
-  }
-}
-
-/* Prevent iOS zoom-on-focus (which shifts layout) */
+/* Mobile keyboard handling - prevent iOS zoom on input focus */
 input, textarea, select, button {
   font-size: 16px;
-}
-
-/* If you have a header/footer bars */
-.app-header, .app-footer {
-  position: sticky;
-  z-index: 10;
-}
-
-.app-header {
-  top: 0;
-}
-
-.app-footer {
-  bottom: 0;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-}
-
-/* Keep content within screen width */
-.container {
-  width: min(100%, 100vw);
-  max-width: 100%;
-  padding-left: 16px;
-  padding-right: 16px;
-  margin: 0 auto;
-}
-
-/* Never overflow horizontally */
-img, video, canvas, svg {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Avoid accidental horizontal scroll */
-html, body, .app {
-  overscroll-behavior: contain;
 }
 
 /* iOS safe area insets */
