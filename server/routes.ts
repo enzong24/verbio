@@ -738,6 +738,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to manually grant premium status (for testing/admin purposes)
+  app.post('/api/admin/grant-premium', async (req, res) => {
+    try {
+      const { email, isPremium } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email required' });
+      }
+
+      const allUsers = await storage.getAllUsers();
+      const user = allUsers.find(u => u.email === email);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      await db.update(users).set({
+        isPremium: isPremium ? 1 : 0,
+        updatedAt: new Date(),
+      }).where(eq(users.id, user.id));
+
+      res.json({ 
+        message: `Premium status ${isPremium ? 'granted' : 'revoked'} for ${email}`,
+        user: { email: user.email, isPremium: isPremium ? 1 : 0 }
+      });
+    } catch (error: any) {
+      console.error('Admin grant premium error:', error);
+      res.status(500).json({ message: error.message || 'Failed to update premium status' });
+    }
+  });
+
+  // Cancel subscription endpoint
+  app.post('/api/cancel-subscription', async (req, res) => {
+    try {
+      const user = req.user as Express.User | undefined;
+      if (!req.isAuthenticated() || !user?.claims?.sub) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      const userId = user.claims.sub;
+      const dbUser = await storage.getUser(userId);
+      
+      if (!dbUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (!dbUser.stripeSubscriptionId) {
+        return res.status(400).json({ message: 'No active subscription found' });
+      }
+
+      // Cancel the subscription at period end (user keeps access until end of billing period)
+      const subscription = await stripe.subscriptions.update(dbUser.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      res.json({ 
+        message: 'Subscription will be cancelled at the end of the billing period',
+        cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null
+      });
+    } catch (error: any) {
+      console.error('Cancel subscription error:', error);
+      res.status(500).json({ message: error.message || 'Failed to cancel subscription' });
+    }
+  });
+
   // Stripe webhook endpoint (from blueprint:javascript_stripe)
   app.post('/api/stripe-webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
