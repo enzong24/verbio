@@ -33,7 +33,7 @@ interface VocabWord {
 }
 
 function MainApp() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated, firebaseUser } = useAuth();
   const { playStreak } = useSound();
   const [currentPage, setCurrentPage] = useState<Page>("duel");
   const [isGuestMode, setIsGuestMode] = useState(false);
@@ -301,7 +301,17 @@ function MainApp() {
     </div>;
   }
 
-  if (!isAuthenticated && !isGuestMode) {
+  // Show main app if Firebase has a user OR backend confirmed auth OR guest mode
+  const shouldShowMainApp = firebaseUser || isAuthenticated || isGuestMode;
+  
+  console.log('[App] Auth state:', {
+    firebaseUser: firebaseUser ? 'exists' : 'null',
+    isAuthenticated,
+    isGuestMode,
+    shouldShowMainApp
+  });
+  
+  if (!shouldShowMainApp) {
     return <Landing />;
   }
 

@@ -18,42 +18,9 @@ export default function FirebaseLogin() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Handle redirect result when user returns from Google sign-in
-    const checkRedirectResult = async () => {
-      try {
-        console.log('[FirebaseLogin] Checking redirect result...');
-        const result = await handleRedirectResult();
-        console.log('[FirebaseLogin] Redirect result:', result ? 'User found' : 'No user');
-        
-        if (result) {
-          // User successfully signed in
-          console.log('[FirebaseLogin] Got ID token, length:', (await result.user.getIdToken()).length);
-          console.log('[FirebaseLogin] User email:', result.user.email);
-          
-          // Firebase auth is already persisted, just navigate to home
-          // Force a full page reload to ensure auth state is properly initialized
-          console.log('[FirebaseLogin] Redirecting to home with full page reload');
-          window.location.replace('/');
-        }
-      } catch (error: any) {
-        console.error('[FirebaseLogin] Sign-in error:', error);
-        // Only show toast for non-API-key errors (user-facing errors)
-        if (error.code && !error.code.includes('api-key')) {
-          toast({
-            title: "Sign-in failed",
-            description: error.message || "Failed to sign in",
-            variant: "destructive",
-          });
-        }
-      } finally {
-        // Always stop loading after a short delay
-        console.log('[FirebaseLogin] Setting isCheckingAuth to false');
-        setTimeout(() => setIsCheckingAuth(false), 500);
-      }
-    };
-    
-    checkRedirectResult();
-  }, [toast]);
+    // Just stop the loading state - App.tsx handles redirect result globally now
+    setIsCheckingAuth(false);
+  }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,12 +33,9 @@ export default function FirebaseLogin() {
       
       console.log('[FirebaseLogin] Email auth successful, user:', result.user.email);
       
-      // Firebase auth state is now updated and persisted automatically
-      // Wait a moment for Firebase to fully persist the state
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Force reload to ensure auth state is picked up
-      window.location.href = '/';
+      // Don't redirect - let useAuth hook detect the auth state change
+      // and App.tsx will automatically show the main app
+      setIsEmailSignIn(false);
     } catch (error: any) {
       console.error('Email auth error:', error);
       let errorMessage = error.message || "Authentication failed";
