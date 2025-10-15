@@ -1,10 +1,35 @@
 // Firebase authentication helpers (from blueprint:firebase_barebones_javascript)
-import { signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut as firebaseSignOut, onAuthStateChanged, type User } from "firebase/auth";
-import { auth, googleProvider } from "./firebase";
+import { 
+  signInWithRedirect, 
+  getRedirectResult, 
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut, 
+  onAuthStateChanged, 
+  type User 
+} from "firebase/auth";
+import { auth, googleProvider, facebookProvider } from "./firebase";
 
-// Call this function when the user clicks on the "Login" button
+// Email/password sign in
+export async function signInWithEmail(email: string, password: string) {
+  return await signInWithEmailAndPassword(auth, email, password);
+}
+
+// Email/password sign up
+export async function signUpWithEmail(email: string, password: string) {
+  return await createUserWithEmailAndPassword(auth, email, password);
+}
+
+// Google sign in
 export function signInWithGoogle() {
   signInWithRedirect(auth, googleProvider);
+}
+
+// Facebook sign in
+export function signInWithFacebook() {
+  signInWithRedirect(auth, facebookProvider);
 }
 
 // Call this function on page load to handle redirect result
@@ -14,8 +39,11 @@ export async function handleRedirectResult() {
     if (result) {
       // The signed-in user info
       const user = result.user;
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential?.accessToken;
+      
+      // Try to get credential from Google or Facebook
+      const googleCredential = GoogleAuthProvider.credentialFromResult(result);
+      const facebookCredential = FacebookAuthProvider.credentialFromResult(result);
+      const token = googleCredential?.accessToken || facebookCredential?.accessToken;
       
       return { user, token };
     }
