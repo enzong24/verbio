@@ -630,16 +630,25 @@ export default function DuelInterface({
                 </div>
               </div>
               <div className="flex flex-wrap gap-1.5 md:gap-2">
-                {vocabulary.map((vocabItem) => (
-                  <VocabularyBadge 
-                    key={vocabItem.word}
-                    chinese={vocabItem.word}
-                    pinyin={vocabItem.romanization}
-                    language={language}
-                    className="text-xs"
-                    definition={vocabItem.definition}
-                  />
-                ))}
+                {vocabulary.map((vocabItem) => {
+                  const isUsed = usedVocabulary.has(vocabItem.word);
+                  return (
+                    <div 
+                      key={vocabItem.word}
+                      className={`transition-all ${isUsed ? 'opacity-40 line-through' : ''}`}
+                      data-testid={`vocab-badge-${vocabItem.word}`}
+                      aria-label={isUsed ? 'used' : 'unused'}
+                    >
+                      <VocabularyBadge 
+                        chinese={vocabItem.word}
+                        pinyin={vocabItem.romanization}
+                        language={language}
+                        className="text-xs"
+                        definition={vocabItem.definition}
+                      />
+                    </div>
+                  );
+                })}
               </div>
               <div className="mt-3 text-xs md:text-sm font-medium">
                 {turnPhase === "user-answer" && <span className="text-primary">⏳ Your turn to answer the question</span>}
@@ -847,64 +856,6 @@ export default function DuelInterface({
               </div>
               <Progress value={progress} className="h-2" />
             </div>
-
-            {/* Vocabulary Checklist */}
-            <Card className="mb-3 border-success/30 bg-success/5" data-testid="vocabulary-checklist-card">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center justify-between">
-                  <span>Vocabulary Used</span>
-                  <Badge variant="outline" className="text-xs" data-testid="vocabulary-counter">
-                    {usedVocabulary.size}/{vocabulary.length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {vocabulary.map((vocabItem) => {
-                    const isUsed = usedVocabulary.has(vocabItem.word);
-                    return (
-                      <div
-                        key={vocabItem.word}
-                        className={`flex items-center gap-2 text-sm transition-all ${
-                          isUsed ? 'opacity-60' : 'opacity-100'
-                        }`}
-                        data-testid={`vocab-item-${vocabItem.word}`}
-                      >
-                        <div 
-                          className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                            isUsed 
-                              ? 'bg-success border-success' 
-                              : 'border-muted-foreground/30'
-                          }`}
-                          data-testid={`vocab-checkbox-${vocabItem.word}`}
-                          aria-checked={isUsed}
-                          role="checkbox"
-                        >
-                          {isUsed && (
-                            <svg 
-                              className="w-3 h-3 text-white" 
-                              fill="none" 
-                              viewBox="0 0 24 24" 
-                              stroke="currentColor"
-                              data-testid={`vocab-checkmark-${vocabItem.word}`}
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
-                        <div 
-                          className={`flex-1 ${isUsed ? 'line-through' : ''}`}
-                          data-testid={`vocab-text-${vocabItem.word}`}
-                          aria-label={isUsed ? 'used' : 'unused'}
-                        >
-                          <TextWithPinyin text={vocabItem.word} language={language} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
 
             <Card className="border-accent/30 bg-accent/5 hidden md:block">
               <CardHeader className="pb-3">
