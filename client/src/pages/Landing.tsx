@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function Landing() {
   const handleSignIn = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/firebase-login";
   };
 
   const handleGuestPlay = () => {

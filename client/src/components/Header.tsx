@@ -160,13 +160,21 @@ export default function Header({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
+            onClick={async () => {
+              // Clear all local storage
               localStorage.clear();
-              if (isAuthenticated) {
-                window.location.href = "/api/logout";
-              } else {
-                window.location.href = "/";
+              sessionStorage.clear();
+              
+              // Firebase logout
+              try {
+                const { signOut } = await import("@/lib/firebaseAuth");
+                await signOut();
+              } catch (error) {
+                console.error('Firebase logout error:', error);
               }
+              
+              // Redirect to landing page
+              window.location.href = "/";
             }}
             className="gap-2"
             data-testid="button-sign-out"

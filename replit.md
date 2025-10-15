@@ -57,10 +57,10 @@ The backend uses Express.js with Node.js and TypeScript, featuring RESTful APIs 
 - **drizzle-zod**: Database schema to Zod.
 
 ### Authentication & Session Management
-- **Replit Auth (OpenID Connect)**: OAuth provider.
-- **openid-client**: OpenID Connect client library.
-- **Passport.js**: Authentication middleware.
-- **express-session**: Session management with `connect-pg-simple`.
+- **Firebase Authentication**: Google Sign-In authentication provider.
+- **Firebase SDK**: Client-side authentication library.
+- **JWT Token Verification**: Server-side token validation for API requests.
+- **Automatic User Sync**: Users automatically created/synced to database on first login.
 
 ### Payment Processing
 - **Stripe**: Payment processing for premium subscriptions.

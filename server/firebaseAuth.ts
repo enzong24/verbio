@@ -19,6 +19,10 @@ export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
 
     const idToken = authHeader.split('Bearer ')[1];
     
+    let userId: string;
+    let email: string;
+    let name: string | undefined;
+    
     try {
       // Decode JWT payload (WARNING: This does NOT verify signature!)
       // For production, replace this with Firebase Admin SDK verification
@@ -31,9 +35,9 @@ export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
         return next();
       }
       
-      const userId = payload.sub || payload.user_id;
-      const email = payload.email;
-      const name = payload.name;
+      userId = payload.sub || payload.user_id;
+      email = payload.email;
+      name = payload.name;
       
       if (!userId || !email) {
         return next();
