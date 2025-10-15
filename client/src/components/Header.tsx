@@ -2,6 +2,7 @@ import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Cr
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/hooks/use-sound";
+import { useClerk } from "@clerk/clerk-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,6 +73,7 @@ export default function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { setEnabled, isEnabled } = useSound();
   const [soundEnabled, setSoundEnabled] = useState(isEnabled());
+  const { signOut: clerkSignOut } = useClerk();
 
   const totalMatches = wins + losses;
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
@@ -165,12 +167,11 @@ export default function Header({
               localStorage.clear();
               sessionStorage.clear();
               
-              // Firebase logout
+              // Clerk logout
               try {
-                const { signOut } = await import("@/lib/firebaseAuth");
-                await signOut();
+                await clerkSignOut();
               } catch (error) {
-                console.error('Firebase logout error:', error);
+                console.error('Clerk logout error:', error);
               }
               
               // Redirect to landing page

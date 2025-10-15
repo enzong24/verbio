@@ -737,7 +737,14 @@ function AppWithClerk() {
   
   // Set up Clerk token getter for queryClient
   useEffect(() => {
-    setClerkTokenGetter(() => getToken);
+    setClerkTokenGetter(async () => {
+      try {
+        return await getToken();
+      } catch (error) {
+        console.error('Error getting Clerk token:', error);
+        return null;
+      }
+    });
   }, [getToken]);
   
   return (
@@ -757,7 +764,11 @@ export default function App() {
   }
   
   return (
-    <ClerkProvider publishableKey={clerkPubKey}>
+    <ClerkProvider 
+      publishableKey={clerkPubKey}
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
+    >
       <AppWithClerk />
     </ClerkProvider>
   );
