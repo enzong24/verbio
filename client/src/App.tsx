@@ -590,7 +590,7 @@ function MainApp() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       {/* Streak Notification */}
       {streakNotification && (
         <StreakNotification
@@ -618,7 +618,7 @@ function MainApp() {
         bestDailyLoginStreak={0}
       />
       
-      <main className="pt-16" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
+      <main className="pt-16">
         {currentPage === "duel" && (
           <MatchFinder 
             onMatchFound={handleMatchFound}
