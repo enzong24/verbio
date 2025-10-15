@@ -31,6 +31,9 @@ export const users = pgTable("users", {
   // Daily match tracking for free users (Medium/Hard limit)
   dailyMediumHardCount: integer("daily_medium_hard_count").notNull().default(0),
   lastMediumHardDate: varchar("last_medium_hard_date"), // Store as YYYY-MM-DD
+  // Stripe integration fields (from blueprint:javascript_stripe)
+  stripeCustomerId: varchar("stripe_customer_id"),
+  stripeSubscriptionId: varchar("stripe_subscription_id")
 });
 
 export type UpsertUser = typeof users.$inferInsert;
