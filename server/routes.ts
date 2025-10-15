@@ -16,17 +16,17 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Helper function to get user ID from Firebase auth
+// Helper function to get user ID from Clerk auth
 function getUserId(req: any): string | undefined {
-  // Only Firebase auth is supported
-  if (req.firebaseUser) {
-    return req.firebaseUser.id;
+  // Clerk auth support
+  if (req.clerkUser) {
+    return req.clerkUser.id;
   }
   return undefined;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Firebase authentication is handled by verifyFirebaseToken middleware in server/index.ts
+  // Clerk authentication is handled by verifyClerkAuth middleware in server/index.ts
 
   // Auth route - get current user (returns null if not authenticated)
   // Supports both Firebase and Replit Auth

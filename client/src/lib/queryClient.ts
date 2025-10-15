@@ -1,5 +1,11 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { auth } from "./firebase";
+
+// Store Clerk token getter globally so we can access it from queries/mutations
+let getClerkToken: (() => Promise<string | null>) | null = null;
+
+export function setClerkTokenGetter(getter: () => Promise<string | null>) {
+  getClerkToken = getter;
+}
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -8,32 +14,21 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// Get Firebase auth token for API requests
+// Get Clerk auth token for API requests
 async function getAuthHeaders(): Promise<HeadersInit> {
   const headers: HeadersInit = {};
   
   try {
-    // Wait for Firebase to be ready if needed
-    let currentUser = auth.currentUser;
-    
-    // If currentUser is null, wait a bit for Firebase to initialize
-    if (!currentUser) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      currentUser = auth.currentUser;
-    }
-    
-    console.log('[QueryClient] Getting auth headers, currentUser:', currentUser ? currentUser.email : 'null');
-    
-    if (currentUser) {
-      const idToken = await currentUser.getIdToken();
-      console.log('[QueryClient] Got token from currentUser, length:', idToken.length);
-      headers['Authorization'] = `Bearer ${idToken}`;
+    if (getClerkToken) {
+      const token = await getClerkToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
     }
   } catch (error) {
-    console.error('[QueryClient] Failed to get Firebase token:', error);
+    console.error('[QueryClient] Failed to get Clerk token:', error);
   }
   
-  console.log('[QueryClient] Returning headers with auth:', !!headers['Authorization']);
   return headers;
 }
 

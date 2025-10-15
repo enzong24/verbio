@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { Switch, Route } from "wouter";
-import { queryClient, apiRequest } from "./lib/queryClient";
+import { queryClient, apiRequest, setClerkTokenGetter } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ClerkProvider, useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSound } from "@/hooks/use-sound";
 import Header from "@/components/Header";
 import Landing from "@/pages/Landing";
 import Subscribe from "@/pages/Subscribe";
-import FirebaseLogin from "@/pages/FirebaseLogin";
 import AdminWhitelist from "@/pages/AdminWhitelist";
 import MatchFinder, { type Language, type Difficulty } from "@/components/MatchFinder";
 import DuelInterface from "@/components/DuelInterface";
@@ -32,7 +32,7 @@ interface VocabWord {
 }
 
 function MainApp() {
-  const { user, isLoading, isAuthenticated, firebaseUser } = useAuth();
+  const { user, isLoading, isAuthenticated, clerkUser } = useAuth();
   const { playStreak } = useSound();
   const [currentPage, setCurrentPage] = useState<Page>("duel");
   const [isGuestMode, setIsGuestMode] = useState(false);
@@ -283,11 +283,11 @@ function MainApp() {
     </div>;
   }
 
-  // Show main app if Firebase has a user OR backend confirmed auth OR guest mode
-  const shouldShowMainApp = firebaseUser || isAuthenticated || isGuestMode;
+  // Show main app if Clerk has a user OR backend confirmed auth OR guest mode
+  const shouldShowMainApp = clerkUser || isAuthenticated || isGuestMode;
   
   console.log('[App] Auth state:', {
-    firebaseUser: firebaseUser ? 'exists' : 'null',
+    clerkUser: clerkUser ? 'exists' : 'null',
     isAuthenticated,
     isGuestMode,
     shouldShowMainApp
@@ -724,7 +724,6 @@ function MainApp() {
 function Router() {
   return (
     <Switch>
-      <Route path="/firebase-login" component={FirebaseLogin} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/admin/whitelist" component={AdminWhitelist} />
       <Route path="/" component={MainApp} />
@@ -733,15 +732,13 @@ function Router() {
   );
 }
 
-export default function App() {
-  // Initialize Firebase auth persistence on app boot
+function AppWithClerk() {
+  const { getToken } = useClerkAuth();
+  
+  // Set up Clerk token getter for queryClient
   useEffect(() => {
-    const initFirebaseAuth = async () => {
-      const { initAuth } = await import("@/lib/firebase");
-      await initAuth();
-    };
-    initFirebaseAuth();
-  }, []);
+    setClerkTokenGetter(() => getToken);
+  }, [getToken]);
   
   return (
     <QueryClientProvider client={queryClient}>
@@ -749,5 +746,19 @@ export default function App() {
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
+  );
+}
+
+export default function App() {
+  const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  
+  if (!clerkPubKey) {
+    throw new Error("Missing Clerk Publishable Key");
+  }
+  
+  return (
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <AppWithClerk />
+    </ClerkProvider>
   );
 }
