@@ -57,10 +57,10 @@ The backend uses Express.js with Node.js and TypeScript, featuring RESTful APIs 
 - **drizzle-zod**: Database schema to Zod.
 
 ### Authentication & Session Management
-- **Replit Auth**: OpenID Connect provider with Google, GitHub, X, Apple, and email/password support.
-- **Passport.js**: Server-side authentication middleware with session management.
-- **PostgreSQL Sessions**: Secure session storage in database.
-- **Automatic User Sync**: Users automatically created/synced to database on first login.
+- **Google OAuth 2.0**: Direct Google OAuth authentication using redirect-based flow.
+- **Passport.js**: Server-side authentication middleware with passport-google-oauth20 strategy.
+- **PostgreSQL Sessions**: Secure session storage in database using connect-pg-simple.
+- **Automatic User Sync**: Users automatically created/synced to database on first login via Google profile.
 
 ### Payment Processing
 - **Stripe**: Payment processing for premium subscriptions.
