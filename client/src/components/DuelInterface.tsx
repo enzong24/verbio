@@ -118,6 +118,7 @@ export default function DuelInterface({
   const inactivityCountRef = useRef(false);
   const wsRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollLockActiveRef = useRef(false);
 
   const botQuestionMutation = useMutation({
     mutationFn: async () => {
@@ -294,6 +295,21 @@ export default function DuelInterface({
       setTimeLeft(getTimerDuration());
       setInactivityTimeLeft(60);
     }
+  }, []);
+
+  // Cleanup scroll lock on unmount
+  useEffect(() => {
+    return () => {
+      // Restore body styles and scroll position if component unmounts while scroll is locked
+      if (scrollLockActiveRef.current) {
+        const scrollY = document.body.style.top;
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        scrollLockActiveRef.current = false;
+      }
+    };
   }, []);
 
   // Update when bot question is ready
@@ -596,7 +612,7 @@ export default function DuelInterface({
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
       {/* Header - Hidden on mobile when keyboard likely active */}
       <div className="border-b bg-card p-2 md:p-4 shadow-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
@@ -923,6 +939,27 @@ export default function DuelInterface({
                     });
                     
                     setUsedVocabulary(newUsedVocab);
+                  }}
+                  onFocus={() => {
+                    // Lock scroll position when keyboard opens (only if not already locked)
+                    if (!scrollLockActiveRef.current) {
+                      const scrollY = window.scrollY;
+                      document.body.style.position = 'fixed';
+                      document.body.style.top = `-${scrollY}px`;
+                      document.body.style.width = '100%';
+                      scrollLockActiveRef.current = true;
+                    }
+                  }}
+                  onBlur={() => {
+                    // Restore scroll position when keyboard closes
+                    if (scrollLockActiveRef.current) {
+                      const scrollY = document.body.style.top;
+                      document.body.style.position = '';
+                      document.body.style.top = '';
+                      document.body.style.width = '';
+                      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+                      scrollLockActiveRef.current = false;
+                    }
                   }}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={
