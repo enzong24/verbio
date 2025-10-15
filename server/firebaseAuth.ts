@@ -60,6 +60,17 @@ export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
       });
     }
 
+    // Check if email is in premium whitelist and auto-grant premium
+    const isWhitelisted = await storage.isEmailWhitelisted(email);
+    if (isWhitelisted && user.isPremium === 0) {
+      // Automatically grant premium to whitelisted users
+      await storage.upsertUser({
+        ...user,
+        isPremium: 1,
+      });
+      console.log(`Auto-granted premium to whitelisted user: ${email}`);
+    }
+
     // Attach user to request object
     (req as any).firebaseUser = {
       id: userId,
