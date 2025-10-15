@@ -10,6 +10,7 @@ import Header from "@/components/Header";
 import Landing from "@/pages/Landing";
 import Subscribe from "@/pages/Subscribe";
 import FirebaseLogin from "@/pages/FirebaseLogin";
+import AdminWhitelist from "@/pages/AdminWhitelist";
 import MatchFinder, { type Language, type Difficulty } from "@/components/MatchFinder";
 import DuelInterface from "@/components/DuelInterface";
 import MatchResults from "@/components/MatchResults";
@@ -715,6 +716,7 @@ function Router() {
     <Switch>
       <Route path="/firebase-login" component={FirebaseLogin} />
       <Route path="/subscribe" component={Subscribe} />
+      <Route path="/admin/whitelist" component={AdminWhitelist} />
       <Route path="/" component={MainApp} />
       <Route path="/:rest*" component={MainApp} />
     </Switch>
