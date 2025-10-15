@@ -300,13 +300,16 @@ export default function DuelInterface({
   // Cleanup scroll lock on unmount
   useEffect(() => {
     return () => {
-      // Restore body position styles if component unmounts while scroll is locked
-      // DON'T restore overflow - App.tsx manages it for the entire match
-      // DON'T call window.scrollTo - it might re-enable scrolling
+      // Restore body styles and scroll position if component unmounts while scroll is locked
       if (scrollLockActiveRef.current) {
+        const scrollY = document.body.style.top;
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
+        document.body.style.overflow = '';
+        if (scrollY) {
+          window.scrollTo(0, parseInt(scrollY || '0') * -1);
+        }
         scrollLockActiveRef.current = false;
       }
     };
@@ -759,7 +762,7 @@ export default function DuelInterface({
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-2 md:p-6 space-y-2 md:space-y-4 max-h-[40vh] md:max-h-none" data-testid="chat-messages">
+            <div className="flex-1 overflow-y-auto p-2 md:p-6 space-y-2 md:space-y-4" data-testid="chat-messages">
               {messages.map((msg, idx) => {
                 const isBotMessage = msg.sender === "opponent";
                 const isBeginnerMode = difficulty === "Beginner";
@@ -947,17 +950,21 @@ export default function DuelInterface({
                       document.body.style.position = 'fixed';
                       document.body.style.top = `-${scrollY}px`;
                       document.body.style.width = '100%';
+                      document.body.style.overflow = 'hidden';
                       scrollLockActiveRef.current = true;
                     }
                   }}
                   onBlur={() => {
-                    // Release position lock when keyboard closes, but keep overflow:hidden from App.tsx
+                    // Restore scroll position when keyboard closes
                     if (scrollLockActiveRef.current) {
+                      const scrollY = document.body.style.top;
                       document.body.style.position = '';
                       document.body.style.top = '';
                       document.body.style.width = '';
-                      // DON'T remove overflow - App.tsx manages it for the entire match
-                      // DON'T call window.scrollTo - it might re-enable scrolling
+                      document.body.style.overflow = '';
+                      if (scrollY) {
+                        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+                      }
                       scrollLockActiveRef.current = false;
                     }
                   }}
