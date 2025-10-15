@@ -76,7 +76,7 @@ export async function setupAuth(app: Express) {
               .where(eq(users.googleId, profile.id))
               .returning();
             
-            return done(null, updatedUser);
+            return done(null, updatedUser as any);
           }
 
           // Create new user
@@ -91,7 +91,7 @@ export async function setupAuth(app: Express) {
             })
             .returning();
 
-          return done(null, newUser);
+          return done(null, newUser as any);
         } catch (error) {
           return done(error as Error);
         }
@@ -106,7 +106,7 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await storage.getUser(id);
-      done(null, user);
+      done(null, user as any);
     } catch (error) {
       done(error);
     }
