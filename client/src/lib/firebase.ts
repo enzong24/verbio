@@ -1,6 +1,6 @@
 // Firebase configuration and initialization (from blueprint:firebase_barebones_javascript)
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDMRWysyqw4WmbEE44WoC13AyNZ5efoFDc",
@@ -14,4 +14,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Set persistence to LOCAL so auth state persists across page refreshes
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Failed to set auth persistence:', error);
+});
+
 export const googleProvider = new GoogleAuthProvider();

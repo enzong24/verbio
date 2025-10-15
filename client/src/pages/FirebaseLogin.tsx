@@ -26,18 +26,14 @@ export default function FirebaseLogin() {
         console.log('[FirebaseLogin] Redirect result:', result ? 'User found' : 'No user');
         
         if (result) {
-          // User successfully signed in, get ID token and send to backend
-          const idToken = await result.user.getIdToken();
-          console.log('[FirebaseLogin] Got ID token, length:', idToken.length);
+          // User successfully signed in
+          console.log('[FirebaseLogin] Got ID token, length:', (await result.user.getIdToken()).length);
           console.log('[FirebaseLogin] User email:', result.user.email);
           
-          // Store token for API requests
-          localStorage.setItem('firebaseToken', idToken);
-          console.log('[FirebaseLogin] Stored token in localStorage');
-          
-          // Redirect to home
-          console.log('[FirebaseLogin] Redirecting to /');
-          window.location.href = '/';
+          // Firebase auth is already persisted, just navigate to home
+          // Force a full page reload to ensure auth state is properly initialized
+          console.log('[FirebaseLogin] Redirecting to home with full page reload');
+          window.location.replace('/');
         }
       } catch (error: any) {
         console.error('[FirebaseLogin] Sign-in error:', error);
