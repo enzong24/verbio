@@ -744,8 +744,8 @@ export default function DuelInterface({
             <div className="p-3 md:p-4 border-t bg-card pb-safe-bottom">
               <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
               
-              {/* Need Help Button for Beginner Mode */}
-              {difficulty === "Beginner" && isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
+              {/* Need Help Button */}
+              {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
                 <div className="mb-3">
                   <Button
                     variant="outline"
