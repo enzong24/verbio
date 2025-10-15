@@ -619,17 +619,17 @@ export default function DuelInterface({
         <div className="max-w-7xl mx-auto h-full flex flex-col md:flex-row">
           <div className="flex-1 flex flex-col min-h-0">
             {/* Topic Header */}
-            <div className="p-3 md:p-4 border-b bg-card">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+            <div className="p-2 md:p-4 border-b bg-card">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-accent items-center justify-center hidden md:flex">
                   <Swords className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <span className="font-semibold text-sm md:text-base">Topic:</span>
-                  <Badge className="ml-2 text-xs md:text-sm bg-accent/20 text-accent border-accent/30">{topic}</Badge>
+                  <span className="font-semibold text-xs md:text-base">Topic:</span>
+                  <Badge className="ml-1 md:ml-2 text-[10px] md:text-sm bg-accent/20 text-accent border-accent/30">{topic}</Badge>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-1.5 md:gap-2">
+              <div className="flex flex-wrap gap-1 md:gap-2">
                 {vocabulary.map((vocabItem) => {
                   const isUsed = usedVocabulary.has(vocabItem.word);
                   return (
@@ -643,24 +643,36 @@ export default function DuelInterface({
                         chinese={vocabItem.word}
                         pinyin={vocabItem.romanization}
                         language={language}
-                        className="text-xs"
+                        className="text-[10px] md:text-xs"
                         definition={vocabItem.definition}
                       />
                     </div>
                   );
                 })}
               </div>
-              <div className="mt-3 text-xs md:text-sm font-medium">
-                {turnPhase === "user-answer" && <span className="text-primary">⏳ Your turn to answer the question</span>}
-                {turnPhase === "user-question" && <span className="text-accent">❓ Your turn to ask a question using vocabulary</span>}
+              <div className="mt-2 text-[10px] md:text-sm font-medium">
+                {turnPhase === "user-answer" && (
+                  <>
+                    <span className="md:hidden text-primary">⏳ Answer</span>
+                    <span className="hidden md:inline text-primary">⏳ Your turn to answer the question</span>
+                  </>
+                )}
+                {turnPhase === "user-question" && (
+                  <>
+                    <span className="md:hidden text-accent">❓ Ask</span>
+                    <span className="hidden md:inline text-accent">❓ Your turn to ask a question using vocabulary</span>
+                  </>
+                )}
                 {turnPhase === "bot-question" && (
                   <span className="text-muted-foreground">
-                    {isBot ? "🤖 Bot is thinking..." : "⏳ Opponent is thinking..."}
+                    <span className="md:hidden">{isBot ? "🤖" : "⏳"}</span>
+                    <span className="hidden md:inline">{isBot ? "🤖 Bot is thinking..." : "⏳ Opponent is thinking..."}</span>
                   </span>
                 )}
                 {turnPhase === "bot-answer" && (
                   <span className="text-success">
-                    {isBot ? "🤖 Bot is answering..." : "💬 Opponent is answering..."}
+                    <span className="md:hidden">{isBot ? "🤖" : "💬"}</span>
+                    <span className="hidden md:inline">{isBot ? "🤖 Bot is answering..." : "💬 Opponent is answering..."}</span>
                   </span>
                 )}
               </div>
