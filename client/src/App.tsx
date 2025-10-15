@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Switch, Route } from "wouter";
-import { queryClient, apiRequest, setClerkTokenGetter } from "./lib/queryClient";
+import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider, useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSound } from "@/hooks/use-sound";
 import Header from "@/components/Header";
@@ -32,7 +31,7 @@ interface VocabWord {
 }
 
 function MainApp() {
-  const { user, isLoading, isAuthenticated, clerkUser } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const { playStreak } = useSound();
   const [currentPage, setCurrentPage] = useState<Page>("duel");
   const [isGuestMode, setIsGuestMode] = useState(false);
@@ -283,11 +282,10 @@ function MainApp() {
     </div>;
   }
 
-  // Show main app if Clerk has a user OR backend confirmed auth OR guest mode
-  const shouldShowMainApp = clerkUser || isAuthenticated || isGuestMode;
+  // Show main app if authenticated OR guest mode
+  const shouldShowMainApp = isAuthenticated || isGuestMode;
   
   console.log('[App] Auth state:', {
-    clerkUser: clerkUser ? 'exists' : 'null',
     isAuthenticated,
     isGuestMode,
     shouldShowMainApp
@@ -732,44 +730,12 @@ function Router() {
   );
 }
 
-function AppWithClerk() {
-  const { getToken } = useClerkAuth();
-  
-  // Set up Clerk token getter for queryClient
-  useEffect(() => {
-    setClerkTokenGetter(async () => {
-      try {
-        return await getToken();
-      } catch (error) {
-        console.error('Error getting Clerk token:', error);
-        return null;
-      }
-    });
-  }, [getToken]);
-  
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Router />
       </TooltipProvider>
     </QueryClientProvider>
-  );
-}
-
-export default function App() {
-  const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-  
-  if (!clerkPubKey) {
-    throw new Error("Missing Clerk Publishable Key");
-  }
-  
-  return (
-    <ClerkProvider 
-      publishableKey={clerkPubKey}
-      afterSignInUrl="/"
-      afterSignUpUrl="/"
-    >
-      <AppWithClerk />
-    </ClerkProvider>
   );
 }

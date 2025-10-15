@@ -3,36 +3,27 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { gradingRequestSchema, users } from "@shared/schema";
 import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary, translateText, generateExampleResponse } from "./openai";
-// Replit Auth removed - now using Firebase only
 import { setupMatchmaking } from "./matchmaking";
 import { vocabularyCache } from "./vocabularyCache";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
-import Stripe from "stripe"; // From blueprint:javascript_stripe
+import Stripe from "stripe";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
-// Initialize Stripe (from blueprint:javascript_stripe)
+// Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Helper function to get user ID from Clerk auth
-function getUserId(req: any): string | undefined {
-  // Clerk auth support
-  if (req.clerkUser) {
-    return req.clerkUser.id;
-  }
-  return undefined;
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Clerk authentication is handled by verifyClerkAuth middleware in server/index.ts
+  // Setup Replit Auth (from blueprint:javascript_log_in_with_replit)
+  await setupAuth(app);
 
-  // Auth route - get current user (returns null if not authenticated)
-  // Supports both Firebase and Replit Auth
-  app.get('/api/auth/user', async (req: any, res) => {
+  // Auth route - get current user (protected by isAuthenticated)
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       
       if (!userId) {
         return res.json(null);
@@ -53,9 +44,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Heartbeat endpoint to keep user marked as online
-  app.post('/api/user/heartbeat', async (req: any, res) => {
+  app.post('/api/user/heartbeat', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
@@ -80,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if user is authenticated and premium
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (userId) {
         const user = await storage.getUser(userId);
         
@@ -110,12 +101,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Track medium/hard match start
-  app.post('/api/user/track-medium-hard-match', async (req: any, res) => {
+  app.post('/api/user/track-medium-hard-match', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getUserId(req);
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
+      const userId = req.user?.claims?.sub;
       
       const today = new Date().toISOString().split('T')[0];
       
@@ -134,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if user is premium (for detailed feedback)
       let isPremium = false;
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (userId) {
         const user = await storage.getUser(userId);
         isPremium = user?.isPremium === 1;
@@ -266,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user stats for a language
   app.get("/api/user/stats/:language", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -285,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user stats for a language
   app.post("/api/user/stats", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -314,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Save match result
   app.post("/api/match/save", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -352,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user matches
   app.get("/api/user/matches", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -371,7 +359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user skill progress
   app.get("/api/user/skill-progress", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -420,7 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Send friend request
   app.post("/api/friends/request", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -442,7 +430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Accept friend request
   app.post("/api/friends/accept/:friendshipId", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -470,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Reject friend request
   app.post("/api/friends/reject/:friendshipId", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -498,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Remove friend
   app.delete("/api/friends/:friendshipId", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -526,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get friends list
   app.get("/api/friends", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -542,7 +530,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get pending friend requests
   app.get("/api/friends/requests", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -558,7 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create private match invite
   app.post("/api/private-match/create", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -617,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Join private match by invite code
   app.post("/api/private-match/join", async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -682,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe subscription endpoint (from blueprint:javascript_stripe)
   app.post('/api/create-subscription', async (req: any, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
@@ -795,7 +783,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cancel subscription endpoint
   app.post('/api/cancel-subscription', async (req, res) => {
     try {
-      const userId = getUserId(req);
+      const userId = req.user?.claims?.sub;
       if (!userId) {
         return res.status(401).json({ message: 'Not authenticated' });
       }

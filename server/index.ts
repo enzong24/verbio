@@ -1,7 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { verifyClerkAuth } from "./clerkAuth";
 
 const app = express();
 // Stripe webhook needs raw body for signature verification - must come before express.json()
@@ -9,8 +8,7 @@ app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Add Clerk authentication middleware
-app.use(verifyClerkAuth);
+// Replit Auth is setup in registerRoutes
 
 app.use((req, res, next) => {
   const start = Date.now();
