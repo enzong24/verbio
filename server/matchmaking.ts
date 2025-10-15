@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
 import type { Server } from "http";
+import { storage } from "./storage";
 
 interface Player {
   id: string;
@@ -378,13 +379,55 @@ export function setupMatchmaking(httpServer: Server) {
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection');
 
-    ws.on('message', (data: Buffer) => {
+    ws.on('message', async (data: Buffer) => {
       try {
         const message = JSON.parse(data.toString());
 
         if (message.type === 'join_queue') {
+          // Check if user has permission for Medium/Hard difficulty
+          const difficulty = message.difficulty;
+          const playerId = message.playerId || `player-${Date.now()}`;
+          
+          // Server-side validation for Medium/Hard access
+          if (difficulty === 'Medium' || difficulty === 'Hard') {
+            try {
+              // Check if this is a real user (not a guest session ID)
+              const user = await storage.getUser(playerId);
+              
+              if (!user) {
+                // Guest users can't play Medium/Hard
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  message: 'Sign in required for Medium/Hard modes'
+                }));
+                return;
+              }
+              
+              // Check if user is premium
+              if (user.isPremium !== 1) {
+                // Check daily limit
+                const today = new Date().toISOString().split('T')[0];
+                const accessCheck = await storage.checkDailyMediumHardLimit(playerId, today);
+                
+                if (!accessCheck.allowed) {
+                  ws.send(JSON.stringify({
+                    type: 'error',
+                    message: `You've reached the daily limit of ${accessCheck.limit} ${difficulty} matches. Upgrade to Premium for unlimited access!`
+                  }));
+                  return;
+                }
+                
+                // Track this match attempt (increment count)
+                await storage.incrementDailyMediumHardCount(playerId, today);
+              }
+            } catch (error) {
+              console.error('Error checking difficulty access:', error);
+              // Allow the match in case of database errors (fail open for better UX)
+            }
+          }
+          
           const player: Player = {
-            id: message.playerId || `player-${Date.now()}`,
+            id: playerId,
             ws,
             username: message.username || 'Guest',
             elo: message.elo || 1000,

@@ -49,6 +49,7 @@ interface HeaderProps {
   bestWinStreak?: number;
   dailyLoginStreak?: number;
   bestDailyLoginStreak?: number;
+  isPremium?: boolean;
 }
 
 export default function Header({ 
@@ -65,7 +66,8 @@ export default function Header({
   winStreak = 0,
   bestWinStreak = 0,
   dailyLoginStreak = 0,
-  bestDailyLoginStreak = 0
+  bestDailyLoginStreak = 0,
+  isPremium = false
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { setEnabled, isEnabled } = useSound();
@@ -194,7 +196,19 @@ export default function Header({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-1.5">
-                <p className="text-sm font-semibold">{username}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold">{username}</p>
+                  {isPremium && (
+                    <Badge 
+                      variant="default" 
+                      className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5"
+                      data-testid="badge-premium"
+                    >
+                      <Crown className="w-3 h-3" />
+                      PRO
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {elo} Fluency
                 </p>

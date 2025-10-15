@@ -285,14 +285,17 @@ function MainApp() {
   }
 
   // Helper to get/generate playerId
-  const getPlayerId = () => {
-    let playerId = localStorage.getItem('matchmaking_session_id');
-    if (!playerId) {
-      playerId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('matchmaking_session_id', playerId);
+  const getSessionId = () => {
+    let sessionId = localStorage.getItem('matchmaking_session_id');
+    if (!sessionId) {
+      sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('matchmaking_session_id', sessionId);
     }
-    return playerId;
+    return sessionId;
   };
+
+  // Use authenticated userId if available, otherwise use session ID for guests
+  const playerId = user?.id || getSessionId();
 
   const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean, matchId?: string, vocabularyFromServer?: any[]) => {
     // Use selected topic or random if not specified
@@ -320,7 +323,7 @@ function MainApp() {
         difficulty,
         startsFirst,
         matchId,
-        playerId: getPlayerId(),
+        playerId: playerId,
       });
       setCurrentPage("match");
       return;
@@ -360,7 +363,7 @@ function MainApp() {
         difficulty,
         startsFirst,
         matchId,
-        playerId: getPlayerId(),
+        playerId: playerId,
       });
       setCurrentPage("match");
     } catch (error) {
@@ -407,7 +410,7 @@ function MainApp() {
         difficulty,
         startsFirst,
         matchId,
-        playerId: getPlayerId(),
+        playerId: playerId,
       });
       setCurrentPage("match");
     }
@@ -617,6 +620,7 @@ function MainApp() {
         bestWinStreak={isAuthenticated ? (languageStats?.bestWinStreak ?? 0) : 0}
         dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
         bestDailyLoginStreak={0}
+        isPremium={user?.isPremium === 1}
       />
       
       <main className={currentPage === "match" ? "" : "pt-16"}>
@@ -629,6 +633,8 @@ function MainApp() {
             userLosses={userLosses}
             username={username}
             isGuest={isGuestMode}
+            isPremium={user?.isPremium === 1}
+            userId={user?.id}
           />
         )}
         

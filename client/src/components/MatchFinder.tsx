@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Bot, Loader2, Target, BookOpen, AlertCircle, Swords, Trophy, Zap, X } from "lucide-react";
+import { Bot, Loader2, Target, BookOpen, AlertCircle, Swords, Trophy, Zap, X, Lock, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +8,7 @@ import { THEMES } from "@shared/themes";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { canGuestPlayMatch, getRemainingGuestMatches, getGuestMatchLimit } from "@/utils/guestRateLimit";
 import { useSound } from "@/hooks/use-sound";
+import { apiRequest } from "@/lib/queryClient";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Beginner" | "Easy" | "Medium" | "Hard";
@@ -38,6 +39,8 @@ interface MatchFinderProps {
   userLosses?: number;
   username?: string;
   isGuest?: boolean;
+  isPremium?: boolean;
+  userId?: string; // Authenticated user ID (not session ID)
 }
 
 export default function MatchFinder({ 
@@ -47,7 +50,9 @@ export default function MatchFinder({
   userWins = 0,
   userLosses = 0,
   username = "Player",
-  isGuest = false
+  isGuest = false,
+  isPremium = false,
+  userId
 }: MatchFinderProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
@@ -55,8 +60,54 @@ export default function MatchFinder({
   const practiceLoadingRef = useRef(false);
   const { resumeAudio } = useSound();
   
+  // Premium access tracking
+  const [difficultyAccess, setDifficultyAccess] = useState<{
+    allowed: boolean;
+    isPremium: boolean;
+    remaining?: number;
+    limit?: number;
+    message?: string;
+  }>({ allowed: true, isPremium: false });
+  const [isCheckingAccess, setIsCheckingAccess] = useState(false);
+  
   const canPlay = !isGuest || canGuestPlayMatch();
   const remainingMatches = isGuest ? getRemainingGuestMatches() : null;
+
+  // Check if user can play selected difficulty (medium/hard have limits for free users)
+  useEffect(() => {
+    const checkDifficultyAccess = async () => {
+      if (selectedDifficulty === "Beginner" || selectedDifficulty === "Easy") {
+        setDifficultyAccess({ allowed: true, isPremium: false });
+        return;
+      }
+
+      // Guest users can't play medium/hard
+      if (isGuest) {
+        setDifficultyAccess({ 
+          allowed: false, 
+          isPremium: false, 
+          message: "Sign in required for Medium/Hard modes" 
+        });
+        return;
+      }
+
+      setIsCheckingAccess(true);
+      try {
+        const response = await apiRequest("POST", "/api/user/check-difficulty-access", {
+          difficulty: selectedDifficulty
+        });
+        const data = await response.json();
+        setDifficultyAccess(data);
+      } catch (error) {
+        console.error("Error checking difficulty access:", error);
+        setDifficultyAccess({ allowed: true, isPremium: false });
+      } finally {
+        setIsCheckingAccess(false);
+      }
+    };
+
+    checkDifficultyAccess();
+  }, [selectedDifficulty, isGuest]);
 
   // Reset loading ref when component unmounts or practice completes
   useEffect(() => {
@@ -78,7 +129,8 @@ export default function MatchFinder({
     return sessionId;
   };
 
-  const playerId = getSessionId();
+  // Use authenticated userId if available, otherwise use session ID for guests
+  const playerId = userId || getSessionId();
 
   const handleWebSocketMatch = useCallback((matchData: any) => {
     // Convert server vocabulary to VocabWord format if provided
@@ -122,6 +174,13 @@ export default function MatchFinder({
       if (isGuest && !canGuestPlayMatch()) {
         return;
       }
+      
+      // Check difficulty access before starting match
+      if (!difficultyAccess.allowed) {
+        return;
+      }
+      
+      // Server-side tracking happens when joining queue
       findMatch(currentLanguage, selectedDifficulty);
     }
   };
@@ -164,6 +223,30 @@ export default function MatchFinder({
             <AlertDescription>
               Guest account: {remainingMatches} {remainingMatches === 1 ? 'match' : 'matches'} remaining today.
               <a href="/api/login" className="underline ml-2 font-semibold text-primary">Sign in</a> for unlimited access!
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Premium Feature Alerts */}
+        {!difficultyAccess.allowed && !difficultyAccess.isPremium && (selectedDifficulty === "Medium" || selectedDifficulty === "Hard") && (
+          <Alert variant="destructive" className="max-w-4xl mx-auto mb-8" data-testid="alert-premium-required">
+            <Lock className="h-4 w-4" />
+            <AlertDescription>
+              {difficultyAccess.message || `You've reached the daily limit of ${difficultyAccess.limit || 3} ${selectedDifficulty} matches. Upgrade to Premium for unlimited access!`}
+              <button className="ml-2 font-semibold underline hover:no-underline" data-testid="button-upgrade">
+                Upgrade to Premium
+              </button>
+            </AlertDescription>
+          </Alert>
+        )}
+        {difficultyAccess.allowed && !difficultyAccess.isPremium && difficultyAccess.remaining !== undefined && (selectedDifficulty === "Medium" || selectedDifficulty === "Hard") && (
+          <Alert className="max-w-4xl mx-auto mb-8 border-accent/50 bg-accent/10" data-testid="alert-premium-remaining">
+            <Crown className="h-4 w-4 text-accent" />
+            <AlertDescription>
+              Free tier: {difficultyAccess.remaining} {selectedDifficulty} {difficultyAccess.remaining === 1 ? 'match' : 'matches'} remaining today.
+              <button className="ml-2 font-semibold underline text-accent hover:no-underline" data-testid="button-upgrade-accent">
+                Upgrade to Premium
+              </button>
             </AlertDescription>
           </Alert>
         )}
@@ -250,7 +333,7 @@ export default function MatchFinder({
                   className="w-full text-lg font-semibold min-h-[56px] md:min-h-[48px]"
                   variant={isSearching ? "destructive" : "default"}
                   onClick={handleFindMatch}
-                  disabled={!isConnected || !canPlay}
+                  disabled={!isConnected || !canPlay || !difficultyAccess.allowed}
                   data-testid="button-find-match"
                 >
                   {isSearching ? (
@@ -273,24 +356,37 @@ export default function MatchFinder({
               <CardContent className="p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold mb-2">Practice Mode</h3>
-                  <p className="text-sm text-muted-foreground">Perfect native-level AI • Choose your topic • No scoring or competition</p>
+                  <p className="text-sm text-muted-foreground">Perfect native-level AI • {isPremium ? 'Choose your topic' : 'Random topics only'} • No scoring or competition</p>
                 </div>
                 <div className="flex items-center gap-3 mb-4">
                   <BookOpen className="w-5 h-5 text-muted-foreground" />
-                  <Select value={selectedTopic} onValueChange={setSelectedTopic} disabled={isSearching || isPracticeLoading}>
-                    <SelectTrigger className="flex-1" data-testid="select-topic">
-                      <SelectValue placeholder="Select topic" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="random">🎲 Random Topic</SelectItem>
-                      {THEMES.map((theme) => (
-                        <SelectItem key={theme.id} value={theme.id}>
-                          {theme.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex-1 relative">
+                    <Select value={selectedTopic} onValueChange={setSelectedTopic} disabled={isSearching || isPracticeLoading || !isPremium}>
+                      <SelectTrigger className="flex-1" data-testid="select-topic">
+                        <SelectValue placeholder="Select topic" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="random">🎲 Random Topic</SelectItem>
+                        {THEMES.map((theme) => (
+                          <SelectItem key={theme.id} value={theme.id}>
+                            {theme.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {!isPremium && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <Lock className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {!isPremium && (
+                  <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5 text-accent" />
+                    <span>Topic selection is a Premium feature</span>
+                  </p>
+                )}
                 <Button
                   className="w-full text-lg min-h-[56px] md:min-h-[48px]"
                   variant="default"
