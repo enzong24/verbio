@@ -734,6 +734,15 @@ function Router() {
 }
 
 export default function App() {
+  // Initialize Firebase auth persistence on app boot
+  useEffect(() => {
+    const initFirebaseAuth = async () => {
+      const { initAuth } = await import("@/lib/firebase");
+      await initAuth();
+    };
+    initFirebaseAuth();
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

@@ -1,5 +1,5 @@
 // Firebase configuration and initialization (from blueprint:firebase_barebones_javascript)
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
 
 const firebaseConfig = {
@@ -12,23 +12,29 @@ const firebaseConfig = {
   measurementId: "G-058P2R5D6T"
 };
 
-console.log('[Firebase] Initializing with config:', {
-  authDomain: firebaseConfig.authDomain,
-  projectId: firebaseConfig.projectId
-});
-
-const app = initializeApp(firebaseConfig);
+// Use single Firebase app instance - prevents multiple inits on hot reload
+export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-console.log('[Firebase] Auth initialized');
-
-// Set persistence to LOCAL so auth state persists across page refreshes
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log('[Firebase] Persistence set to LOCAL successfully');
-  })
-  .catch((error) => {
-    console.error('[Firebase] Failed to set auth persistence:', error);
-  });
+console.log('[Firebase] App initialized, existing apps:', getApps().length);
 
 export const googleProvider = new GoogleAuthProvider();
+
+// Initialize auth - MUST be called before any sign-in attempts
+let authInitialized = false;
+
+export async function initAuth() {
+  if (authInitialized) {
+    console.log('[Firebase] Auth already initialized');
+    return;
+  }
+  
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    authInitialized = true;
+    console.log('[Firebase] Persistence set to LOCAL successfully');
+  } catch (error) {
+    console.error('[Firebase] Failed to set auth persistence:', error);
+    throw error;
+  }
+}

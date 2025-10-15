@@ -1,0 +1,142 @@
+1) Use a single Firebase app + set persistence before sign-in
+
+Multiple inits or hot-reloads = auth state never sticks.
+
+// firebase.ts
+import { initializeApp, getApps, getApp } from "firebase/app";
+import {
+  getAuth, setPersistence, browserLocalPersistence,
+} from "firebase/auth";
+
+const firebaseConfig = { /* your config */ };
+
+export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+
+// call this once on app boot (before any sign-in attempts)
+export async function initAuth() {
+  await setPersistence(auth, browserLocalPersistence);
+}
+
+
+In your app root:
+
+useEffect(() => { initAuth(); }, []);
+
+2) Don’t run inside the Replit iframe
+
+Open your app in a new tab (the public URL). Popups/cookies can fail in the embedded preview.
+
+3) Authorize your domain(s) in Firebase
+
+Firebase Console → Authentication → Settings → Authorized domains
+Add all you use:
+
+localhost (and/or 127.0.0.1)
+
+Your Replit domain, e.g. yourname-yourapp.yourregion.repl.co
+
+Any custom/prod domain
+
+4) Use popup login and prove auth state with a loader
+
+Redirect can lose state in this environment. Also, don’t guard routes until Firebase finishes restoring the session.
+
+import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "./firebase";
+
+const provider = new GoogleAuthProvider();
+
+export async function googleLogin() {
+  await signInWithPopup(auth, provider);
+  // immediately handshake with your backend (step 5)
+}
+
+export function watchAuth(cb: (u: any)=>void) {
+  return onAuthStateChanged(auth, (u) => {
+    console.log("Firebase user:", u?.uid, u?.email); // <- must log uid here
+    cb(u);
+  });
+}
+
+
+Make sure your router waits:
+
+const [user, setUser] = useState(null);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => watchAuth(u => { setUser(u); setLoading(false); }), []);
+
+if (loading) return <Spinner/>;     // don't redirect yet
+if (!user)   return <SignIn/>;      // only after loading
+return <App/>;
+
+5) Do the backend handshake right after login
+
+Firebase logging you in ≠ your backend session is set. Send the ID token to your server so you can create the DB user + session.
+
+Client:
+
+import { getIdToken } from "firebase/auth";
+import { auth } from "./firebase";
+
+async function establishSession() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const idToken = await getIdToken(user, true); // fresh token
+  await fetch("/api/session/firebase", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    credentials: "include", // if server sets HttpOnly cookie
+    body: JSON.stringify({ idToken })
+  });
+}
+
+
+Call establishSession() after signInWithPopup resolves, and also once at app start if user exists but you don’t have your app cookie/JWT yet.
+
+FastAPI (server):
+
+# verify token, upsert user, set cookie
+from fastapi import FastAPI, HTTPException, Response
+from pydantic import BaseModel
+import firebase_admin
+from firebase_admin import auth as fauth, credentials
+from jose import jwt
+from datetime import datetime, timedelta
+
+# init admin once
+if not firebase_admin._apps:
+    firebase_admin.initialize_app()
+
+APP_JWT_SECRET = "change-me"
+
+class Handshake(BaseModel):
+    idToken: str
+
+app = FastAPI()
+
+@app.post("/api/session/firebase")
+def session_from_firebase(body: Handshake, response: Response):
+    try:
+        decoded = fauth.verify_id_token(body.idToken)
+    except Exception as e:
+        raise HTTPException(401, f"Invalid Firebase token: {e}")
+
+    uid = decoded["uid"]
+    email = decoded.get("email")
+
+    # TODO: upsert user into your DB here
+
+    token = jwt.encode(
+        {"sub": uid, "email": email, "exp": datetime.utcnow()+timedelta(days=14)},
+        APP_JWT_SECRET, algorithm="HS256"
+    )
+    response.set_cookie(
+        "app_session", token,
+        httponly=True, secure=True, samesite="None", max_age=14*24*3600
+    )
+    return {"ok": True}
+
+
+If your frontend and backend are on different origins, enable CORS (allow your FE origin) and keep credentials: 'include' on the client.
