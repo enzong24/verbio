@@ -816,43 +816,42 @@ export default function DuelInterface({
 
               {showHelpArea && (
                 <div className="p-3 md:p-4 border-b">
-                  {/* Accent Keyboard Toggle - Desktop only */}
-                  {(language === "Spanish" || language === "Italian") && (
-                    <div className="mb-2 hidden md:flex items-center gap-2">
+                  {/* Buttons row - Accent keyboard toggle and Need help side by side */}
+                  <div className="flex gap-2 mb-2">
+                    {/* Accent Keyboard Toggle - Now available on mobile */}
+                    {(language === "Spanish" || language === "Italian") && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setShowAccentKeyboard(!showAccentKeyboard)}
                         data-testid="button-toggle-accent-keyboard"
-                        className="h-8"
+                        className="h-9 flex-1"
                       >
                         <Type className="w-3 h-3 mr-1" />
                         <span className="text-xs">{showAccentKeyboard ? "Hide" : "Show"} accents</span>
                       </Button>
-                    </div>
-                  )}
-                  
-                  {/* Accent Keyboard - Desktop only when toggled */}
-                  {showAccentKeyboard && (
-                    <div className="hidden md:block">
-                      <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
-                    </div>
-                  )}
-                  
-                  {/* Need Help Button */}
-                  {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
-                    <div className="mb-0">
+                    )}
+                    
+                    {/* Need Help Button */}
+                    {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => exampleMutation.mutate()}
                         disabled={exampleMutation.isPending || helpUsedThisTurn}
                         data-testid="button-need-help"
-                        className="w-full"
+                        className="h-9 flex-1"
                       >
-                        <HelpCircle className="w-4 h-4 mr-2" />
-                        {exampleMutation.isPending ? "Generating example..." : "Need help? Show me an example (-15pts)"}
+                        <HelpCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                        <span className="text-xs md:text-sm">{exampleMutation.isPending ? "Generating..." : "Need help? (-15pts)"}</span>
                       </Button>
+                    )}
+                  </div>
+                  
+                  {/* Accent Keyboard - Now available on mobile when toggled */}
+                  {showAccentKeyboard && (
+                    <div>
+                      <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
                     </div>
                   )}
                 </div>
