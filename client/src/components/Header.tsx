@@ -117,7 +117,7 @@ export default function Header({
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-card-border z-50">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-background border-b border-border z-50">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
