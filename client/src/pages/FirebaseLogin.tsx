@@ -21,17 +21,26 @@ export default function FirebaseLogin() {
     // Handle redirect result when user returns from Google sign-in
     const checkRedirectResult = async () => {
       try {
+        console.log('[FirebaseLogin] Checking redirect result...');
         const result = await handleRedirectResult();
+        console.log('[FirebaseLogin] Redirect result:', result ? 'User found' : 'No user');
+        
         if (result) {
           // User successfully signed in, get ID token and send to backend
           const idToken = await result.user.getIdToken();
+          console.log('[FirebaseLogin] Got ID token, length:', idToken.length);
+          console.log('[FirebaseLogin] User email:', result.user.email);
+          
           // Store token for API requests
           localStorage.setItem('firebaseToken', idToken);
+          console.log('[FirebaseLogin] Stored token in localStorage');
+          
           // Redirect to home
+          console.log('[FirebaseLogin] Redirecting to /');
           window.location.href = '/';
         }
       } catch (error: any) {
-        console.error('Sign-in error:', error);
+        console.error('[FirebaseLogin] Sign-in error:', error);
         // Only show toast for non-API-key errors (user-facing errors)
         if (error.code && !error.code.includes('api-key')) {
           toast({
@@ -42,6 +51,7 @@ export default function FirebaseLogin() {
         }
       } finally {
         // Always stop loading after a short delay
+        console.log('[FirebaseLogin] Setting isCheckingAuth to false');
         setTimeout(() => setIsCheckingAuth(false), 500);
       }
     };
