@@ -33,9 +33,33 @@ export default function FirebaseLogin() {
       
       console.log('[FirebaseLogin] Email auth successful, user:', result.user.email);
       
-      // Don't redirect - let useAuth hook detect the auth state change
-      // and App.tsx will automatically show the main app
+      // Force token refresh and manually sync with backend
+      try {
+        console.log('[FirebaseLogin] Getting fresh token...');
+        const token = await result.user.getIdToken(true); // force refresh
+        console.log('[FirebaseLogin] Got token, length:', token.length);
+        
+        // Manually call backend to sync user
+        console.log('[FirebaseLogin] Syncing user with backend...');
+        const response = await fetch('/api/auth/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const user = await response.json();
+          console.log('[FirebaseLogin] Backend sync successful, user:', user);
+        } else {
+          console.error('[FirebaseLogin] Backend sync failed:', response.status, await response.text());
+        }
+      } catch (syncError) {
+        console.error('[FirebaseLogin] Backend sync error:', syncError);
+      }
+      
       setIsEmailSignIn(false);
+      // Firebase auth state updated, useAuth will detect it and show main app
     } catch (error: any) {
       console.error('Email auth error:', error);
       let errorMessage = error.message || "Authentication failed";
@@ -70,8 +94,34 @@ export default function FirebaseLogin() {
     try {
       const result = await signInWithGoogle();
       console.log('[FirebaseLogin] Google sign-in successful:', result.user.email);
-      // Firebase auth state updated, useAuth will detect it and show main app
+      
+      // Force token refresh and manually sync with backend
+      try {
+        console.log('[FirebaseLogin] Getting fresh token...');
+        const token = await result.user.getIdToken(true); // force refresh
+        console.log('[FirebaseLogin] Got token, length:', token.length);
+        
+        // Manually call backend to sync user
+        console.log('[FirebaseLogin] Syncing user with backend...');
+        const response = await fetch('/api/auth/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const user = await response.json();
+          console.log('[FirebaseLogin] Backend sync successful, user:', user);
+        } else {
+          console.error('[FirebaseLogin] Backend sync failed:', response.status, await response.text());
+        }
+      } catch (syncError) {
+        console.error('[FirebaseLogin] Backend sync error:', syncError);
+      }
+      
       setIsSigningIn(false);
+      // Firebase auth state updated, useAuth will detect it and show main app
     } catch (error: any) {
       console.error('[FirebaseLogin] Google sign-in error:', error);
       toast({
