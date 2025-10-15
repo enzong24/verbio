@@ -772,12 +772,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cancel subscription endpoint
   app.post('/api/cancel-subscription', async (req, res) => {
     try {
-      const user = req.user as Express.User | undefined;
-      if (!req.isAuthenticated() || !user?.claims?.sub) {
+      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
         return res.status(401).json({ message: 'Not authenticated' });
       }
 
-      const userId = user.claims.sub;
+      const userId = req.user.claims.sub;
       const dbUser = await storage.getUser(userId);
       
       if (!dbUser) {

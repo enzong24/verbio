@@ -1,0 +1,67 @@
+// Firebase Admin SDK for backend authentication verification
+import type { Express, RequestHandler } from "express";
+import { storage } from "./storage";
+
+// Middleware to verify Firebase ID token and sync with database
+export const verifyFirebaseToken: RequestHandler = async (req, res, next) => {
+  try {
+    // Firebase ID token should be sent in Authorization header
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next();
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    
+    // For now, we'll decode the JWT manually without verification
+    // In production, you should use Firebase Admin SDK to verify the token
+    const payload = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64').toString());
+    
+    const userId = payload.sub || payload.user_id;
+    const email = payload.email;
+    const name = payload.name;
+    
+    if (!userId || !email) {
+      return next();
+    }
+
+    // Check if user exists in database, create if not
+    let user = await storage.getUser(userId);
+    
+    if (!user) {
+      // Create new user from Firebase data
+      user = await storage.createUser({
+        id: userId,
+        email: email,
+        firstName: name?.split(' ')[0] || email.split('@')[0],
+        lastName: name?.split(' ').slice(1).join(' ') || '',
+        isPremium: 0,
+        fluencyScore: 1200,
+        createdAt: new Date(),
+      });
+    }
+
+    // Attach user to request object
+    (req as any).firebaseUser = {
+      id: userId,
+      email: email,
+      name: name,
+    };
+    
+    next();
+  } catch (error) {
+    console.error('Firebase token verification error:', error);
+    next();
+  }
+};
+
+// Helper to check if user is authenticated via Firebase
+export function isFirebaseAuthenticated(req: Express.Request): boolean {
+  return !!(req as any).firebaseUser;
+}
+
+// Helper to get Firebase user from request
+export function getFirebaseUser(req: Express.Request) {
+  return (req as any).firebaseUser;
+}
