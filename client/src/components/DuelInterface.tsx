@@ -615,7 +615,7 @@ export default function DuelInterface({
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-4rem-env(safe-area-inset-top))]">
       {/* Header - Hidden on mobile when keyboard likely active */}
       <div className="border-b bg-card p-2 md:p-4 shadow-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
@@ -836,8 +836,8 @@ export default function DuelInterface({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="border-t bg-card pb-safe-bottom">
+            {/* Input Area - Sticky to bottom */}
+            <div className="sticky bottom-0 border-t bg-card pb-safe-bottom z-10">
               {/* Help Area Toggle */}
               <button 
                 className="w-full p-2 md:p-3 flex items-center justify-between border-b cursor-pointer hover-elevate text-left"
