@@ -825,6 +825,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Premium whitelist management endpoints (admin only - development mode)
+  app.post('/api/admin/whitelist/add', async (req, res) => {
+    try {
+      // Only allow in development mode
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ message: 'This endpoint is disabled in production' });
+      }
+      
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email required' });
+      }
+
+      const entry = await storage.addToWhitelist(email, 'admin');
+      res.json({ 
+        message: `Email ${email} added to premium whitelist`,
+        entry 
+      });
+    } catch (error: any) {
+      console.error('Add to whitelist error:', error);
+      res.status(500).json({ message: error.message || 'Failed to add to whitelist' });
+    }
+  });
+
+  app.post('/api/admin/whitelist/remove', async (req, res) => {
+    try {
+      // Only allow in development mode
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ message: 'This endpoint is disabled in production' });
+      }
+      
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email required' });
+      }
+
+      await storage.removeFromWhitelist(email);
+      res.json({ 
+        message: `Email ${email} removed from premium whitelist`
+      });
+    } catch (error: any) {
+      console.error('Remove from whitelist error:', error);
+      res.status(500).json({ message: error.message || 'Failed to remove from whitelist' });
+    }
+  });
+
+  app.get('/api/admin/whitelist', async (req, res) => {
+    try {
+      // Only allow in development mode
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(403).json({ message: 'This endpoint is disabled in production' });
+      }
+
+      const whitelist = await storage.getAllWhitelistedEmails();
+      res.json({ whitelist });
+    } catch (error: any) {
+      console.error('Get whitelist error:', error);
+      res.status(500).json({ message: error.message || 'Failed to get whitelist' });
+    }
+  });
+
   // Stripe webhook endpoint (from blueprint:javascript_stripe)
   app.post('/api/stripe-webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
