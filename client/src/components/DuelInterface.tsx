@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Flag, Clock, HelpCircle, Swords } from "lucide-react";
+import { Send, Flag, Clock, HelpCircle, Swords, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,6 +105,7 @@ export default function DuelInterface({
   const [helpPenalty, setHelpPenalty] = useState(0);
   const [helpUsedThisTurn, setHelpUsedThisTurn] = useState(false);
   const [usedVocabulary, setUsedVocabulary] = useState<Set<string>>(new Set());
+  const [showAccentKeyboard, setShowAccentKeyboard] = useState(false);
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -754,21 +755,45 @@ export default function DuelInterface({
 
             {/* Input Area */}
             <div className="p-3 md:p-4 border-t bg-card pb-safe-bottom">
-              <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
+              {/* Accent Keyboard Toggle */}
+              {(language === "Spanish" || language === "Italian") && (
+                <div className="mb-2 flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAccentKeyboard(!showAccentKeyboard)}
+                    data-testid="button-toggle-accent-keyboard"
+                    className="h-8"
+                  >
+                    <Type className="w-3 h-3 mr-1" />
+                    <span className="text-xs">{showAccentKeyboard ? "Hide" : "Show"} accents</span>
+                  </Button>
+                </div>
+              )}
+              
+              {/* Accent Keyboard - Collapsible */}
+              {showAccentKeyboard && <AccentKeyboard language={language} onAccentClick={handleAccentClick} />}
               
               {/* Need Help Button */}
               {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
-                <div className="mb-3">
+                <div className="mb-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => exampleMutation.mutate()}
                     disabled={exampleMutation.isPending || helpUsedThisTurn}
                     data-testid="button-need-help"
-                    className="w-full"
+                    className="w-full md:w-auto"
                   >
-                    <HelpCircle className="w-4 h-4 mr-2" />
-                    {exampleMutation.isPending ? "Generating example..." : "Need help? Show me an example (-15pts)"}
+                    <HelpCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                    <span className="text-xs md:text-sm">
+                      {exampleMutation.isPending ? "Generating..." : (
+                        <>
+                          <span className="md:hidden">Help (-15pts)</span>
+                          <span className="hidden md:inline">Need help? Show me an example (-15pts)</span>
+                        </>
+                      )}
+                    </span>
                   </Button>
                 </div>
               )}
