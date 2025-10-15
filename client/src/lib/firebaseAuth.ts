@@ -3,14 +3,13 @@ import {
   signInWithRedirect, 
   getRedirectResult, 
   GoogleAuthProvider,
-  FacebookAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut, 
   onAuthStateChanged, 
   type User 
 } from "firebase/auth";
-import { auth, googleProvider, facebookProvider } from "./firebase";
+import { auth, googleProvider } from "./firebase";
 
 // Email/password sign in
 export async function signInWithEmail(email: string, password: string) {
@@ -27,11 +26,6 @@ export function signInWithGoogle() {
   signInWithRedirect(auth, googleProvider);
 }
 
-// Facebook sign in
-export function signInWithFacebook() {
-  signInWithRedirect(auth, facebookProvider);
-}
-
 // Call this function on page load to handle redirect result
 export async function handleRedirectResult() {
   try {
@@ -40,10 +34,9 @@ export async function handleRedirectResult() {
       // The signed-in user info
       const user = result.user;
       
-      // Try to get credential from Google or Facebook
+      // Try to get credential from Google
       const googleCredential = GoogleAuthProvider.credentialFromResult(result);
-      const facebookCredential = FacebookAuthProvider.credentialFromResult(result);
-      const token = googleCredential?.accessToken || facebookCredential?.accessToken;
+      const token = googleCredential?.accessToken;
       
       return { user, token };
     }
