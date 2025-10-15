@@ -104,6 +104,7 @@ export default function DuelInterface({
   const [exampleText, setExampleText] = useState("");
   const [helpPenalty, setHelpPenalty] = useState(0);
   const [helpUsedThisTurn, setHelpUsedThisTurn] = useState(false);
+  const [usedVocabulary, setUsedVocabulary] = useState<Set<string>>(new Set());
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -781,9 +782,25 @@ export default function DuelInterface({
                   ref={inputRef}
                   value={input}
                   onChange={(e) => {
-                    setInput(e.target.value);
+                    const newInput = e.target.value;
+                    setInput(newInput);
                     resetInactivity();
                     if (validationError) setValidationError("");
+                    
+                    // Check for vocabulary words in real-time
+                    const newUsedVocab = new Set<string>();
+                    vocabulary.forEach((vocabItem) => {
+                      // For Chinese and other character-based languages, check if the word appears anywhere
+                      // For alphabetic languages, we could add word boundary checks if needed
+                      if (newInput.includes(vocabItem.word)) {
+                        newUsedVocab.add(vocabItem.word);
+                      }
+                    });
+                    
+                    // Update used vocabulary if changed
+                    if (newUsedVocab.size > 0 || usedVocabulary.size > 0) {
+                      setUsedVocabulary(newUsedVocab);
+                    }
                   }}
                   onKeyDown={(e) => e.key === "Enter" && handleSend()}
                   placeholder={
@@ -830,6 +847,49 @@ export default function DuelInterface({
               </div>
               <Progress value={progress} className="h-2" />
             </div>
+
+            {/* Vocabulary Checklist */}
+            <Card className="mb-3 border-success/30 bg-success/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span>Vocabulary Used</span>
+                  <Badge variant="outline" className="text-xs">
+                    {usedVocabulary.size}/{vocabulary.length}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {vocabulary.map((vocabItem) => {
+                    const isUsed = usedVocabulary.has(vocabItem.word);
+                    return (
+                      <div
+                        key={vocabItem.word}
+                        className={`flex items-center gap-2 text-sm transition-all ${
+                          isUsed ? 'opacity-60' : 'opacity-100'
+                        }`}
+                        data-testid={`vocab-item-${vocabItem.word}`}
+                      >
+                        <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          isUsed 
+                            ? 'bg-success border-success' 
+                            : 'border-muted-foreground/30'
+                        }`}>
+                          {isUsed && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className={`flex-1 ${isUsed ? 'line-through' : ''}`}>
+                          <TextWithPinyin text={vocabItem.word} language={language} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
 
             <Card className="border-accent/30 bg-accent/5 hidden md:block">
               <CardHeader className="pb-3">
