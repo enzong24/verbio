@@ -344,3 +344,24 @@
     inset: -1px;
   }
 }
+
+/* Mobile keyboard handling - use dynamic viewport height */
+html {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height - adjusts for mobile keyboard */
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* iOS safe area insets */
+.pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
