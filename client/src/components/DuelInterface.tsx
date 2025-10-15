@@ -107,6 +107,7 @@ export default function DuelInterface({
   const [usedVocabulary, setUsedVocabulary] = useState<Set<string>>(new Set());
   const [showAccentKeyboard, setShowAccentKeyboard] = useState(false);
   const [showTopicHeader, setShowTopicHeader] = useState(true);
+  const [showHelpArea, setShowHelpArea] = useState(true);
   const maxRounds = getMaxRounds();
   
   // Refs to avoid recreating timer interval
@@ -697,7 +698,7 @@ export default function DuelInterface({
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-3 md:space-y-4" data-testid="chat-messages">
+            <div className="flex-1 overflow-y-auto p-2 md:p-6 space-y-2 md:space-y-4" data-testid="chat-messages">
               {messages.map((msg, idx) => {
                 const isBotMessage = msg.sender === "opponent";
                 const isBeginnerMode = difficulty === "Beginner";
@@ -711,7 +712,7 @@ export default function DuelInterface({
                     className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`inline-block max-w-[85%] md:max-w-2xl px-4 py-3 rounded-md text-base ${
+                      className={`inline-block max-w-[85%] md:max-w-2xl px-2 py-2 md:px-4 md:py-3 rounded-md text-sm md:text-base ${
                         msg.sender === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
@@ -771,69 +772,88 @@ export default function DuelInterface({
             </div>
 
             {/* Input Area */}
-            <div className="p-3 md:p-4 border-t bg-card pb-safe-bottom">
-              {/* Accent Keyboard Toggle */}
-              {(language === "Spanish" || language === "Italian") && (
-                <div className="mb-2 flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowAccentKeyboard(!showAccentKeyboard)}
-                    data-testid="button-toggle-accent-keyboard"
-                    className="h-8"
-                  >
-                    <Type className="w-3 h-3 mr-1" />
-                    <span className="text-xs">{showAccentKeyboard ? "Hide" : "Show"} accents</span>
-                  </Button>
-                </div>
-              )}
-              
-              {/* Accent Keyboard - Collapsible */}
-              {showAccentKeyboard && <AccentKeyboard language={language} onAccentClick={handleAccentClick} />}
-              
-              {/* Need Help Button */}
-              {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
-                <div className="mb-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exampleMutation.mutate()}
-                    disabled={exampleMutation.isPending || helpUsedThisTurn}
-                    data-testid="button-need-help"
-                    className="w-full"
-                  >
-                    <HelpCircle className="w-4 h-4 mr-2" />
-                    {exampleMutation.isPending ? "Generating example..." : "Need help? Show me an example (-15pts)"}
-                  </Button>
-                </div>
-              )}
+            <div className="border-t bg-card pb-safe-bottom">
+              {/* Help Area Toggle */}
+              <div className="p-2 md:p-3 flex items-center justify-between border-b">
+                <span className="text-xs text-muted-foreground">Help & Tools</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowHelpArea(!showHelpArea)}
+                  data-testid="button-toggle-help-area"
+                  className="h-6 w-6 p-0"
+                >
+                  {showHelpArea ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                </Button>
+              </div>
 
-              {/* Example Display */}
-              {showExample && exampleText && (
-                <Card className="mb-3 border-highlight/30 bg-highlight/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <HelpCircle className="w-4 h-4" />
-                      Example {turnPhase === "user-question" ? "Question" : "Answer"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-foreground">
-                      <TextWithPinyin text={exampleText} language={language} />
+              {showHelpArea && (
+                <div className="p-3 md:p-4 border-b">
+                  {/* Accent Keyboard Toggle */}
+                  {(language === "Spanish" || language === "Italian") && (
+                    <div className="mb-2 flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAccentKeyboard(!showAccentKeyboard)}
+                        data-testid="button-toggle-accent-keyboard"
+                        className="h-8"
+                      >
+                        <Type className="w-3 h-3 mr-1" />
+                        <span className="text-xs">{showAccentKeyboard ? "Hide" : "Show"} accents</span>
+                      </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2 italic">
-                      Use this as inspiration! (-15 points applied)
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {validationError && (
-                <div className="mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs md:text-sm" data-testid="validation-error">
-                  {validationError}
+                  )}
+                  
+                  {/* Accent Keyboard - Collapsible */}
+                  {showAccentKeyboard && <AccentKeyboard language={language} onAccentClick={handleAccentClick} />}
+                  
+                  {/* Need Help Button */}
+                  {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
+                    <div className="mb-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => exampleMutation.mutate()}
+                        disabled={exampleMutation.isPending || helpUsedThisTurn}
+                        data-testid="button-need-help"
+                        className="w-full"
+                      >
+                        <HelpCircle className="w-4 h-4 mr-2" />
+                        {exampleMutation.isPending ? "Generating example..." : "Need help? Show me an example (-15pts)"}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
-              <div className="flex gap-2 items-end">
+
+              <div className="p-3 md:p-4">
+                {/* Example Display */}
+                {showExample && exampleText && (
+                  <Card className="mb-3 border-highlight/30 bg-highlight/5">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4" />
+                        Example {turnPhase === "user-question" ? "Question" : "Answer"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-foreground">
+                        <TextWithPinyin text={exampleText} language={language} />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 italic">
+                        Use this as inspiration! (-15 points applied)
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {validationError && (
+                  <div className="mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/30 text-xs md:text-sm" data-testid="validation-error">
+                    {validationError}
+                  </div>
+                )}
+                <div className="flex gap-2 items-end">
                 <Input
                   ref={inputRef}
                   value={input}
@@ -890,6 +910,7 @@ export default function DuelInterface({
                   <Send className="w-4 h-4 md:mr-2" />
                   <span className="hidden md:inline">Send</span>
                 </Button>
+                </div>
               </div>
             </div>
           </div>
