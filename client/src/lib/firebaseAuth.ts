@@ -13,17 +13,40 @@ import { auth, googleProvider } from "./firebase";
 
 // Email/password sign in
 export async function signInWithEmail(email: string, password: string) {
-  return await signInWithEmailAndPassword(auth, email, password);
+  console.log('[firebaseAuth] Signing in with email:', email);
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    console.log('[firebaseAuth] Sign in successful:', result.user.email);
+    return result;
+  } catch (error) {
+    console.error('[firebaseAuth] Sign in error:', error);
+    throw error;
+  }
 }
 
 // Email/password sign up
 export async function signUpWithEmail(email: string, password: string) {
-  return await createUserWithEmailAndPassword(auth, email, password);
+  console.log('[firebaseAuth] Signing up with email:', email);
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    console.log('[firebaseAuth] Sign up successful:', result.user.email);
+    return result;
+  } catch (error) {
+    console.error('[firebaseAuth] Sign up error:', error);
+    throw error;
+  }
 }
 
 // Google sign in
 export function signInWithGoogle() {
-  signInWithRedirect(auth, googleProvider);
+  console.log('[firebaseAuth] Starting Google sign-in redirect');
+  try {
+    signInWithRedirect(auth, googleProvider);
+    console.log('[firebaseAuth] Google redirect initiated');
+  } catch (error) {
+    console.error('[firebaseAuth] Google sign-in error:', error);
+    throw error;
+  }
 }
 
 // Call this function on page load to handle redirect result

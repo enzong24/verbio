@@ -12,12 +12,23 @@ const firebaseConfig = {
   measurementId: "G-058P2R5D6T"
 };
 
+console.log('[Firebase] Initializing with config:', {
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId
+});
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
+console.log('[Firebase] Auth initialized');
+
 // Set persistence to LOCAL so auth state persists across page refreshes
-setPersistence(auth, browserLocalPersistence).catch((error) => {
-  console.error('Failed to set auth persistence:', error);
-});
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log('[Firebase] Persistence set to LOCAL successfully');
+  })
+  .catch((error) => {
+    console.error('[Firebase] Failed to set auth persistence:', error);
+  });
 
 export const googleProvider = new GoogleAuthProvider();

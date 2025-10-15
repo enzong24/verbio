@@ -65,11 +65,13 @@ export default function FirebaseLogin() {
   };
 
   const handleGoogleSignIn = async () => {
+    console.log('[FirebaseLogin] Google sign-in button clicked');
     setIsSigningIn(true);
     try {
       await signInWithGoogle();
+      console.log('[FirebaseLogin] Google sign-in initiated successfully');
     } catch (error: any) {
-      console.error('Google sign-in error:', error);
+      console.error('[FirebaseLogin] Google sign-in error:', error);
       toast({
         title: "Sign-in failed",
         description: error.message || "Failed to sign in with Google",
