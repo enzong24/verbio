@@ -789,9 +789,9 @@ export default function DuelInterface({
 
               {showHelpArea && (
                 <div className="p-3 md:p-4 border-b">
-                  {/* Accent Keyboard Toggle */}
+                  {/* Accent Keyboard Toggle - Desktop only */}
                   {(language === "Spanish" || language === "Italian") && (
-                    <div className="mb-2 flex items-center gap-2">
+                    <div className="mb-2 hidden md:flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -805,8 +805,12 @@ export default function DuelInterface({
                     </div>
                   )}
                   
-                  {/* Accent Keyboard - Collapsible */}
-                  {showAccentKeyboard && <AccentKeyboard language={language} onAccentClick={handleAccentClick} />}
+                  {/* Accent Keyboard - Desktop only when toggled */}
+                  {showAccentKeyboard && (
+                    <div className="hidden md:block">
+                      <AccentKeyboard language={language} onAccentClick={handleAccentClick} />
+                    </div>
+                  )}
                   
                   {/* Need Help Button */}
                   {isUserTurn && !isGrading && !showExample && !helpUsedThisTurn && (
