@@ -345,20 +345,11 @@
   }
 }
 
-/* Mobile keyboard handling - use dynamic viewport height */
-html {
-  height: 100vh;
-  height: 100dvh; /* Dynamic viewport height - adjusts for mobile keyboard */
-}
-
-body {
-  height: 100%;
-  overflow: hidden;
-}
-
-#root {
-  height: 100%;
-  overflow: hidden;
+/* Mobile keyboard handling - use dynamic viewport height for fullscreen components */
+@supports (height: 100dvh) {
+  .mobile-vh-fix {
+    height: 100dvh;
+  }
 }
 
 /* iOS safe area insets */

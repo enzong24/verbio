@@ -570,7 +570,7 @@ export default function DuelInterface({
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-4rem)] supports-[height:100dvh]:h-[calc(100dvh-4rem)]">
       {/* Header */}
       <div className="border-b bg-card p-3 md:p-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
