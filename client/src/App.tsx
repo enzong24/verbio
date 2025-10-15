@@ -187,18 +187,6 @@ function MainApp() {
     }
   }, [isAuthenticated]);
 
-  // Prevent scrolling during match
-  useEffect(() => {
-    if (currentPage === "match") {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [currentPage]);
 
   // Set up WebSocket for multiplayer matches
   useEffect(() => {
@@ -603,7 +591,7 @@ function MainApp() {
 
 
   return (
-    <div className={`min-h-screen bg-background text-foreground ${currentPage === "match" ? "h-screen overflow-hidden" : ""}`} style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <div className="app bg-background text-foreground" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       {/* Streak Notification */}
       {streakNotification && (
         <StreakNotification
@@ -631,7 +619,7 @@ function MainApp() {
         bestDailyLoginStreak={0}
       />
       
-      <main className="pt-16">
+      <main className={currentPage === "match" ? "" : "pt-16"}>
         {currentPage === "duel" && (
           <MatchFinder 
             onMatchFound={handleMatchFound}

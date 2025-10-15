@@ -1,0 +1,132 @@
+1) HTML (head) — make the viewport stable
+
+Add this inside <head>:
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+2) CSS — layout that doesn’t jump + fits on screen
+
+Paste this (or merge with your styles). It:
+
+Uses 100dvh (with a JS fallback) so the keyboard doesn’t shove the layout.
+
+Locks body scroll; only your .app scrolls.
+
+Ensures elements never overflow the iPhone screen.
+
+/* Make sizing predictable */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Body stays fixed to avoid rubber-banding when keyboard opens */
+html, body { height: 100%; }
+body {
+  margin: 0;
+  overflow: hidden; /* IMPORTANT: scrolling happens in .app, not body */
+  background: #0f172a; /* or your bg */
+  color: #0b1220;      /* adjust to your palette */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Main app wrapper uses dynamic viewport height */
+.app {
+  height: 100vh; /* fallback */
+  max-width: 100vw;
+  overflow: auto;                /* this scrolls instead of body */
+  -webkit-overflow-scrolling: touch;
+}
+
+@supports (height: 100dvh) {
+  .app { height: 100dvh; }       /* prevents jump on modern iOS */
+}
+
+/* Prevent iOS zoom-on-focus (which shifts layout) */
+input, textarea, select, button { font-size: 16px; }
+
+/* If you have a header/footer bars */
+.header, .footer { position: sticky; z-index: 10; }
+.header { top: 0; }
+.footer { bottom: 0; padding-bottom: env(safe-area-inset-bottom, 0); }
+
+/* Keep content within screen width */
+.container {
+  width: min(100%, 100vw);
+  max-width: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin: 0 auto;
+}
+
+/* Never overflow horizontally */
+img, video, canvas, svg { max-width: 100%; height: auto; }
+
+/* Avoid accidental horizontal scroll */
+html, body, .app { overscroll-behavior: contain; }
+
+3) JS — fallback for older iOS + fixed footer that won’t jump
+
+Place this before </body>. It sets a --vh variable for older Safari and (optionally) keeps a fixed footer above the keyboard without moving the entire page.
+
+<script>
+  // 1) Older iOS Safari fallback for dynamic viewport height
+  (function () {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01; // visual height at the moment
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    setVH();
+    window.addEventListener('resize', setVH);
+
+    // If you prefer the CSS to use the fallback:
+    // .app { height: calc(var(--vh, 1vh) * 100); }
+  })();
+
+  // 2) OPTIONAL: Keep a fixed footer from jumping with keyboard using VisualViewport
+  (function () {
+    const footer = document.querySelector('.footer'); // your fixed/sticky bottom bar
+    if (!footer || !window.visualViewport) return;
+
+    const onVVChange = () => {
+      const vv = window.visualViewport;
+      const covered = window.innerHeight - vv.height - vv.offsetTop;
+      footer.style.transform = covered > 0 ? `translateY(-${covered}px)` : '';
+    };
+    visualViewport.addEventListener('resize', onVVChange);
+    visualViewport.addEventListener('scroll', onVVChange);
+  })();
+</script>
+
+
+If you use the fallback, change the .app CSS height to:
+
+.app { height: calc(var(--vh, 1vh) * 100); }
+@supports (height: 100dvh) { .app { height: 100dvh; } }
+
+4) Minimal HTML structure example
+
+Make sure your page is structured like this so the rules apply cleanly:
+
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="container">Your header</div>
+    </header>
+
+    <main class="container">
+      <!-- Your content / forms / chat -->
+    </main>
+
+    <footer class="footer">
+      <div class="container">Your bottom bar</div>
+    </footer>
+  </div>
+</body>
+
+Quick checks
+
+If anything still goes off-screen, look for any element with fixed widths (e.g., width: 400px) and switch to % or max-width: 100%.
+
+Make sure no child sets position: fixed; bottom: 0; outside .app. If you must use fixed, keep the VisualViewport script.
+
+Keep inputs at 16px+ to prevent iOS zoom.
+
+If you share your current header/main/footer snippet, I can tailor these classes to your exact structure (and point out any specific offenders causing overflow).
