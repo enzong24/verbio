@@ -178,9 +178,14 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await storage.getUser(id);
+      if (!user) {
+        // User doesn't exist anymore, clear session
+        return done(null, false);
+      }
       done(null, user as any);
     } catch (error) {
-      done(error);
+      // On error, clear session instead of propagating error
+      done(null, false);
     }
   });
 

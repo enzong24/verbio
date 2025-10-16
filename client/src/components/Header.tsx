@@ -226,20 +226,20 @@ export default function Header({
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => {
-                      localStorage.clear();
-                      sessionStorage.clear();
-                      window.location.href = "/api/logout";
-                    }}
-                    data-testid="menu-logout"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
                 </>
               )}
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.href = "/api/logout";
+                }}
+                data-testid="menu-logout"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -531,23 +531,25 @@ export default function Header({
                         <span>Cancel Subscription</span>
                       </Button>
                     )}
-                    
-                    {/* Logout Button */}
-                    <Button
-                      variant="outline"
-                      className="w-full gap-2 text-destructive hover:text-destructive border-destructive/30"
-                      onClick={() => {
-                        localStorage.clear();
-                        sessionStorage.clear();
-                        window.location.href = "/api/logout";
-                      }}
-                      data-testid="button-mobile-logout"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Log Out</span>
-                    </Button>
                   </div>
                 )}
+                
+                {/* Sign Out Button - Always visible */}
+                <div className="pt-4 border-t border-card-border">
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 text-destructive hover:text-destructive border-destructive/30"
+                    onClick={() => {
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      window.location.href = "/api/logout";
+                    }}
+                    data-testid="button-mobile-logout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </Button>
+                </div>
               </div>
             </TabsContent>
             
