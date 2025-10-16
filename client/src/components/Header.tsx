@@ -216,7 +216,7 @@ export default function Header({
                     </Badge>
                   )}
                 </div>
-                <div className="mt-2 space-y-1">
+                <div className="mt-2 space-y-2">
                   <div className="flex items-center gap-2">
                     <p className="text-xs text-muted-foreground">{currentLanguage}</p>
                     <Badge 
@@ -227,9 +227,9 @@ export default function Header({
                       {fluencyLevel.level}
                     </Badge>
                   </div>
-                  <div className="bg-muted/30 rounded-md p-2 border border-border/50">
-                    <p className="text-xs font-medium mb-0.5">CEFR {fluencyLevel.level}: {fluencyLevel.name}</p>
-                    <p className="text-[10px] text-muted-foreground leading-tight">{fluencyLevel.description}</p>
+                  <div className="bg-primary/5 rounded-md p-2.5 border border-primary/10">
+                    <p className="text-xs font-semibold text-primary mb-1">CEFR {fluencyLevel.level}: {fluencyLevel.name}</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">{fluencyLevel.description}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
