@@ -289,7 +289,7 @@ export default function MatchFinder({
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• Practice mode doesn't affect Fluency Score</li>
-                  <li>• Use vocabulary hints freely - no penalties!</li>
+                  <li>• Use vocabulary definitions freely</li>
                   <li>• Avoid skipping questions (-20 pts each)</li>
                 </ul>
               </CardContent>

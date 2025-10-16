@@ -207,36 +207,12 @@ export default function Header({
                 </p>
               </div>
               <DropdownMenuSeparator />
-              {!isPremium ? (
+              {!isPremium && (
                 <DropdownMenuItem asChild data-testid="menu-item-upgrade">
                   <a href="/subscribe" className="flex items-center cursor-pointer">
                     <Crown className="w-4 h-4 mr-2 text-yellow-500" />
                     <span>Upgrade to Premium</span>
                   </a>
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem 
-                  onClick={async () => {
-                    if (confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
-                      try {
-                        const res = await fetch('/api/cancel-subscription', { method: 'POST' });
-                        const data = await res.json();
-                        if (res.ok) {
-                          alert(data.message);
-                          window.location.reload();
-                        } else {
-                          alert(data.message || 'Failed to cancel subscription');
-                        }
-                      } catch (error) {
-                        alert('Failed to cancel subscription');
-                      }
-                    }
-                  }}
-                  className="cursor-pointer"
-                  data-testid="menu-item-cancel-subscription"
-                >
-                  <Crown className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span>Cancel Subscription</span>
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
@@ -485,7 +461,7 @@ export default function Header({
                     </Button>
                     
                     {/* Subscription Management */}
-                    {!isPremium ? (
+                    {!isPremium && (
                       <Button
                         variant="default"
                         className="w-full gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0"
@@ -496,31 +472,6 @@ export default function Header({
                       >
                         <Crown className="w-4 h-4" />
                         <span>Upgrade to Premium</span>
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        className="w-full gap-2"
-                        onClick={async () => {
-                          if (confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
-                            try {
-                              const res = await fetch('/api/cancel-subscription', { method: 'POST' });
-                              const data = await res.json();
-                              if (res.ok) {
-                                alert(data.message);
-                                window.location.reload();
-                              } else {
-                                alert(data.message || 'Failed to cancel subscription');
-                              }
-                            } catch (error) {
-                              alert('Failed to cancel subscription');
-                            }
-                          }
-                        }}
-                        data-testid="button-mobile-cancel-subscription"
-                      >
-                        <Crown className="w-4 h-4" />
-                        <span>Cancel Subscription</span>
                       </Button>
                     )}
                     
