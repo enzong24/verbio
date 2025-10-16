@@ -273,42 +273,6 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
             </CardContent>
           </Card>
         )}
-
-        {/* Skill Breakdown */}
-        {skillData.length > 0 && skillData.some(s => s.value > 0) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Skill Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={skillData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {skillData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--card-border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Recent Performance */}
