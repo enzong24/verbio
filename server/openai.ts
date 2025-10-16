@@ -20,24 +20,30 @@ export async function gradeConversation(request: GradingRequest, isPremium: bool
   
   // Different prompts based on premium status
   const detailedAnalysisSection = isPremium ? `
-2. DETAILED MESSAGE-BY-MESSAGE ANALYSIS (messageAnalysis array):
-For EACH student message, provide:
+2. COMPREHENSIVE MESSAGE-BY-MESSAGE ANALYSIS (messageAnalysis array):
+For EVERY SINGLE student message, provide DETAILED analysis:
 - messageIndex: the message number [0, 1, 2...]
-- sender: "user" or "opponent"
+- sender: "user" 
 - originalText: the exact message text
-- grammarCorrections: array of {original: "text with error", corrected: "fixed text", explanation: "why"}
-  (only if there are grammar errors - can be empty array)
-- vocabularySuggestions: array of {word: "used word", betterAlternative: "better word", reason: "why it's better"}
-  (only if there are better vocabulary choices - can be empty array)
-- strengths: array of 1-2 things done well in this specific message
-- improvements: array of 1-2 specific things to improve in this message
+- grammarCorrections: array of EVERY grammar error {original: "exact text with error", corrected: "corrected version", explanation: "detailed explanation of the grammar rule"}
+  Include ALL errors: word order, particles, verb conjugation, tense usage, articles, prepositions, etc.
+- vocabularySuggestions: array of BETTER word choices {word: "word used", betterAlternative: "more natural/advanced word", reason: "detailed explanation why it's better"}
+  Suggest more natural, idiomatic, or contextually appropriate alternatives for EVERY improvable word
+- sentenceImprovement: {
+    original: "student's sentence",
+    improved: "how a native speaker would say it",
+    explanation: "detailed explanation of ALL changes made and why"
+  }
+- strengths: array of 2-3 specific things done well (grammar structures used correctly, good vocabulary choices, natural expressions)
+- improvements: array of 2-3 specific actionable suggestions to improve this message
 
-IMPORTANT: 
-- Analyze ONLY the student's messages (sender: "user") in detail
-- For grammarCorrections, extract the specific part with the error, not the whole sentence
-- For vocabularySuggestions, suggest more natural or advanced alternatives
-- Keep each analysis constructive and encouraging
-- Empty arrays are fine if no corrections/suggestions needed` : '';
+CRITICAL REQUIREMENTS:
+- Analyze EVERY student message, even if it seems perfect
+- Be THOROUGH - find and explain ALL errors, not just major ones
+- For each message, provide AT LEAST 2-3 grammar corrections or vocabulary suggestions (unless truly perfect)
+- The sentenceImprovement field is REQUIRED for every message - show how a native would say it
+- Give detailed, educational explanations that teach the student
+- Empty arrays only if the message is grammatically perfect AND uses optimal vocabulary` : '';
   
   const prompt = `You are an expert ${request.language} language teacher providing ${isPremium ? 'detailed, message-by-message' : 'general'} feedback for a conversation at ${request.difficulty} difficulty level.
 
@@ -77,10 +83,15 @@ Respond with JSON in this ${isPremium ? 'EXACT' : 'format (NO messageAnalysis fi
       "messageIndex": 0,
       "sender": "user",
       "originalText": "original message text",
-      "grammarCorrections": [{"original": "错误部分", "corrected": "正确部分", "explanation": "why"}],
-      "vocabularySuggestions": [{"word": "used word", "betterAlternative": "better word", "reason": "why"}],
-      "strengths": ["strength 1", "strength 2"],
-      "improvements": ["improvement 1"]
+      "grammarCorrections": [{"original": "错误部分", "corrected": "正确部分", "explanation": "detailed grammar explanation"}],
+      "vocabularySuggestions": [{"word": "used word", "betterAlternative": "better word", "reason": "detailed reason"}],
+      "sentenceImprovement": {
+        "original": "student sentence",
+        "improved": "native speaker version",
+        "explanation": "detailed explanation of all improvements"
+      },
+      "strengths": ["strength 1", "strength 2", "strength 3"],
+      "improvements": ["improvement 1", "improvement 2"]
     }
   ]` : ''}
 }`;
@@ -99,7 +110,7 @@ Respond with JSON in this ${isPremium ? 'EXACT' : 'format (NO messageAnalysis fi
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: isPremium ? 3000 : 1500, // Less tokens for basic feedback
+      max_tokens: isPremium ? 4000 : 1500, // More tokens for comprehensive premium feedback
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");

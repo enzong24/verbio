@@ -163,6 +163,11 @@ export const messageAnalysisSchema = z.object({
     betterAlternative: z.string(),
     reason: z.string(),
   })).optional(),
+  sentenceImprovement: z.object({
+    original: z.string(),
+    improved: z.string(),
+    explanation: z.string(),
+  }).optional(),
   strengths: z.array(z.string()).optional(),
   improvements: z.array(z.string()).optional(),
 });

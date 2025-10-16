@@ -93,6 +93,7 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                   const hasFeedback = feedback && (
                     (feedback.grammarCorrections && feedback.grammarCorrections.length > 0) ||
                     (feedback.vocabularySuggestions && feedback.vocabularySuggestions.length > 0) ||
+                    feedback.sentenceImprovement ||
                     (feedback.strengths && feedback.strengths.length > 0) ||
                     (feedback.improvements && feedback.improvements.length > 0)
                   );
@@ -136,7 +137,7 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                 {isExpanded ? "Hide" : "Show"} AI Feedback
                                 {!isExpanded && (
                                   <Badge variant="outline" className="ml-2 text-xs">
-                                    {(feedback.grammarCorrections?.length || 0) + (feedback.vocabularySuggestions?.length || 0)}
+                                    {(feedback.grammarCorrections?.length || 0) + (feedback.vocabularySuggestions?.length || 0) + (feedback.sentenceImprovement ? 1 : 0)}
                                   </Badge>
                                 )}
                               </Button>
@@ -174,6 +175,41 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                               <p className="text-muted-foreground">{correction.explanation}</p>
                                             </div>
                                           ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Sentence Improvement */}
+                                    {feedback.sentenceImprovement && (
+                                      <div>
+                                        <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
+                                          <Lightbulb className="w-4 h-4 text-blue-500" />
+                                          How a Native Would Say It
+                                        </h4>
+                                        <div className="text-xs bg-background/50 p-3 rounded space-y-2">
+                                          <div>
+                                            <span className="text-muted-foreground font-medium">Your sentence:</span>
+                                            <div className="mt-1 p-2 bg-muted/50 rounded">
+                                              {language === "Chinese" ? (
+                                                <TextWithPinyin text={feedback.sentenceImprovement.original} language={language} />
+                                              ) : (
+                                                feedback.sentenceImprovement.original
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <span className="text-success font-medium">Native speaker version:</span>
+                                            <div className="mt-1 p-2 bg-success/10 rounded font-medium">
+                                              {language === "Chinese" ? (
+                                                <TextWithPinyin text={feedback.sentenceImprovement.improved} language={language} />
+                                              ) : (
+                                                feedback.sentenceImprovement.improved
+                                              )}
+                                            </div>
+                                          </div>
+                                          <p className="text-muted-foreground pt-1 border-t border-border">
+                                            {feedback.sentenceImprovement.explanation}
+                                          </p>
                                         </div>
                                       </div>
                                     )}
