@@ -162,14 +162,7 @@ export default function Header({
           {!hideProfile && (
             <>
               {isPremium && (
-                <Badge 
-                  variant="default" 
-                  className="hidden md:flex bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
-                  data-testid="badge-premium-header"
-                >
-                  <Crown className="w-3 h-3 mr-1" />
-                  PRO
-                </Badge>
+                <Crown className="w-5 h-5 text-yellow-500 hidden md:block" data-testid="icon-premium-crown-header" />
               )}
               
               <DropdownMenu>
