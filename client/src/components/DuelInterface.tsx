@@ -630,13 +630,15 @@ export default function DuelInterface({
                 <span className="truncate">{opponentName}</span>
                 {isBot && <Badge className="text-xs flex-shrink-0 bg-accent/20 text-accent border-accent/30">Bot</Badge>}
               </div>
-              {!isPracticeMode ? (
+              {!isPracticeMode && difficulty !== "Beginner" ? (
                 <div className="text-xs text-muted-foreground font-mono">{opponentElo} Fluency</div>
-              ) : (
+              ) : isPracticeMode || difficulty === "Beginner" ? (
                 <div className="text-xs text-muted-foreground flex items-center gap-1">
                   <Info className="w-3 h-3" />
                   Hover over bot messages for translations
                 </div>
+              ) : (
+                <div className="text-xs text-muted-foreground font-mono">{opponentElo} Fluency</div>
               )}
             </div>
           </div>
@@ -770,7 +772,7 @@ export default function DuelInterface({
             <div className="flex-1 overflow-y-auto p-2 md:p-6 space-y-2 md:space-y-4" data-testid="chat-messages">
               {messages.map((msg, idx) => {
                 const isBotMessage = msg.sender === "opponent";
-                const shouldShowTranslation = isBotMessage && isPracticeMode;
+                const shouldShowTranslation = isBotMessage && (isPracticeMode || difficulty === "Beginner");
                 const isHovered = hoveredMessageIndex === idx;
                 const translation = translations[idx];
 
