@@ -57,10 +57,13 @@ The backend uses Express.js with Node.js and TypeScript, featuring RESTful APIs 
 - **drizzle-zod**: Database schema to Zod.
 
 ### Authentication & Session Management
-- **Google OAuth 2.0**: Direct Google OAuth authentication using redirect-based flow.
-- **Passport.js**: Server-side authentication middleware with passport-google-oauth20 strategy.
+- **Dual Authentication System**: Users can sign in using either Google OAuth or username/password.
+- **Google OAuth 2.0**: Direct Google OAuth authentication using redirect-based flow via passport-google-oauth20.
+- **Username/Password Auth**: Traditional credential-based authentication using passport-local with secure password hashing (scrypt).
+- **Passport.js**: Server-side authentication middleware supporting both authentication strategies.
 - **PostgreSQL Sessions**: Secure session storage in database using connect-pg-simple.
-- **Automatic User Sync**: Users automatically created/synced to database on first login via Google profile.
+- **User Schema**: Supports both google_id (for OAuth) and username/password (for local auth) fields.
+- **Sign-In Page**: Tabbed interface at /signin with options for both authentication methods.
 
 ### Payment Processing
 - **Stripe**: Payment processing for premium subscriptions.
