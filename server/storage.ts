@@ -19,7 +19,7 @@ import {
   premiumWhitelist
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, or } from "drizzle-orm";
+import { eq, and, desc, or, sql, inArray } from "drizzle-orm";
 
 // Storage interface for Replit Auth
 export interface IStorage {
@@ -613,6 +613,29 @@ export class DbStorage implements IStorage {
 
   async createMatch(matchData: InsertMatch): Promise<Match> {
     const result = await db.insert(matches).values(matchData).returning();
+    
+    // Keep only the last 20 matches per user per language
+    if (matchData.userId && matchData.language) {
+      const allUserMatches = await db
+        .select()
+        .from(matches)
+        .where(and(
+          eq(matches.userId, matchData.userId),
+          eq(matches.language, matchData.language)
+        ))
+        .orderBy(desc(matches.createdAt));
+      
+      // If more than 20 matches, delete the oldest ones
+      if (allUserMatches.length > 20) {
+        const matchesToDelete = allUserMatches.slice(20);
+        const idsToDelete = matchesToDelete.map(m => m.id);
+        
+        await db
+          .delete(matches)
+          .where(inArray(matches.id, idsToDelete));
+      }
+    }
+    
     return result[0];
   }
 
