@@ -187,47 +187,6 @@ export default function Header({
                 </div>
               </div>
               <DropdownMenuSeparator />
-              {isAuthenticated && (
-                <>
-                  <DropdownMenuItem onClick={() => onNavigate?.("friends")} data-testid="menu-friends">
-                    <Users className="w-4 h-4 mr-2" />
-                    Friends
-                  </DropdownMenuItem>
-                  {!isPremium ? (
-                    <DropdownMenuItem 
-                      onClick={() => window.location.href = "/subscribe"}
-                      data-testid="menu-upgrade"
-                    >
-                      <Crown className="w-4 h-4 mr-2" />
-                      Upgrade to Premium
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        if (confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
-                          try {
-                            const res = await fetch('/api/cancel-subscription', { method: 'POST' });
-                            const data = await res.json();
-                            if (res.ok) {
-                              alert(data.message);
-                              window.location.reload();
-                            } else {
-                              alert(data.message || 'Failed to cancel subscription');
-                            }
-                          } catch (error) {
-                            alert('Failed to cancel subscription');
-                          }
-                        }
-                      }}
-                      data-testid="menu-cancel-subscription"
-                    >
-                      <Crown className="w-4 h-4 mr-2" />
-                      Cancel Subscription
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                </>
-              )}
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => {
