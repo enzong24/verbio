@@ -25,6 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MatchDetails from "@/components/MatchDetails";
+import { getFluencyLevel } from "@shared/fluencyLevels";
 
 interface LeaderboardEntry {
   rank?: number;
@@ -73,6 +74,7 @@ export default function Header({
   hideProfile = false
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const fluencyLevel = getFluencyLevel(elo);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const { setEnabled, isEnabled } = useSound();
   const [soundEnabled, setSoundEnabled] = useState(isEnabled());
@@ -168,6 +170,13 @@ export default function Header({
                   PRO
                 </Badge>
               )}
+              <Badge 
+                variant="outline" 
+                className="font-bold hidden md:flex" 
+                data-testid="badge-fluency-level"
+              >
+                {fluencyLevel.level}
+              </Badge>
               <Badge variant="outline" className="font-mono font-semibold hidden md:flex" data-testid="badge-elo">
                 {elo} Fluency
               </Badge>

@@ -10,6 +10,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
 import type { Match } from "@shared/schema";
 import MatchDetails from "@/components/MatchDetails";
+import { getFluencyLevel } from "@shared/fluencyLevels";
 
 interface ProfileStatsProps {
   username?: string;
@@ -38,6 +39,7 @@ export default function ProfileStats({
 }: ProfileStatsProps) {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+  const fluencyLevel = getFluencyLevel(elo);
 
   // Fetch recent matches - explicitly pass language parameter
   const { data: matches } = useQuery<Match[]>({
@@ -76,6 +78,9 @@ export default function ProfileStats({
             <div className="flex-1">
               <CardTitle className="text-2xl" data-testid="text-username">{username}</CardTitle>
               <div className="flex items-center gap-3 mt-1 flex-wrap">
+                <Badge variant="outline" className="font-bold text-base" data-testid="badge-fluency-level-profile">
+                  {fluencyLevel.level} • {fluencyLevel.name}
+                </Badge>
                 <Badge variant="outline" className="font-mono font-semibold text-base">
                   {elo} Fluency
                 </Badge>

@@ -20,10 +20,12 @@ import AIReview from "@/components/AIReview";
 import Friends from "@/components/Friends";
 import Analytics from "@/components/Analytics";
 import { StreakNotification } from "@/components/StreakNotification";
+import LevelUpDialog from "@/components/LevelUpDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 import { incrementGuestMatches } from "@/utils/guestRateLimit";
+import { FLUENCY_LEVELS, type FluencyLevel } from "@shared/fluencyLevels";
 
 type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review" | "friends" | "analytics";
 
@@ -57,6 +59,13 @@ function MainApp() {
   const multiplayerWsRef = useRef<WebSocket | null>(null);
   const [waitingForOpponentResult, setWaitingForOpponentResult] = useState(false);
   const [isSavingMatch, setIsSavingMatch] = useState(false);
+  
+  // Level-up state
+  const [levelUpInfo, setLevelUpInfo] = useState<{
+    oldLevel: import("@shared/fluencyLevels").FluencyLevelInfo;
+    newLevel: import("@shared/fluencyLevels").FluencyLevelInfo;
+    language: string;
+  } | null>(null);
   
   // Streak notification state
   const [streakNotification, setStreakNotification] = useState<{
@@ -557,7 +566,7 @@ function MainApp() {
         // Save match history for authenticated users (both practice and competitive)
         if (isAuthenticated) {
           try {
-            await apiRequest("POST", "/api/match/save", {
+            const response = await apiRequest("POST", "/api/match/save", {
               opponent: matchData.opponent,
               result: isWin ? "win" : "loss",
               eloChange: matchData.isPracticeMode ? 0 : change, // No Elo change for practice
@@ -579,6 +588,22 @@ function MainApp() {
               },
               topic: matchData.topic || null, // Match topic
             });
+            
+            // Check for level-up
+            const data = await response.json() as any;
+            if (data.levelUpInfo) {
+              // Convert level strings to FluencyLevelInfo objects
+              const oldLevelInfo = FLUENCY_LEVELS[data.levelUpInfo.oldLevel as FluencyLevel];
+              const newLevelInfo = FLUENCY_LEVELS[data.levelUpInfo.newLevel as FluencyLevel];
+              if (oldLevelInfo && newLevelInfo) {
+                setLevelUpInfo({
+                  oldLevel: oldLevelInfo,
+                  newLevel: newLevelInfo,
+                  language: data.levelUpInfo.language
+                });
+              }
+            }
+            
             // Invalidate match history and skill progress queries
             queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
             queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`] });
@@ -653,6 +678,16 @@ function MainApp() {
           isVisible={streakNotification.visible}
           onClose={() => setStreakNotification(null)}
           playSound={streakNotification.type === "win" ? playStreak : playDailyStreak}
+        />
+      )}
+      
+      {/* Level Up Dialog */}
+      {levelUpInfo && (
+        <LevelUpDialog
+          open={!!levelUpInfo}
+          onClose={() => setLevelUpInfo(null)}
+          oldLevel={levelUpInfo.oldLevel}
+          newLevel={levelUpInfo.newLevel}
         />
       )}
       
