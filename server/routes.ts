@@ -115,6 +115,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get bots by language
+  app.get("/api/bots", async (req, res) => {
+    try {
+      const { language } = req.query;
+      const { getBotsByLanguage } = await import('./botProfiles.js');
+      
+      if (!language || typeof language !== 'string') {
+        return res.status(400).json({ message: "Language parameter is required" });
+      }
+      
+      const bots = getBotsByLanguage(language);
+      res.json(bots);
+    } catch (error) {
+      console.error("Error fetching bots:", error);
+      res.status(500).json({ message: "Failed to fetch bots" });
+    }
+  });
+
   // Grade conversation
   app.post("/api/grade", async (req: any, res) => {
     try {
@@ -156,8 +174,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate bot question
   app.post("/api/bot-question", async (req, res) => {
     try {
-      const { topic, vocabulary, language = "Chinese", difficulty = "Medium", previousQuestions = [], isPracticeMode = false } = req.body;
-      const question = await generateBotQuestion(topic, vocabulary, language, difficulty, previousQuestions, isPracticeMode);
+      const { topic, vocabulary, language = "Chinese", difficulty = "Medium", previousQuestions = [], isPracticeMode = false, botId } = req.body;
+      
+      let botPersonality: string | undefined = undefined;
+      if (botId) {
+        const { getBotById } = await import('./botProfiles.js');
+        const bot = getBotById(botId);
+        if (bot) {
+          botPersonality = bot.personality;
+        }
+      }
+      
+      const question = await generateBotQuestion(topic, vocabulary, language, difficulty, previousQuestions, isPracticeMode, botPersonality);
       res.json({ question });
     } catch (error: any) {
       console.error("Bot question error:", error);
@@ -171,8 +199,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate bot answer
   app.post("/api/bot-answer", async (req, res) => {
     try {
-      const { userQuestion, topic, vocabulary, language = "Chinese", difficulty = "Medium", isPracticeMode = false } = req.body;
-      const answer = await generateBotAnswer(userQuestion, topic, vocabulary, language, difficulty, isPracticeMode);
+      const { userQuestion, topic, vocabulary, language = "Chinese", difficulty = "Medium", isPracticeMode = false, botId } = req.body;
+      
+      let botPersonality: string | undefined = undefined;
+      if (botId) {
+        const { getBotById } = await import('./botProfiles.js');
+        const bot = getBotById(botId);
+        if (bot) {
+          botPersonality = bot.personality;
+        }
+      }
+      
+      const answer = await generateBotAnswer(userQuestion, topic, vocabulary, language, difficulty, isPracticeMode, botPersonality);
       res.json({ answer });
     } catch (error: any) {
       console.error("Bot answer error:", error);
