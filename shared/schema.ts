@@ -167,7 +167,7 @@ export const messageAnalysisSchema = z.object({
     original: z.string(),
     improved: z.string(),
     explanation: z.string(),
-  }).optional(),
+  }),
   strengths: z.array(z.string()).optional(),
   improvements: z.array(z.string()).optional(),
 });

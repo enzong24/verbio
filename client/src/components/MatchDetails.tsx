@@ -136,8 +136,8 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                               >
                                 {isExpanded ? "Hide" : "Show"} AI Feedback
                                 {!isExpanded && (
-                                  <Badge variant="outline" className="ml-2 text-xs">
-                                    {(feedback.grammarCorrections?.length || 0) + (feedback.vocabularySuggestions?.length || 0) + (feedback.sentenceImprovement ? 1 : 0)}
+                                  <Badge variant="outline" className="ml-2 text-xs px-2">
+                                    {(feedback.grammarCorrections?.length || 0) + (feedback.vocabularySuggestions?.length || 0) + (feedback.sentenceImprovement ? 1 : 0)} insights
                                   </Badge>
                                 )}
                               </Button>
@@ -148,31 +148,38 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                     {/* Grammar Corrections */}
                                     {feedback.grammarCorrections && feedback.grammarCorrections.length > 0 && (
                                       <div>
-                                        <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
+                                        <h4 className="text-sm font-semibold flex items-center gap-2 mb-3">
                                           <AlertCircle className="w-4 h-4 text-destructive" />
-                                          Grammar Corrections
+                                          Grammar Analysis ({feedback.grammarCorrections.length})
                                         </h4>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                           {feedback.grammarCorrections.map((correction, i) => (
-                                            <div key={i} className="text-xs bg-background/50 p-2 rounded">
-                                              <div className="flex items-start gap-2 mb-1">
-                                                <span className="text-destructive line-through">
-                                                  {language === "Chinese" ? (
-                                                    <TextWithPinyin text={correction.original} language={language} />
-                                                  ) : (
-                                                    correction.original
-                                                  )}
-                                                </span>
-                                                <span>→</span>
-                                                <span className="text-success font-medium">
-                                                  {language === "Chinese" ? (
-                                                    <TextWithPinyin text={correction.corrected} language={language} />
-                                                  ) : (
-                                                    correction.corrected
-                                                  )}
-                                                </span>
+                                            <div key={i} className="text-xs bg-background/50 p-3 rounded-md border border-border/50">
+                                              <div className="flex items-start gap-2 mb-2">
+                                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">#{i + 1}</Badge>
+                                                <div className="flex-1">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                    <span className="text-destructive line-through">
+                                                      {language === "Chinese" ? (
+                                                        <TextWithPinyin text={correction.original} language={language} />
+                                                      ) : (
+                                                        correction.original
+                                                      )}
+                                                    </span>
+                                                    <span className="text-muted-foreground">→</span>
+                                                    <span className="text-success font-medium">
+                                                      {language === "Chinese" ? (
+                                                        <TextWithPinyin text={correction.corrected} language={language} />
+                                                      ) : (
+                                                        correction.corrected
+                                                      )}
+                                                    </span>
+                                                  </div>
+                                                  <p className="text-muted-foreground leading-relaxed mt-2 pl-2 border-l-2 border-muted">
+                                                    {correction.explanation}
+                                                  </p>
+                                                </div>
                                               </div>
-                                              <p className="text-muted-foreground">{correction.explanation}</p>
                                             </div>
                                           ))}
                                         </div>
@@ -182,14 +189,16 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                     {/* Sentence Improvement */}
                                     {feedback.sentenceImprovement && (
                                       <div>
-                                        <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
+                                        <h4 className="text-sm font-semibold flex items-center gap-2 mb-3">
                                           <Lightbulb className="w-4 h-4 text-blue-500" />
-                                          How a Native Would Say It
+                                          Native Speaker Comparison
                                         </h4>
-                                        <div className="text-xs bg-background/50 p-3 rounded space-y-2">
+                                        <div className="text-xs bg-gradient-to-br from-blue-500/5 to-blue-500/10 p-4 rounded-md border border-blue-500/20 space-y-3">
                                           <div>
-                                            <span className="text-muted-foreground font-medium">Your sentence:</span>
-                                            <div className="mt-1 p-2 bg-muted/50 rounded">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">Your version</Badge>
+                                            </div>
+                                            <div className="mt-1 p-2.5 bg-muted/50 rounded border border-border/50">
                                               {language === "Chinese" ? (
                                                 <TextWithPinyin text={feedback.sentenceImprovement.original} language={language} />
                                               ) : (
@@ -198,8 +207,10 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                             </div>
                                           </div>
                                           <div>
-                                            <span className="text-success font-medium">Native speaker version:</span>
-                                            <div className="mt-1 p-2 bg-success/10 rounded font-medium">
+                                            <div className="flex items-center gap-2 mb-1">
+                                              <Badge className="text-[10px] px-1.5 py-0 h-4 bg-success/90">Native version</Badge>
+                                            </div>
+                                            <div className="mt-1 p-2.5 bg-success/10 rounded border border-success/30 font-medium">
                                               {language === "Chinese" ? (
                                                 <TextWithPinyin text={feedback.sentenceImprovement.improved} language={language} />
                                               ) : (
@@ -207,9 +218,12 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                               )}
                                             </div>
                                           </div>
-                                          <p className="text-muted-foreground pt-1 border-t border-border">
-                                            {feedback.sentenceImprovement.explanation}
-                                          </p>
+                                          <div className="pt-2 border-t border-blue-500/20">
+                                            <span className="text-blue-600 dark:text-blue-400 font-medium block mb-1">Why this is better:</span>
+                                            <p className="text-muted-foreground leading-relaxed">
+                                              {feedback.sentenceImprovement.explanation}
+                                            </p>
+                                          </div>
                                         </div>
                                       </div>
                                     )}
@@ -217,31 +231,38 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                                     {/* Vocabulary Suggestions */}
                                     {feedback.vocabularySuggestions && feedback.vocabularySuggestions.length > 0 && (
                                       <div>
-                                        <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
-                                          <Lightbulb className="w-4 h-4 text-warning" />
-                                          Better Vocabulary
+                                        <h4 className="text-sm font-semibold flex items-center gap-2 mb-3">
+                                          <Lightbulb className="w-4 h-4 text-amber-500" />
+                                          Vocabulary Enhancement ({feedback.vocabularySuggestions.length})
                                         </h4>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                           {feedback.vocabularySuggestions.map((suggestion, i) => (
-                                            <div key={i} className="text-xs bg-background/50 p-2 rounded">
-                                              <div className="flex items-start gap-2 mb-1">
-                                                <span className="text-muted-foreground">
-                                                  {language === "Chinese" ? (
-                                                    <TextWithPinyin text={suggestion.word} language={language} />
-                                                  ) : (
-                                                    suggestion.word
-                                                  )}
-                                                </span>
-                                                <span>→</span>
-                                                <span className="text-primary font-medium">
-                                                  {language === "Chinese" ? (
-                                                    <TextWithPinyin text={suggestion.betterAlternative} language={language} />
-                                                  ) : (
-                                                    suggestion.betterAlternative
-                                                  )}
-                                                </span>
+                                            <div key={i} className="text-xs bg-background/50 p-3 rounded-md border border-border/50">
+                                              <div className="flex items-start gap-2 mb-2">
+                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-amber-500/30">#{i + 1}</Badge>
+                                                <div className="flex-1">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                    <span className="text-muted-foreground">
+                                                      {language === "Chinese" ? (
+                                                        <TextWithPinyin text={suggestion.word} language={language} />
+                                                      ) : (
+                                                        suggestion.word
+                                                      )}
+                                                    </span>
+                                                    <span className="text-muted-foreground">→</span>
+                                                    <span className="text-amber-600 dark:text-amber-400 font-medium">
+                                                      {language === "Chinese" ? (
+                                                        <TextWithPinyin text={suggestion.betterAlternative} language={language} />
+                                                      ) : (
+                                                        suggestion.betterAlternative
+                                                      )}
+                                                    </span>
+                                                  </div>
+                                                  <p className="text-muted-foreground leading-relaxed mt-2 pl-2 border-l-2 border-muted">
+                                                    {suggestion.reason}
+                                                  </p>
+                                                </div>
                                               </div>
-                                              <p className="text-muted-foreground">{suggestion.reason}</p>
                                             </div>
                                           ))}
                                         </div>
@@ -250,16 +271,16 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
 
                                     {/* Strengths */}
                                     {feedback.strengths && feedback.strengths.length > 0 && (
-                                      <div>
+                                      <div className="bg-success/5 p-3 rounded-md border border-success/20">
                                         <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
                                           <CheckCircle2 className="w-4 h-4 text-success" />
-                                          What You Did Well
+                                          Strengths ({feedback.strengths.length})
                                         </h4>
-                                        <ul className="text-xs space-y-1">
+                                        <ul className="text-xs space-y-2">
                                           {feedback.strengths.map((strength, i) => (
                                             <li key={i} className="flex items-start gap-2">
-                                              <span className="text-success">•</span>
-                                              <span>{strength}</span>
+                                              <CheckCircle2 className="w-3 h-3 text-success mt-0.5 flex-shrink-0" />
+                                              <span className="leading-relaxed">{strength}</span>
                                             </li>
                                           ))}
                                         </ul>
@@ -268,16 +289,16 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
 
                                     {/* Improvements */}
                                     {feedback.improvements && feedback.improvements.length > 0 && (
-                                      <div>
+                                      <div className="bg-primary/5 p-3 rounded-md border border-primary/20">
                                         <h4 className="text-sm font-semibold flex items-center gap-2 mb-2">
                                           <TrendingUp className="w-4 h-4 text-primary" />
-                                          Areas to Improve
+                                          Study Recommendations ({feedback.improvements.length})
                                         </h4>
-                                        <ul className="text-xs space-y-1">
+                                        <ul className="text-xs space-y-2">
                                           {feedback.improvements.map((improvement, i) => (
                                             <li key={i} className="flex items-start gap-2">
-                                              <span className="text-primary">•</span>
-                                              <span>{improvement}</span>
+                                              <TrendingUp className="w-3 h-3 text-primary mt-0.5 flex-shrink-0" />
+                                              <span className="leading-relaxed">{improvement}</span>
                                             </li>
                                           ))}
                                         </ul>
