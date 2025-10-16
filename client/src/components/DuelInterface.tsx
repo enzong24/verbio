@@ -69,7 +69,7 @@ export default function DuelInterface({
       case "Beginner": return 120; // 2 minutes (very generous)
       case "Easy": return 90;      // 1.5 minutes
       case "Medium": return 60;    // 1 minute
-      case "Hard": return 30;      // 30 seconds
+      case "Hard": return 60;      // 1 minute (same as Medium)
       default: return 60;
     }
   };
