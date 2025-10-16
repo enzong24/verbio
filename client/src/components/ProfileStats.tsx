@@ -160,9 +160,9 @@ export default function ProfileStats({
               <CardTitle>Recent Matches</CardTitle>
             </CardHeader>
             <CardContent>
-              {matches && matches.filter(m => m.isPracticeMode === 0).length > 0 ? (
+              {matches && matches.filter((m: any) => m.isPracticeMode === 0).length > 0 ? (
                 <div className="space-y-3">
-                  {matches.filter(m => m.isPracticeMode === 0).map((match) => (
+                  {matches.filter((m: any) => m.isPracticeMode === 0).map((match) => (
                         <div
                           key={match.id}
                           className="flex items-center gap-4 p-3 rounded-md hover-elevate cursor-pointer transition-all"
