@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Flag, Clock, HelpCircle, Swords, Type, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { Send, Flag, Clock, HelpCircle, Swords, Type, ChevronDown, ChevronUp, Info, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,8 @@ interface DuelInterfaceProps {
   opponentName?: string;
   opponentElo?: number;
   userElo?: number;
+  userName?: string;
+  isPremium?: boolean;
   isBot?: boolean;
   isPracticeMode?: boolean;
   language?: string;
@@ -50,6 +52,8 @@ export default function DuelInterface({
   opponentName = "AI Bot",
   opponentElo = 1520,
   userElo = 1000,
+  userName = "You",
+  isPremium = false,
   isBot = true,
   isPracticeMode = false,
   language = "Chinese",
@@ -616,7 +620,7 @@ export default function DuelInterface({
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem-env(safe-area-inset-top))]" style={{ marginTop: '4rem' }}>
-      {/* Desktop Header - opponent info, timer, forfeit */}
+      {/* Desktop Header - opponent info, timer, forfeit, user info */}
       <div className="border-b bg-card p-2 md:p-4 shadow-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
           <div className="flex items-center gap-2 md:gap-3 min-w-0">
@@ -643,7 +647,7 @@ export default function DuelInterface({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
             <div className="flex flex-col items-center min-w-[80px]">
               <div className="flex items-center gap-1 md:gap-2 mb-1">
                 <Clock className="w-4 h-4 text-primary" />
@@ -666,6 +670,28 @@ export default function DuelInterface({
               <Flag className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Forfeit</span>
             </Button>
+
+            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+              <div className="min-w-0 text-right">
+                <div className="font-semibold flex items-center justify-end gap-1 md:gap-2 text-sm md:text-base truncate">
+                  <span className="truncate">{userName}</span>
+                  {isPremium && (
+                    <Badge className="text-xs flex-shrink-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold border-0">
+                      <Crown className="w-3 h-3 mr-0.5" />
+                      PRO
+                    </Badge>
+                  )}
+                </div>
+                {!isPracticeMode && difficulty !== "Beginner" && (
+                  <div className="text-xs text-muted-foreground font-mono">{userElo} Fluency</div>
+                )}
+              </div>
+              <Avatar className="w-8 h-8 md:w-10 md:h-10 border-2 border-accent flex-shrink-0">
+                <AvatarFallback className="bg-accent text-accent-foreground font-semibold text-xs md:text-sm">
+                  {userName.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+            </div>
           </div>
         </div>
       </div>

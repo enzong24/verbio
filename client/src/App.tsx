@@ -657,6 +657,8 @@ function MainApp() {
             opponentName={matchData.opponent}
             opponentElo={matchData.opponentElo}
             userElo={userElo}
+            userName={username}
+            isPremium={user?.isPremium === 1}
             isBot={matchData.isBot}
             isPracticeMode={matchData.isPracticeMode}
             language={matchData.language}
