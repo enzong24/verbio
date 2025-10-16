@@ -34,6 +34,9 @@ export const users = pgTable("users", {
   // Daily match tracking for free users (Medium/Hard limit)
   dailyMediumHardCount: integer("daily_medium_hard_count").notNull().default(0),
   lastMediumHardDate: varchar("last_medium_hard_date"), // Store as YYYY-MM-DD
+  // Daily premium feedback tracking for free users (2 per day limit)
+  dailyPremiumFeedbackCount: integer("daily_premium_feedback_count").notNull().default(0),
+  lastPremiumFeedbackDate: varchar("last_premium_feedback_date"), // Store as YYYY-MM-DD
   // Stripe integration fields (from blueprint:javascript_stripe)
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id")

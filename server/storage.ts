@@ -65,6 +65,8 @@ export interface IStorage {
   // Premium features
   checkDailyMediumHardLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }>;
   incrementDailyMediumHardCount(userId: string, today: string): Promise<void>;
+  checkDailyPremiumFeedbackLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }>;
+  incrementDailyPremiumFeedbackCount(userId: string, today: string): Promise<void>;
   
   // Stripe integration (from blueprint:javascript_stripe)
   updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User>;
@@ -104,10 +106,13 @@ export class MemStorage implements IStorage {
     const existingUser = this.users.get(userData.id!);
     const user: User = {
       id: userData.id || "",
-      email: userData.email || null,
-      firstName: userData.firstName || null,
-      lastName: userData.lastName || null,
-      profileImageUrl: userData.profileImageUrl || null,
+      googleId: userData.googleId !== undefined ? userData.googleId : (existingUser?.googleId || null),
+      username: userData.username !== undefined ? userData.username : (existingUser?.username || null),
+      password: userData.password !== undefined ? userData.password : (existingUser?.password || null),
+      email: userData.email !== undefined ? userData.email : (existingUser?.email || null),
+      firstName: userData.firstName !== undefined ? userData.firstName : (existingUser?.firstName || null),
+      lastName: userData.lastName !== undefined ? userData.lastName : (existingUser?.lastName || null),
+      profileImageUrl: userData.profileImageUrl !== undefined ? userData.profileImageUrl : (existingUser?.profileImageUrl || null),
       isOnline: existingUser?.isOnline ?? 0,
       lastSeenAt: existingUser?.lastSeenAt || new Date(),
       createdAt: existingUser?.createdAt || new Date(),
@@ -116,6 +121,8 @@ export class MemStorage implements IStorage {
       subscriptionEndDate: existingUser?.subscriptionEndDate || null,
       dailyMediumHardCount: existingUser?.dailyMediumHardCount ?? 0,
       lastMediumHardDate: existingUser?.lastMediumHardDate || null,
+      dailyPremiumFeedbackCount: existingUser?.dailyPremiumFeedbackCount ?? 0,
+      lastPremiumFeedbackDate: existingUser?.lastPremiumFeedbackDate || null,
       stripeCustomerId: existingUser?.stripeCustomerId || null,
       stripeSubscriptionId: existingUser?.stripeSubscriptionId || null,
     };
@@ -417,6 +424,47 @@ export class MemStorage implements IStorage {
       }
       user.dailyMediumHardCount += 1;
       user.lastMediumHardDate = today;
+      this.users.set(userId, user);
+    }
+  }
+
+  async checkDailyPremiumFeedbackLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }> {
+    const user = this.users.get(userId);
+    const limit = 2; // Free users get 2 premium feedback matches per day
+    
+    if (!user) {
+      return { allowed: false, remaining: 0, limit };
+    }
+    
+    // Premium users have unlimited
+    if (user.isPremium === 1) {
+      return { allowed: true, remaining: 999, limit: 999 };
+    }
+    
+    // Reset count if it's a new day
+    if (user.lastPremiumFeedbackDate !== today) {
+      user.dailyPremiumFeedbackCount = 0;
+      user.lastPremiumFeedbackDate = today;
+      this.users.set(userId, user);
+    }
+    
+    const remaining = Math.max(0, limit - user.dailyPremiumFeedbackCount);
+    return {
+      allowed: user.dailyPremiumFeedbackCount < limit,
+      remaining,
+      limit
+    };
+  }
+
+  async incrementDailyPremiumFeedbackCount(userId: string, today: string): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      // Reset count if it's a new day
+      if (user.lastPremiumFeedbackDate !== today) {
+        user.dailyPremiumFeedbackCount = 0;
+      }
+      user.dailyPremiumFeedbackCount += 1;
+      user.lastPremiumFeedbackDate = today;
       this.users.set(userId, user);
     }
   }
@@ -882,6 +930,63 @@ export class DbStorage implements IStorage {
         .update(users)
         .set({
           dailyMediumHardCount: user.dailyMediumHardCount + 1,
+        })
+        .where(eq(users.id, userId));
+    }
+  }
+
+  async checkDailyPremiumFeedbackLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }> {
+    const user = await this.getUser(userId);
+    const limit = 2; // Free users get 2 premium feedback matches per day
+    
+    if (!user) {
+      return { allowed: false, remaining: 0, limit };
+    }
+    
+    // Premium users have unlimited
+    if (user.isPremium === 1) {
+      return { allowed: true, remaining: 999, limit: 999 };
+    }
+    
+    // Reset count if it's a new day
+    if (user.lastPremiumFeedbackDate !== today) {
+      await db
+        .update(users)
+        .set({
+          dailyPremiumFeedbackCount: 0,
+          lastPremiumFeedbackDate: today,
+        })
+        .where(eq(users.id, userId));
+      
+      return { allowed: true, remaining: limit, limit };
+    }
+    
+    const remaining = Math.max(0, limit - user.dailyPremiumFeedbackCount);
+    return {
+      allowed: user.dailyPremiumFeedbackCount < limit,
+      remaining,
+      limit
+    };
+  }
+
+  async incrementDailyPremiumFeedbackCount(userId: string, today: string): Promise<void> {
+    const user = await this.getUser(userId);
+    if (!user) return;
+    
+    // Reset count if it's a new day
+    if (user.lastPremiumFeedbackDate !== today) {
+      await db
+        .update(users)
+        .set({
+          dailyPremiumFeedbackCount: 1,
+          lastPremiumFeedbackDate: today,
+        })
+        .where(eq(users.id, userId));
+    } else {
+      await db
+        .update(users)
+        .set({
+          dailyPremiumFeedbackCount: user.dailyPremiumFeedbackCount + 1,
         })
         .where(eq(users.id, userId));
     }

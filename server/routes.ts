@@ -123,9 +123,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is premium (for detailed feedback)
       let isPremium = false;
       const userId = req.user?.id;
+      const today = new Date().toISOString().split('T')[0];
+      
       if (userId) {
         const user = await storage.getUser(userId);
         isPremium = user?.isPremium === 1;
+        
+        // For free users, check daily premium feedback limit
+        if (!isPremium) {
+          const feedbackLimit = await storage.checkDailyPremiumFeedbackLimit(userId, today);
+          
+          // If allowed, give premium feedback and increment counter
+          if (feedbackLimit.allowed) {
+            isPremium = true; // Give them premium feedback
+            await storage.incrementDailyPremiumFeedbackCount(userId, today);
+          }
+          // Otherwise isPremium stays false, they get basic feedback
+        }
       }
       
       const result = await gradeConversation(request, isPremium);
