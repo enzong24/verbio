@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface LeaderboardEntry {
   rank?: number;
@@ -25,9 +26,43 @@ export default function Leaderboard({
   currentLanguage = "Chinese"
 }: LeaderboardProps) {
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage);
+  
+  // Get current month and year for season display
+  const currentDate = new Date();
+  const currentMonth = currentDate.toLocaleDateString('en-US', { month: 'long' });
+  const currentYear = currentDate.getFullYear();
+  
+  // Generate list of available months (current month + last 5 months)
+  const generateMonthOptions = () => {
+    const options = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const month = date.toLocaleDateString('en-US', { month: 'long' });
+      const year = date.getFullYear();
+      const value = `${year}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      options.push({
+        label: i === 0 ? `${month} ${year} (Current)` : `${month} ${year}`,
+        value
+      });
+    }
+    
+    return options;
+  };
+  
+  const monthOptions = generateMonthOptions();
+  const [selectedMonth, setSelectedMonth] = useState(monthOptions[0].value);
+  
+  // Parse selected month to display in season indicator
+  const [selectedYear, selectedMonthNum] = selectedMonth.split('-');
+  const selectedDate = new Date(parseInt(selectedYear), parseInt(selectedMonthNum) - 1, 1);
+  const selectedMonthName = selectedDate.toLocaleDateString('en-US', { month: 'long' });
+  const selectedYearNum = selectedDate.getFullYear();
 
   const { data: leaderboardData, isLoading } = useQuery<LeaderboardEntry[]>({
-    queryKey: [`/api/leaderboard?language=${selectedLanguage}`],
+    queryKey: [`/api/leaderboard?language=${selectedLanguage}&month=${selectedMonth}`],
     refetchOnWindowFocus: false,
   });
 
@@ -61,9 +96,25 @@ export default function Leaderboard({
           <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Global Leaderboard
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Top {selectedLanguage} learners competing worldwide
+          <p className="text-lg text-muted-foreground mb-4">
+            Top {selectedLanguage} learners • {selectedMonthName} {selectedYearNum} Season
           </p>
+          
+          {/* Month Selector */}
+          <div className="flex justify-center">
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-64" data-testid="select-month">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Language Tabs */}

@@ -648,31 +648,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get leaderboard for a specific language
+  // Get leaderboard for a specific language and month
   app.get("/api/leaderboard", async (req, res) => {
     try {
       const language = (req.query.language as string) || "Chinese";
-      const allStats = await storage.getAllLanguageStats(language);
-      const allUsers = await storage.getAllUsers();
+      const month = req.query.month as string; // Format: "YYYY-MM"
       
-      // Create a map of userId to user for quick lookup
+      const allUsers = await storage.getAllUsers();
       const userMap = new Map(allUsers.map(user => [user.id, user]));
       
-      // Sort by Elo (descending) and map to leaderboard format
-      const leaderboard = allStats
-        .filter(stats => stats.wins + stats.losses > 0) // Only show users with at least 1 match
-        .sort((a, b) => b.elo - a.elo)
-        .map(stats => {
-          const user = userMap.get(stats.userId);
-          return {
-            username: user?.firstName || user?.email?.split('@')[0] || "Unknown",
-            elo: stats.elo,
-            wins: stats.wins,
-            losses: stats.losses,
-          };
-        });
-      
-      res.json(leaderboard);
+      // If month is specified, calculate leaderboard based on that month's matches
+      if (month) {
+        const [year, monthNum] = month.split('-');
+        const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+        const endDate = new Date(parseInt(year), parseInt(monthNum), 0, 23, 59, 59);
+        
+        // Get all users' matches for this language
+        const userMonthlyStats = new Map<string, { wins: number; losses: number; elo: number }>();
+        
+        for (const user of allUsers) {
+          // Use higher limit for monthly leaderboards to avoid truncation
+          const matches = await storage.getUserMatches(user.id, language, 500);
+          
+          // Filter matches by month and exclude practice matches
+          const monthMatches = matches.filter(match => {
+            if (!match.createdAt) return false;
+            if (match.isPracticeMode === 1) return false; // Exclude practice matches
+            const matchDate = new Date(match.createdAt);
+            return matchDate >= startDate && matchDate <= endDate;
+          });
+          
+          if (monthMatches.length > 0) {
+            const wins = monthMatches.filter(m => m.result === "win").length;
+            const losses = monthMatches.filter(m => m.result === "loss").length;
+            // Use current ELO as approximation (we don't track historical ELO)
+            const stats = await storage.getUserLanguageStats(user.id, language);
+            const elo = stats?.elo || 1000;
+            
+            userMonthlyStats.set(user.id, { wins, losses, elo });
+          }
+        }
+        
+        // Sort by Elo and create leaderboard
+        const leaderboard = Array.from(userMonthlyStats.entries())
+          .sort((a, b) => b[1].elo - a[1].elo)
+          .map(([userId, stats]) => {
+            const user = userMap.get(userId);
+            return {
+              username: user?.firstName || user?.email?.split('@')[0] || "Unknown",
+              elo: stats.elo,
+              wins: stats.wins,
+              losses: stats.losses,
+            };
+          });
+        
+        res.json(leaderboard);
+      } else {
+        // No month specified, use current aggregated stats
+        const allStats = await storage.getAllLanguageStats(language);
+        
+        const leaderboard = allStats
+          .filter(stats => stats.wins + stats.losses > 0)
+          .sort((a, b) => b.elo - a.elo)
+          .map(stats => {
+            const user = userMap.get(stats.userId);
+            return {
+              username: user?.firstName || user?.email?.split('@')[0] || "Unknown",
+              elo: stats.elo,
+              wins: stats.wins,
+              losses: stats.losses,
+            };
+          });
+        
+        res.json(leaderboard);
+      }
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       res.status(500).json({ message: "Failed to fetch leaderboard" });
