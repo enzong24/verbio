@@ -978,7 +978,7 @@ export default function DuelInterface({
                   disabled={!isUserTurn || isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                   data-testid="input-message"
                 />
-                {turnPhase === "user-answer" && (
+                {(turnPhase === "user-answer" || (turnPhase === "user-question" && difficulty === "Beginner")) && (
                   <Button 
                     variant="outline"
                     onClick={handleDontKnow} 
