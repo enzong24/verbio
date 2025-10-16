@@ -212,7 +212,7 @@ export async function setupAuth(app: Express) {
         .returning();
 
       // Log the user in
-      req.login(newUser, (err) => {
+      req.login(newUser as any, (err) => {
         if (err) return next(err);
         res.status(201).json(newUser);
       });
@@ -249,12 +249,21 @@ export async function setupAuth(app: Express) {
     }
   );
 
-  // Logout
-  app.post("/api/logout", (req, res) => {
+  // Logout (support both GET and POST)
+  const logoutHandler = (req: any, res: any) => {
     req.logout(() => {
-      res.json({ message: "Logged out successfully" });
+      // If it's a GET request (browser navigation), redirect to landing
+      if (req.method === 'GET') {
+        res.redirect('/');
+      } else {
+        // If it's a POST request (API call), return success
+        res.json({ message: "Logged out successfully" });
+      }
     });
-  });
+  };
+  
+  app.get("/api/logout", logoutHandler);
+  app.post("/api/logout", logoutHandler);
 }
 
 export const isAuthenticated: RequestHandler = (req, res, next) => {
