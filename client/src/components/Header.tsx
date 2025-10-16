@@ -217,17 +217,8 @@ export default function Header({
                   )}
                 </div>
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground">{currentLanguage}</p>
-                    <Badge 
-                      variant="outline" 
-                      className="font-bold text-xs"
-                      data-testid="badge-fluency-level-dropdown"
-                    >
-                      {fluencyLevel.level}
-                    </Badge>
-                  </div>
-                  <div className="bg-primary/5 rounded-md p-2.5 border border-primary/10">
+                  <p className="text-xs text-muted-foreground">{currentLanguage}</p>
+                  <div className="bg-primary/5 rounded-md p-2.5 border border-primary/10" data-testid="card-cefr-info-dropdown">
                     <p className="text-xs font-semibold text-primary mb-1">CEFR {fluencyLevel.level}: {fluencyLevel.name}</p>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">{fluencyLevel.description}</p>
                   </div>
@@ -291,24 +282,10 @@ export default function Header({
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-muted-foreground">{currentLanguage}</p>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Badge 
-                            variant="outline" 
-                            className="font-bold text-xs cursor-pointer hover-elevate"
-                            data-testid="badge-fluency-level-mobile"
-                          >
-                            {fluencyLevel.level}
-                          </Badge>
-                        </PopoverTrigger>
-                        <PopoverContent className="max-w-xs" data-testid="popover-fluency-level">
-                          <p className="font-semibold mb-1">CEFR Level: {fluencyLevel.level}</p>
-                          <p className="text-xs text-muted-foreground mb-2">Common European Framework of Reference for Languages</p>
-                          <p className="text-sm">{fluencyLevel.description}</p>
-                        </PopoverContent>
-                      </Popover>
+                    <p className="text-sm text-muted-foreground">{currentLanguage}</p>
+                    <div className="bg-primary/5 rounded-md p-2.5 border border-primary/10 mt-1" data-testid="card-cefr-info-mobile">
+                      <p className="text-xs font-semibold text-primary mb-1">CEFR {fluencyLevel.level}: {fluencyLevel.name}</p>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">{fluencyLevel.description}</p>
                     </div>
                   </div>
                 </div>
