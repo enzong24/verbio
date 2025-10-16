@@ -133,6 +133,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single bot by ID
+  app.get("/api/bots/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { getBotById } = await import('./botProfiles.js');
+      
+      const bot = getBotById(id);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      res.json(bot);
+    } catch (error) {
+      console.error("Error fetching bot:", error);
+      res.status(500).json({ message: "Failed to fetch bot" });
+    }
+  });
+
   // Grade conversation
   app.post("/api/grade", async (req: any, res) => {
     try {

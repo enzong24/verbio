@@ -9,6 +9,7 @@ import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { canGuestPlayMatch, getRemainingGuestMatches, getGuestMatchLimit } from "@/utils/guestRateLimit";
 import { useSound } from "@/hooks/use-sound";
 import { apiRequest } from "@/lib/queryClient";
+import BotSelection from "./BotSelection";
 
 export type Language = "Chinese" | "Spanish" | "Italian";
 export type Difficulty = "Beginner" | "Easy" | "Medium" | "Hard";
@@ -63,6 +64,7 @@ export default function MatchFinder({
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const practiceLoadingRef = useRef(false);
   const { resumeAudio } = useSound();
+  const [showBotSelection, setShowBotSelection] = useState(false);
 
   // Save difficulty to localStorage when it changes
   useEffect(() => {
@@ -207,10 +209,29 @@ export default function MatchFinder({
       return;
     }
     
+    // Show bot selection dialog
+    setShowBotSelection(true);
+    practiceLoadingRef.current = false;
+  };
+
+  const handleBotSelected = (botId: string) => {
+    // Start practice match with selected bot
     setIsPracticeLoading(true);
-    const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
-    const topic = selectedTopic === "random" ? undefined : selectedTopic;
-    onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true);
+    
+    // Fetch bot name from API (we'll use the botId and pass it to the match)
+    fetch(`/api/bots/${botId}`)
+      .then(res => res.json())
+      .then(bot => {
+        const topic = selectedTopic === "random" ? undefined : selectedTopic;
+        onMatchFound?.(bot.name, true, currentLanguage, selectedDifficulty, topic, 1000, true);
+      })
+      .catch(err => {
+        console.error('Error fetching bot:', err);
+        // Fallback to random bot name
+        const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+        const topic = selectedTopic === "random" ? undefined : selectedTopic;
+        onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true);
+      });
   };
 
   return (
@@ -421,6 +442,14 @@ export default function MatchFinder({
           </div>
         </div>
       </div>
+
+      {/* Bot Selection Dialog */}
+      <BotSelection
+        open={showBotSelection}
+        onClose={() => setShowBotSelection(false)}
+        language={currentLanguage}
+        onSelectBot={handleBotSelected}
+      />
     </div>
   );
 }
