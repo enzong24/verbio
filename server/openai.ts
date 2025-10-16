@@ -240,7 +240,8 @@ export async function generateBotQuestion(
   difficulty: string = "Medium",
   previousQuestions: string[] = [],
   isPracticeMode: boolean = false,
-  botPersonality?: string
+  botPersonality?: string,
+  botBackstory?: string
 ): Promise<string> {
   const targetAccuracy = isPracticeMode ? 100 : getBotTargetAccuracy(difficulty);
   
@@ -349,7 +350,14 @@ ERROR PATTERN: Make 1 subtle mistake:
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
 
-  const personalityContext = botPersonality ? `\n\nYour character/personality: ${botPersonality}` : '';
+  // Create rich character context for practice mode
+  const characterContext = (botPersonality || botBackstory) 
+    ? `\n\n=== YOUR CHARACTER ===
+${botBackstory ? `Background: ${botBackstory}` : ''}
+${botPersonality ? `${botBackstory ? '\n' : ''}Personality: ${botPersonality}` : ''}
+
+${isPracticeMode ? 'IMPORTANT: Let your personality and background shine through naturally in your teaching! Reference your experiences, use examples from your life, and teach in a way that reflects who you are.' : ''}` 
+    : '';
 
   const practiceTeachingGuidelines: Record<string, string> = {
     Beginner: `TEACHING APPROACH for ABSOLUTE BEGINNERS:
@@ -379,7 +387,7 @@ ERROR PATTERN: Make 1 subtle mistake:
   };
 
   const prompt = isPracticeMode 
-    ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER asking a question during a Q&A practice session about ${topic}.${personalityContext}
+    ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER asking a question during a Q&A practice session about ${topic}.${characterContext}
 
 DIFFICULTY LEVEL: ${difficulty}
 ${practiceTeachingGuidelines[difficulty] || practiceTeachingGuidelines.Medium}
@@ -393,12 +401,12 @@ Generate ONE question in ${language} that:
 - Uses PERFECT grammar (no mistakes - you are teaching!)
 - Matches the language complexity for ${difficulty} level learners
 - Helps the student practice at their appropriate level
-${botPersonality ? '- Reflects your personality and background' : ''}
+${characterContext ? '- Reflects your unique personality and background through your teaching style and example choices' : ''}
 
 CRITICAL: Use PERFECT ${language} with NO mistakes, but adjust vocabulary complexity and sentence length for ${difficulty} level. You are a teacher helping students learn at their level.
 
 Respond with ONLY the question in ${language}, nothing else.`
-    : `You are roleplaying as a human ${language} language LEARNER (not a teacher) asking a question during a Q&A session about ${topic}.${personalityContext}
+    : `You are roleplaying as a human ${language} language LEARNER (not a teacher) asking a question during a Q&A session about ${topic}.${characterContext}
 
 Your proficiency level: ${difficulty} (approximately ${targetAccuracy}% accuracy)
 ${difficultyInstructions[difficulty] || difficultyInstructions.Medium}
@@ -414,7 +422,7 @@ Generate ONE question in ${language} that:
 - Contains realistic learner mistakes appropriate for ${difficulty} level
 - Sounds like a believable human learner would speak
 - Still communicates the intended meaning despite mistakes
-${botPersonality ? '- Reflects your personality and background' : ''}
+${characterContext ? '- Reflects your unique personality and background in how you phrase things' : ''}
 
 IMPORTANT: You MUST include realistic mistakes. Do NOT generate perfect ${language}. Make it sound like a real learner at ${targetAccuracy}% proficiency.
 
@@ -452,7 +460,8 @@ export async function generateBotAnswer(
   language: string = "Chinese",
   difficulty: string = "Medium",
   isPracticeMode: boolean = false,
-  botPersonality?: string
+  botPersonality?: string,
+  botBackstory?: string
 ): Promise<string> {
   const targetAccuracy = isPracticeMode ? 100 : getBotTargetAccuracy(difficulty);
   
@@ -561,7 +570,15 @@ ERROR PATTERN: Make 1 subtle mistake:
   };
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
-  const personalityContext = botPersonality ? `\n\nYour character/personality: ${botPersonality}` : '';
+  
+  // Create rich character context for practice mode
+  const characterContext = (botPersonality || botBackstory) 
+    ? `\n\n=== YOUR CHARACTER ===
+${botBackstory ? `Background: ${botBackstory}` : ''}
+${botPersonality ? `${botBackstory ? '\n' : ''}Personality: ${botPersonality}` : ''}
+
+${isPracticeMode ? 'IMPORTANT: Let your personality and background shine through naturally in your answers! Reference your experiences, use examples from your life, and respond in a way that reflects who you are.' : ''}` 
+    : '';
 
   const practiceTeachingGuidelinesAnswer: Record<string, string> = {
     Beginner: `TEACHING APPROACH for ABSOLUTE BEGINNERS:
@@ -591,7 +608,7 @@ ERROR PATTERN: Make 1 subtle mistake:
   };
 
   const prompt = isPracticeMode
-    ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER answering a question during a Q&A practice session about ${topic}.${personalityContext}
+    ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER answering a question during a Q&A practice session about ${topic}.${characterContext}
 
 DIFFICULTY LEVEL: ${difficulty}
 ${practiceTeachingGuidelinesAnswer[difficulty] || practiceTeachingGuidelinesAnswer.Medium}
@@ -606,12 +623,12 @@ Answer the question in ${language} that:
 - Uses PERFECT grammar (no mistakes - you are teaching!)
 - Matches the language complexity for ${difficulty} level learners
 - Helps the student learn at their appropriate level
-${botPersonality ? '- Reflects your personality and background' : ''}
+${characterContext ? '- Reflects your unique personality and background through your teaching style and example choices' : ''}
 
 CRITICAL: Use PERFECT ${language} with NO mistakes, but adjust vocabulary complexity and sentence length for ${difficulty} level. You are a teacher helping students learn at their level.
 
 Respond with ONLY the answer in ${language}, nothing else.`
-    : `You are roleplaying as a human ${language} language LEARNER (not a native speaker) answering a question during a Q&A session about ${topic}.${personalityContext}
+    : `You are roleplaying as a human ${language} language LEARNER (not a native speaker) answering a question during a Q&A session about ${topic}.${characterContext}
 
 Your proficiency level: ${difficulty} (approximately ${targetAccuracy}% accuracy)
 ${difficultyInstructions[difficulty] || difficultyInstructions.Medium}
@@ -628,7 +645,7 @@ Answer the question in ${language} with 1-2 sentences that:
 - Contains realistic learner mistakes appropriate for ${difficulty} level
 - Sounds like a believable human learner would speak
 - Still communicates the intended meaning despite mistakes
-${botPersonality ? '- Reflects your personality and background' : ''}
+${characterContext ? '- Reflects your unique personality and background in how you phrase things' : ''}
 
 IMPORTANT: You MUST include realistic mistakes. Do NOT generate perfect ${language}. Make it sound like a real learner at ${targetAccuracy}% proficiency.
 

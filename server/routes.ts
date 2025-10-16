@@ -195,15 +195,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { topic, vocabulary, language = "Chinese", difficulty = "Medium", previousQuestions = [], isPracticeMode = false, botId } = req.body;
       
       let botPersonality: string | undefined = undefined;
+      let botBackstory: string | undefined = undefined;
       if (botId) {
         const { getBotById } = await import('./botProfiles.js');
         const bot = getBotById(botId);
         if (bot) {
           botPersonality = bot.personality;
+          botBackstory = bot.backstory;
         }
       }
       
-      const question = await generateBotQuestion(topic, vocabulary, language, difficulty, previousQuestions, isPracticeMode, botPersonality);
+      const question = await generateBotQuestion(topic, vocabulary, language, difficulty, previousQuestions, isPracticeMode, botPersonality, botBackstory);
       res.json({ question });
     } catch (error: any) {
       console.error("Bot question error:", error);
@@ -220,15 +222,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userQuestion, topic, vocabulary, language = "Chinese", difficulty = "Medium", isPracticeMode = false, botId } = req.body;
       
       let botPersonality: string | undefined = undefined;
+      let botBackstory: string | undefined = undefined;
       if (botId) {
         const { getBotById } = await import('./botProfiles.js');
         const bot = getBotById(botId);
         if (bot) {
           botPersonality = bot.personality;
+          botBackstory = bot.backstory;
         }
       }
       
-      const answer = await generateBotAnswer(userQuestion, topic, vocabulary, language, difficulty, isPracticeMode, botPersonality);
+      const answer = await generateBotAnswer(userQuestion, topic, vocabulary, language, difficulty, isPracticeMode, botPersonality, botBackstory);
       res.json({ answer });
     } catch (error: any) {
       console.error("Bot answer error:", error);
