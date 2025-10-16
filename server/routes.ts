@@ -577,8 +577,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch recent matches (last 20 matches)
       const matches = await storage.getUserMatches(userId, language, 20);
       
-      // Filter matches that have any feedback AND are competitive (exclude practice mode)
-      const matchesWithFeedback = matches.filter(m => m.detailedFeedback && m.isPracticeMode === 0);
+      // Filter matches that have any feedback AND are competitive (exclude practice mode and forfeited matches)
+      const matchesWithFeedback = matches.filter(m => m.detailedFeedback && m.isPracticeMode === 0 && m.isForfeit === 0);
       
       if (matchesWithFeedback.length === 0) {
         return res.json({
