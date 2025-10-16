@@ -196,7 +196,7 @@ export default function Header({
                         <AvatarFallback className="text-xs">{username.slice(0, 2).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       {isPremium && (
-                        <Crown className="w-4 h-4 text-yellow-500 absolute -top-1 -right-1 md:hidden" data-testid="icon-premium-crown-mobile" />
+                        <Crown className="w-4 h-4 text-yellow-500 absolute -top-1 -right-1" data-testid="icon-premium-crown-avatar" />
                       )}
                     </div>
                   </Button>
