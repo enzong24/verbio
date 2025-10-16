@@ -205,6 +205,18 @@ export default function Friends() {
   });
 
   const handleChallengeFriend = (friendId: string) => {
+    // Find the friend to check their online status
+    const friend = friends.find(f => f.friendUser.id === friendId);
+    
+    // Show informational message if friend is offline, but still send the challenge
+    if (friend && !isOnline(friend.friendUser)) {
+      toast({
+        title: "Challenge sent",
+        description: "This player is currently offline. They'll receive your challenge when they return.",
+        variant: "default",
+      });
+    }
+    
     setSelectedFriendForInvite(friendId);
     createChallengeMutation.mutate(friendId);
   };
