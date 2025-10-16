@@ -359,7 +359,7 @@ export default function Header({
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium text-sm overflow-x-auto scrollbar-thin flex items-center gap-2">
                                     <span className="whitespace-nowrap">vs {match.opponent}</span>
-                                    {match.isForfeit === 1 && (
+                                    {(match.isForfeit === 1 || (match as any).is_forfeit === 1) && (
                                       <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 whitespace-nowrap">
                                         Forfeit
                                       </Badge>

@@ -454,7 +454,7 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
                           <Badge variant="outline" className={getDifficultyColor(match.difficulty)}>
                             {match.difficulty}
                           </Badge>
-                          {match.isForfeit === 1 && (
+                          {(match.isForfeit === 1 || (match as any).is_forfeit === 1) && (
                             <Badge variant="outline" className="border-muted text-muted-foreground">
                               Forfeit
                             </Badge>
