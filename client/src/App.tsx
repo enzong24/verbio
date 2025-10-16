@@ -888,6 +888,7 @@ function MainApp() {
             onContinue={handleResultsContinue}
             onAIReview={handleAIReview}
             isSaving={isSavingMatch}
+            streakMultiplier={streakMultiplierInfo}
           />
         )}
         

@@ -18,6 +18,11 @@ interface MatchResultsProps {
   onContinue?: () => void;
   onAIReview?: () => void;
   isSaving?: boolean;
+  streakMultiplier?: {
+    multiplier: number;
+    dayStreakBonus: number;
+    winStreakBonus: number;
+  } | null;
 }
 
 export default function MatchResults({
@@ -29,7 +34,8 @@ export default function MatchResults({
   isPracticeMode = false,
   onContinue,
   onAIReview,
-  isSaving = false
+  isSaving = false,
+  streakMultiplier = null
 }: MatchResultsProps) {
   const { playWin, playLoss } = useSound();
   const userScore = gradingResult.overall;
@@ -177,6 +183,25 @@ export default function MatchResults({
                 >
                   {newElo + actualEloChange} Fluency
                 </motion.span>
+              </motion.div>
+            )}
+            
+            {/* Streak Multiplier Display */}
+            {streakMultiplier && streakMultiplier.multiplier > 1 && actualEloChange > 0 && (
+              <motion.div
+                className="flex items-center justify-center gap-2 text-sm text-muted-foreground mt-2"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+              >
+                <Badge variant="secondary" className="font-mono">
+                  {streakMultiplier.multiplier.toFixed(2)}x Streak Bonus
+                </Badge>
+                <span className="text-xs">
+                  ({streakMultiplier.dayStreakBonus > 0 && `Day: +${(streakMultiplier.dayStreakBonus * 100).toFixed(0)}%`}
+                  {streakMultiplier.dayStreakBonus > 0 && streakMultiplier.winStreakBonus > 0 && ` • `}
+                  {streakMultiplier.winStreakBonus > 0 && `Win: +${(streakMultiplier.winStreakBonus * 100).toFixed(0)}%`})
+                </span>
               </motion.div>
             )}
           </CardHeader>
