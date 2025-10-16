@@ -541,46 +541,46 @@ function MainApp() {
       const isDraw = userScore === botScore;
       const isLoss = userScore < botScore;
       
-      // Calculate Elo change using standard Elo formula
+      // Calculate Elo change using standard Elo formula (only applies to competitive)
       const K_FACTOR = 32;
       const expectedScore = 1 / (1 + Math.pow(10, (botElo - userElo) / 400));
       const actualScore = isWin ? 1 : (isDraw ? 0.5 : 0);
       const change = Math.round(K_FACTOR * (actualScore - expectedScore));
       
-      // Only update stats if not in practice mode
-      if (!matchData.isPracticeMode) {
-        // Save match history for authenticated users (including forfeits)
-        if (isAuthenticated) {
-          try {
-            await apiRequest("POST", "/api/match/save", {
-              opponent: matchData.opponent,
-              result: isWin ? "win" : "loss",
-              eloChange: change,
-              language: matchData.language,
-              difficulty: matchData.difficulty,
-              scores: {
-                grammar: gradingResult.grammar,
-                fluency: gradingResult.fluency,
-                vocabulary: gradingResult.vocabulary,
-                naturalness: gradingResult.naturalness,
-                overall: gradingResult.overall,
-              },
-              isForfeit: isForfeit,
-              conversation: matchMessages || [], // Full chat log
-              detailedFeedback: {
-                messageAnalysis: gradingResult.messageAnalysis || [], // Detailed AI feedback with corrections (premium)
-                generalFeedback: gradingResult.feedback || [], // General feedback points (free users)
-              },
-              topic: matchData.topic || null, // Match topic
-            });
-            // Invalidate match history and skill progress queries
-            queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
-            queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`] });
-          } catch (error) {
-            console.error("Failed to save match:", error);
-          }
+      // Save match history for authenticated users (both practice and competitive)
+      if (isAuthenticated) {
+        try {
+          await apiRequest("POST", "/api/match/save", {
+            opponent: matchData.opponent,
+            result: isWin ? "win" : "loss",
+            eloChange: matchData.isPracticeMode ? 0 : change, // No Elo change for practice
+            language: matchData.language,
+            difficulty: matchData.difficulty,
+            scores: {
+              grammar: gradingResult.grammar,
+              fluency: gradingResult.fluency,
+              vocabulary: gradingResult.vocabulary,
+              naturalness: gradingResult.naturalness,
+              overall: gradingResult.overall,
+            },
+            isForfeit: isForfeit,
+            conversation: matchMessages || [], // Full chat log
+            detailedFeedback: {
+              messageAnalysis: gradingResult.messageAnalysis || [], // Detailed AI feedback with corrections (premium)
+              generalFeedback: gradingResult.feedback || [], // General feedback points (free users)
+            },
+            topic: matchData.topic || null, // Match topic
+          });
+          // Invalidate match history and skill progress queries
+          queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
+          queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`] });
+        } catch (error) {
+          console.error("Failed to save match:", error);
         }
-        
+      }
+      
+      // Only update Elo stats if not in practice mode
+      if (!matchData.isPracticeMode) {
         await updateStats(change, isWin, isLoss, isForfeit);
       }
     }

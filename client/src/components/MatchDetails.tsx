@@ -18,7 +18,9 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
   const [expandedMessageIndex, setExpandedMessageIndex] = useState<number | null>(null);
   
   const conversation = (match.conversation as Message[]) || [];
-  const detailedFeedback = (match.detailedFeedback as MessageAnalysis[]) || [];
+  const feedbackData = match.detailedFeedback as any;
+  const detailedFeedback = (feedbackData?.messageAnalysis as MessageAnalysis[]) || [];
+  const generalFeedback = (feedbackData?.generalFeedback as string[]) || [];
   
   const getFeedbackForMessage = (index: number): MessageAnalysis | undefined => {
     return detailedFeedback.find(feedback => feedback.messageIndex === index);
