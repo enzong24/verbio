@@ -235,7 +235,8 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="elo" 
+                  dataKey="elo"
+                  name="Fluency Score"
                   stroke="hsl(var(--primary))" 
                   strokeWidth={2}
                   dot={{ fill: 'hsl(var(--primary))', r: 4 }}
