@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSound } from "@/hooks/use-sound";
 import Header from "@/components/Header";
 import Landing from "@/pages/Landing";
+import SignIn from "@/pages/SignIn";
 import Subscribe from "@/pages/Subscribe";
 import AdminWhitelist from "@/pages/AdminWhitelist";
 import MatchFinder, { type Language, type Difficulty } from "@/components/MatchFinder";
@@ -722,6 +723,7 @@ function MainApp() {
 function Router() {
   return (
     <Switch>
+      <Route path="/signin" component={SignIn} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/admin/whitelist" component={AdminWhitelist} />
       <Route path="/" component={MainApp} />

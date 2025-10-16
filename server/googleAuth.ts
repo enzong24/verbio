@@ -1,12 +1,30 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import { db } from "./db";
 import { users } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
+import { scrypt, randomBytes, timingSafeEqual } from "crypto";
+import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+async function comparePasswords(supplied: string, stored: string) {
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
 
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   throw new Error("Missing Google OAuth credentials: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET");
@@ -47,6 +65,32 @@ export async function setupAuth(app: Express) {
   // Get the primary domain (first one in the list)
   const primaryDomain = process.env.REPLIT_DOMAINS!.split(",")[0];
 
+  // Local (username/password) strategy
+  passport.use(
+    new LocalStrategy(async (username, password, done) => {
+      try {
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.username, username));
+
+        if (!user || !user.password) {
+          return done(null, false);
+        }
+
+        const isValid = await comparePasswords(password, user.password);
+        if (!isValid) {
+          return done(null, false);
+        }
+
+        return done(null, user as any);
+      } catch (error) {
+        return done(error as Error);
+      }
+    })
+  );
+
+  // Google OAuth strategy
   passport.use(
     new GoogleStrategy(
       {
@@ -140,20 +184,75 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  app.get("/api/login", passport.authenticate("google", {
+  // Username/password registration
+  app.post("/api/register", async (req, res, next) => {
+    try {
+      const { username, password, email, firstName, lastName } = req.body;
+
+      // Check if username already exists
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(or(eq(users.username, username), eq(users.email, email)));
+
+      if (existingUser) {
+        return res.status(400).json({ message: "Username or email already exists" });
+      }
+
+      // Create user
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          username,
+          password: await hashPassword(password),
+          email,
+          firstName,
+          lastName,
+        })
+        .returning();
+
+      // Log the user in
+      req.login(newUser, (err) => {
+        if (err) return next(err);
+        res.status(201).json(newUser);
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  // Username/password login
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) return next(err);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      req.login(user, (err) => {
+        if (err) return next(err);
+        res.json(user);
+      });
+    })(req, res, next);
+  });
+
+  // Google OAuth login
+  app.get("/api/login/google", passport.authenticate("google", {
     scope: ["profile", "email"],
   }));
 
+  // Google OAuth callback
   app.get("/api/callback", 
-    passport.authenticate("google", { failureRedirect: "/" }),
+    passport.authenticate("google", { failureRedirect: "/signin" }),
     (req, res) => {
       res.redirect("/");
     }
   );
 
-  app.get("/api/logout", (req, res) => {
+  // Logout
+  app.post("/api/logout", (req, res) => {
     req.logout(() => {
-      res.redirect("/");
+      res.json({ message: "Logged out successfully" });
     });
   });
 }

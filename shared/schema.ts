@@ -14,10 +14,12 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table with Google OAuth
+// User storage table with Google OAuth and username/password auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   googleId: varchar("google_id").unique(), // Google OAuth user ID
+  username: varchar("username").unique(), // For username/password auth
+  password: varchar("password"), // Hashed password
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
