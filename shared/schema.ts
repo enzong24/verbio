@@ -60,6 +60,7 @@ export const userLanguageStats = pgTable(
     dailyLoginStreak: integer("daily_login_streak").notNull().default(0),
     lastLoginDate: varchar("last_login_date"), // Store as YYYY-MM-DD for easy comparison
     highestFluencyLevel: varchar("highest_fluency_level").default("A1"), // A1, A2, B1, B2, C1, C2
+    initialLevelSelected: integer("initial_level_selected").notNull().default(0), // 0 = not selected, 1 = selected
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
