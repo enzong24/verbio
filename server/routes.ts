@@ -398,11 +398,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const language = req.query.language as string | undefined;
       
-      // Fetch recent matches with detailed feedback (last 20 matches)
+      // Fetch recent matches (last 20 matches)
       const matches = await storage.getUserMatches(userId, language, 20);
       
-      // Filter matches that have detailed feedback
-      const matchesWithFeedback = matches.filter(m => m.detailedFeedback && Array.isArray(m.detailedFeedback));
+      // Filter matches that have any feedback
+      const matchesWithFeedback = matches.filter(m => m.detailedFeedback);
       
       if (matchesWithFeedback.length === 0) {
         return res.json({
@@ -419,32 +419,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const improvementPatterns = new Map<string, number>();
       
       matchesWithFeedback.forEach(match => {
-        const feedback = match.detailedFeedback as any[];
+        const feedback = match.detailedFeedback as any;
         
-        feedback.forEach(analysis => {
-          // Aggregate grammar corrections
-          if (analysis.grammarCorrections) {
-            analysis.grammarCorrections.forEach((correction: any) => {
-              const key = correction.explanation || correction.corrected;
-              grammarPatterns.set(key, (grammarPatterns.get(key) || 0) + 1);
-            });
-          }
-          
-          // Aggregate vocabulary suggestions
-          if (analysis.vocabularySuggestions) {
-            analysis.vocabularySuggestions.forEach((suggestion: any) => {
-              const key = `${suggestion.word} → ${suggestion.betterAlternative}: ${suggestion.reason}`;
-              vocabularyPatterns.set(key, (vocabularyPatterns.get(key) || 0) + 1);
-            });
-          }
-          
-          // Aggregate improvement suggestions
-          if (analysis.improvements) {
-            analysis.improvements.forEach((improvement: string) => {
-              improvementPatterns.set(improvement, (improvementPatterns.get(improvement) || 0) + 1);
-            });
-          }
-        });
+        // Handle new format: { messageAnalysis: [...], generalFeedback: [...] }
+        if (feedback.messageAnalysis && Array.isArray(feedback.messageAnalysis)) {
+          // Premium users: detailed message-by-message analysis
+          feedback.messageAnalysis.forEach((analysis: any) => {
+            // Aggregate grammar corrections
+            if (analysis.grammarCorrections) {
+              analysis.grammarCorrections.forEach((correction: any) => {
+                const key = correction.explanation || correction.corrected;
+                grammarPatterns.set(key, (grammarPatterns.get(key) || 0) + 1);
+              });
+            }
+            
+            // Aggregate vocabulary suggestions
+            if (analysis.vocabularySuggestions) {
+              analysis.vocabularySuggestions.forEach((suggestion: any) => {
+                const key = `${suggestion.word} → ${suggestion.betterAlternative}: ${suggestion.reason}`;
+                vocabularyPatterns.set(key, (vocabularyPatterns.get(key) || 0) + 1);
+              });
+            }
+            
+            // Aggregate improvement suggestions
+            if (analysis.improvements) {
+              analysis.improvements.forEach((improvement: string) => {
+                improvementPatterns.set(improvement, (improvementPatterns.get(improvement) || 0) + 1);
+              });
+            }
+          });
+        }
+        
+        // Handle general feedback (free users)
+        if (feedback.generalFeedback && Array.isArray(feedback.generalFeedback)) {
+          feedback.generalFeedback.forEach((tip: string) => {
+            improvementPatterns.set(tip, (improvementPatterns.get(tip) || 0) + 1);
+          });
+        }
+        
+        // Handle legacy format (old matches with array directly)
+        if (Array.isArray(feedback) && !feedback.messageAnalysis) {
+          feedback.forEach((analysis: any) => {
+            if (analysis.grammarCorrections) {
+              analysis.grammarCorrections.forEach((correction: any) => {
+                const key = correction.explanation || correction.corrected;
+                grammarPatterns.set(key, (grammarPatterns.get(key) || 0) + 1);
+              });
+            }
+            if (analysis.vocabularySuggestions) {
+              analysis.vocabularySuggestions.forEach((suggestion: any) => {
+                const key = `${suggestion.word} → ${suggestion.betterAlternative}: ${suggestion.reason}`;
+                vocabularyPatterns.set(key, (vocabularyPatterns.get(key) || 0) + 1);
+              });
+            }
+            if (analysis.improvements) {
+              analysis.improvements.forEach((improvement: string) => {
+                improvementPatterns.set(improvement, (improvementPatterns.get(improvement) || 0) + 1);
+              });
+            }
+          });
+        }
       });
       
       // Sort and get top recommendations

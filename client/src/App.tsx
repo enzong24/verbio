@@ -563,7 +563,10 @@ function MainApp() {
               },
               isForfeit: isForfeit,
               conversation: matchMessages || [], // Full chat log
-              detailedFeedback: gradingResult.messageAnalysis || [], // Detailed AI feedback with corrections
+              detailedFeedback: {
+                messageAnalysis: gradingResult.messageAnalysis || [], // Detailed AI feedback with corrections (premium)
+                generalFeedback: gradingResult.feedback || [], // General feedback points (free users)
+              },
               topic: matchData.topic || null, // Match topic
             });
             // Invalidate match history and skill progress queries
