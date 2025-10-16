@@ -343,22 +343,22 @@ export default function Header({
                             {matches.filter(m => !m.isPracticeMode).slice(0, 5).map((match) => (
                               <div
                                 key={match.id}
-                                className="flex items-center gap-2 p-2 rounded-md hover-elevate cursor-pointer"
+                                className="p-2 rounded-md hover-elevate cursor-pointer overflow-x-auto scrollbar-thin"
                                 onClick={() => {
                                   setSelectedMatch(match);
                                   setMobileMenuOpen(false);
                                 }}
                                 data-testid={`match-card-${match.id}`}
                               >
-                                <Badge
-                                  variant={match.result === "win" ? "default" : "destructive"}
-                                  className="w-10 justify-center font-semibold text-xs"
-                                >
-                                  {match.result === "win" ? "W" : "L"}
-                                </Badge>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-sm overflow-x-auto scrollbar-thin">
-                                    <div className="flex items-center gap-2 whitespace-nowrap">
+                                <div className="flex items-center gap-2 whitespace-nowrap">
+                                  <Badge
+                                    variant={match.result === "win" ? "default" : "destructive"}
+                                    className="w-10 justify-center font-semibold text-xs flex-shrink-0"
+                                  >
+                                    {match.result === "win" ? "W" : "L"}
+                                  </Badge>
+                                  <div className="flex flex-col gap-0.5 flex-shrink-0">
+                                    <div className="flex items-center gap-2 font-medium text-sm">
                                       <span>vs {match.opponent}</span>
                                       {(match.isForfeit === 1 || (match as any).is_forfeit === 1) && (
                                         <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
@@ -366,30 +366,30 @@ export default function Header({
                                         </Badge>
                                       )}
                                     </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
+                                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                                    <div className={`font-mono font-bold text-sm ${
+                                      match.result === "win" ? "text-success" : "text-destructive"
+                                    }`}>
+                                      {match.result === "win" ? "+" : ""}{match.eloChange}
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 w-7 p-0"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedMatch(match);
+                                        setMobileMenuOpen(false);
+                                      }}
+                                      data-testid={`button-view-match-${match.id}`}
+                                    >
+                                      <Eye className="w-3 h-3" />
+                                    </Button>
                                   </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <div className={`font-mono font-bold text-sm ${
-                                    match.result === "win" ? "text-success" : "text-destructive"
-                                  }`}>
-                                    {match.result === "win" ? "+" : ""}{match.eloChange}
-                                  </div>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-7 w-7 p-0"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedMatch(match);
-                                      setMobileMenuOpen(false);
-                                    }}
-                                    data-testid={`button-view-match-${match.id}`}
-                                  >
-                                    <Eye className="w-3 h-3" />
-                                  </Button>
                                 </div>
                               </div>
                             ))}
