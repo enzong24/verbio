@@ -6,11 +6,45 @@ import { getBotElo, getBotTargetAccuracy } from "./botConfig";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function gradeConversation(request: GradingRequest, isPremium: boolean = false): Promise<GradingResult> {
+  // Consistent grading standards across all difficulties
+  const standardGuidelines = `
+Grade using CONSISTENT standards regardless of difficulty level:
+
+GRAMMAR (0-100):
+- 90-100: Perfect or near-perfect grammar with minor slip-ups
+- 70-89: Generally correct with some errors that don't impede understanding
+- 50-69: Multiple errors but message is understandable
+- 30-49: Significant errors that sometimes confuse meaning
+- 0-29: Grammar severely impedes communication
+
+FLUENCY (0-100):
+- 90-100: Natural, smooth expression like a proficient speaker
+- 70-89: Clear communication with some awkwardness
+- 50-69: Understandable but noticeably non-native
+- 30-49: Choppy, requires effort to understand
+- 0-29: Very broken, difficult to follow
+
+VOCABULARY (0-100):
+- 90-100: Excellent word choice, appropriate and natural
+- 70-89: Good vocabulary with occasional awkward choices
+- 50-69: Basic vocabulary, gets point across
+- 30-49: Limited vocabulary, some incorrect usage
+- 0-29: Very poor vocabulary, wrong words frequently
+
+NATURALNESS (0-100):
+- 90-100: Sounds like a native or advanced speaker
+- 70-89: Natural with minor non-native patterns
+- 50-69: Functional but clearly non-native
+- 30-49: Unnatural phrasing, sounds foreign
+- 0-29: Very unnatural, doesn't sound like natural language
+
+Apply these standards EQUALLY to all difficulty levels. A score of 70 means the same thing whether in Beginner or Hard mode.`;
+
   const difficultyGuidelines: Record<string, string> = {
-    Beginner: "Grade with ABSOLUTE MAXIMUM encouragement. This is for complete beginners - celebrate ANY word or sound in the target language! Give extremely high scores (80-95+) for trying AT ALL. Even if they write in English or use translator, give encouragement. Focus purely on participation and effort.",
-    Easy: "Grade with MAXIMUM encouragement and patience. This is absolute beginner level - accept ANY attempt at communication, even single words or very broken sentences. Focus ONLY on effort and attempting to communicate. Give high scores (70-90+) for any genuine attempt.",
-    Medium: "Grade with encouragement. Accept basic grammar and simple vocabulary. Focus on communication success. Expect simple but complete sentences.",
-    Hard: "Grade with balanced standards. Expect correct grammar, appropriate vocabulary, and natural language flow for intermediate level."
+    Beginner: standardGuidelines,
+    Easy: standardGuidelines,
+    Medium: standardGuidelines,
+    Hard: standardGuidelines
   };
   
   // Format messages with indices for detailed analysis
