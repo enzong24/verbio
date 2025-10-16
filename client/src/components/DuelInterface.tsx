@@ -758,9 +758,9 @@ export default function DuelInterface({
         <div className="max-w-7xl mx-auto h-full flex flex-col md:flex-row">
           <div className="flex-1 flex flex-col min-h-0">
             {/* Topic Header */}
-            <div className="border-b bg-card">
+            <div className="border-b bg-card flex-shrink-0">
               <button 
-                className="w-full p-2 md:p-4 flex items-center justify-between cursor-pointer hover-elevate text-left"
+                className="w-full p-1.5 md:p-4 flex items-center justify-between cursor-pointer hover-elevate text-left"
                 onClick={() => setShowTopicHeader(!showTopicHeader)}
                 data-testid="button-toggle-topic-header"
                 aria-expanded={showTopicHeader}
@@ -775,13 +775,13 @@ export default function DuelInterface({
                   </div>
                 </div>
                 <div className="flex-shrink-0">
-                  {showTopicHeader ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  {showTopicHeader ? <ChevronUp className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />}
                 </div>
               </button>
               
               {showTopicHeader && (
                 <>
-                  <div className="px-2 md:px-4 pb-2 flex flex-wrap gap-1 md:gap-2">
+                  <div className="px-1.5 md:px-4 pb-1.5 md:pb-2 flex flex-wrap gap-1 md:gap-2">
                     {vocabulary.map((vocabItem) => {
                       const isUsed = usedVocabulary.has(vocabItem.word);
                       return (
@@ -802,7 +802,7 @@ export default function DuelInterface({
                       );
                     })}
                   </div>
-                  <div className="px-2 md:px-4 pb-2 text-[10px] md:text-sm font-medium">
+                  <div className="px-1.5 md:px-4 pb-1.5 md:pb-2 text-[10px] md:text-sm font-medium">
                     {turnPhase === "user-answer" && (
                       <>
                         <span className="md:hidden text-primary">⏳ Answer</span>
@@ -833,7 +833,7 @@ export default function DuelInterface({
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-2 md:p-6 space-y-2 md:space-y-4 max-h-[40dvh] md:max-h-none" data-testid="chat-messages">
+            <div className="flex-1 overflow-y-auto p-1.5 md:p-6 space-y-1.5 md:space-y-4" data-testid="chat-messages">
               {messages.map((msg, idx) => {
                 const isBotMessage = msg.sender === "opponent";
                 const shouldShowTranslation = isBotMessage && (isPracticeMode || difficulty === "Beginner");
@@ -846,7 +846,7 @@ export default function DuelInterface({
                     className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`inline-block max-w-[85%] md:max-w-2xl px-2 py-2 md:px-4 md:py-3 rounded-md text-sm md:text-base ${
+                      className={`inline-block max-w-[85%] md:max-w-2xl px-2 py-1.5 md:px-4 md:py-3 rounded-md text-sm md:text-base ${
                         msg.sender === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
@@ -907,10 +907,10 @@ export default function DuelInterface({
             </div>
 
             {/* Input Area - Sticky to bottom */}
-            <div className="sticky bottom-0 border-t bg-card pb-safe-bottom z-10">
+            <div className="sticky bottom-0 border-t bg-card pb-safe-bottom z-10 flex-shrink-0">
               {/* Help Area Toggle */}
               <button 
-                className="w-full p-2 md:p-3 flex items-center justify-between border-b cursor-pointer hover-elevate text-left"
+                className="w-full p-1.5 md:p-3 flex items-center justify-between border-b cursor-pointer hover-elevate text-left"
                 onClick={() => setShowHelpArea(!showHelpArea)}
                 data-testid="button-toggle-help-area"
                 aria-expanded={showHelpArea}
@@ -922,9 +922,9 @@ export default function DuelInterface({
               </button>
 
               {showHelpArea && (
-                <div className="p-3 md:p-4 border-b">
+                <div className="p-2 md:p-4 border-b">
                   {/* Buttons row - Accent keyboard toggle and Need help side by side */}
-                  <div className="flex gap-2 mb-2">
+                  <div className="flex gap-1.5 md:gap-2 mb-1.5 md:mb-2">
                     {/* Accent Keyboard Toggle - Now available on mobile */}
                     {(language === "Spanish" || language === "Italian") && (
                       <Button
@@ -932,7 +932,7 @@ export default function DuelInterface({
                         size="sm"
                         onClick={() => setShowAccentKeyboard(!showAccentKeyboard)}
                         data-testid="button-toggle-accent-keyboard"
-                        className="h-9 flex-1"
+                        className="h-8 md:h-9 flex-1 text-xs"
                       >
                         <Type className="w-3 h-3 mr-1" />
                         <span className="text-xs">{showAccentKeyboard ? "Hide" : "Show"} accents</span>
@@ -947,9 +947,9 @@ export default function DuelInterface({
                         onClick={() => exampleMutation.mutate()}
                         disabled={exampleMutation.isPending || helpUsedThisTurn}
                         data-testid="button-need-help"
-                        className="h-9 flex-1"
+                        className="h-8 md:h-9 flex-1 text-xs"
                       >
-                        <HelpCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                        <HelpCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                         <span className="text-xs md:text-sm">{exampleMutation.isPending ? "Generating..." : "Need help? (-15pts)"}</span>
                       </Button>
                     )}
@@ -964,21 +964,21 @@ export default function DuelInterface({
                 </div>
               )}
 
-              <div className="p-3 md:p-4">
+              <div className="p-2 md:p-4">
                 {/* Example Display */}
                 {showExample && exampleText && (
-                  <Card className="mb-3 border-highlight/30 bg-highlight/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <HelpCircle className="w-4 h-4" />
+                  <Card className="mb-2 md:mb-3 border-highlight/30 bg-highlight/5">
+                    <CardHeader className="pb-1.5 md:pb-2 pt-2 md:pt-6 px-3 md:px-6">
+                      <CardTitle className="text-xs md:text-sm flex items-center gap-1.5 md:gap-2">
+                        <HelpCircle className="w-3 h-3 md:w-4 md:h-4" />
                         Example {turnPhase === "user-question" ? "Question" : "Answer"}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-sm text-foreground">
+                    <CardContent className="pt-1.5 md:pt-0 px-3 pb-3 md:px-6 md:pb-6">
+                      <div className="text-xs md:text-sm text-foreground">
                         <TextWithPinyin text={exampleText} language={language} />
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2 italic">
+                      <p className="text-[10px] md:text-xs text-muted-foreground mt-1.5 md:mt-2 italic">
                         Use this as inspiration! (-15 points applied)
                       </p>
                     </CardContent>
@@ -986,11 +986,11 @@ export default function DuelInterface({
                 )}
 
                 {validationError && (
-                  <div className="mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/30 text-xs md:text-sm" data-testid="validation-error">
+                  <div className="mb-1.5 md:mb-2 p-1.5 md:p-2 rounded-md bg-destructive/10 border border-destructive/30 text-xs md:text-sm" data-testid="validation-error">
                     {validationError}
                   </div>
                 )}
-                <div className="flex gap-2 items-end">
+                <div className="flex gap-1.5 md:gap-2 items-end">
                 <Input
                   ref={inputRef}
                   value={input}
@@ -1042,7 +1042,7 @@ export default function DuelInterface({
                       ? `Answer in ${language}...` 
                       : `Ask a question in ${language}...`
                   }
-                  className="flex-1 text-base min-h-[48px] md:min-h-[40px]"
+                  className="flex-1 text-sm md:text-base min-h-[40px] md:min-h-[40px]"
                   disabled={!isUserTurn || isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                   data-testid="input-message"
                 />
@@ -1052,19 +1052,19 @@ export default function DuelInterface({
                     onClick={handleDontKnow} 
                     disabled={isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                     data-testid="button-dont-know"
-                    className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-3 md:px-4"
+                    className="flex-shrink-0 min-h-[40px] md:min-h-[40px] px-2 md:px-4"
                   >
-                    <HelpCircle className="w-4 h-4 mr-1 md:mr-2" />
-                    <span className="text-xs md:text-sm">Skip (-20pts)</span>
+                    <HelpCircle className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                    <span className="text-xs md:text-sm">Skip</span>
                   </Button>
                 )}
                 <Button 
                   onClick={handleSend} 
                   disabled={!isUserTurn || isGrading || validateQuestionMutation.isPending || botQuestionMutation.isPending || botAnswerMutation.isPending}
                   data-testid="button-send"
-                  className="flex-shrink-0 min-h-[48px] md:min-h-[40px] px-4"
+                  className="flex-shrink-0 min-h-[40px] md:min-h-[40px] px-3 md:px-4"
                 >
-                  <Send className="w-4 h-4 md:mr-2" />
+                  <Send className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
                   <span className="hidden md:inline">Send</span>
                 </Button>
                 </div>
