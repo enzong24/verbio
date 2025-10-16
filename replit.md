@@ -14,6 +14,8 @@ The frontend is built with React 18, TypeScript, and Vite, utilizing Wouter for 
 ### Technical Implementations
 The backend uses Express.js with Node.js and TypeScript, providing RESTful APIs for core functionalities. Zod is used for schema validation. OpenAI API (GPT-4o and GPT-4o-mini) is integrated for conversation grading, bot interactions, and vocabulary generation, supported by a caching system. WebSocket facilitates real-time multiplayer matchmaking with Fluency Score-based pairing and AI bot fallback. Bots adjust language complexity based on difficulty and mode, with distinct behaviors for "Practice Mode" (teaching, perfect grammar) and "Competitive Mode" (simulating learners with realistic mistakes). A bot personality system enhances conversations by providing unique backstories and personas.
 
+**Connection & Performance Safeguards**: The system includes WebSocket connection tracking with a 500 concurrent connection limit, automatic cleanup on disconnect/error, user-friendly capacity messages, and database health monitoring with periodic stats logging (every 5 minutes).
+
 ### Feature Specifications
 - **Practice vs. Competitive Modes**: Practice mode offers perfect AI bots without Fluency Score impact; Competitive mode involves Fluency Score changes, even against bots. Practice matches are excluded from competitive analytics.
 - **Real Multiplayer Matchmaking**: WebSocket-based matchmaking pairs players by Fluency Score, language, and difficulty, with AI bot fallback and shared, dynamically generated vocabulary.
@@ -21,7 +23,8 @@ The backend uses Express.js with Node.js and TypeScript, providing RESTful APIs 
 - **Fluency Score Ranking System**: An Elo-based system (K-factor=32) for competitive ranking.
 - **Competitive Bot Matches**: Bots with varied Fluency Scores (600-1600) and target accuracy ranges (50-90%).
 - **Dual Bot System**: Separate sets of 19 bots for Practice Mode (native speakers, perfect fluency) and Competitive Mode (difficulty-rated, unique personalities).
-- **Difficulty & Penalty System**: Beginner, Easy, Medium, and Hard difficulties with varying timers and rounds. Consistent grading standards across all difficulties. Features include a 20-point penalty for skipping questions, an exclusive Beginner mode skip feature, Practice mode hover-to-translate, and a "Need help?" feature with a 15-point penalty.
+- **Difficulty & Penalty System**: Beginner, Easy, Medium, and Hard difficulties with varying timers and rounds. Consistent grading standards across all difficulties. Features include a 20-point penalty for skipping questions (clearly displayed on skip button), an exclusive Beginner mode skip feature, Practice mode hover-to-translate, and a "Need help?" feature with a 15-point penalty.
+- **Quick Rematch System**: After completing a match, clicking "New Match" automatically queues a new game with the same difficulty, language, topic, and mode settings for seamless continuous play.
 - **Real-Time Vocabulary Visual Feedback**: Vocabulary badges visually update when typed in the input field, providing instant feedback.
 - **Expanded Theme System**: 21 themes with difficulty-specific vocabulary across multiple languages.
 - **Turn-Based Q&A**: Structured conversation flow with AI-driven question validation.

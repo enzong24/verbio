@@ -654,9 +654,49 @@ function MainApp() {
         }
       }
       
+      // Store previous match settings before clearing
+      const previousSettings = matchData ? {
+        language: matchData.language,
+        difficulty: matchData.difficulty,
+        isPracticeMode: matchData.isPracticeMode,
+        topic: matchData.topic,
+        botId: matchData.botId,
+        isBot: matchData.isBot,
+      } : null;
+      
       setMatchData(null);
       setGradingResult(null);
-      setCurrentPage("duel");
+      
+      // If we have previous settings, automatically start a new match with the same settings
+      if (previousSettings) {
+        // Find the theme ID based on the topic
+        const matchingTheme = THEMES.find(t => getThemeTitle(t.id) === previousSettings.topic);
+        if (matchingTheme) {
+          // Generate a new opponent name if it was a bot
+          const opponentName = previousSettings.isBot ? "AI Bot" : "Opponent";
+          
+          // Start a new match with the same settings
+          handleMatchFound(
+            opponentName,
+            previousSettings.isBot,
+            previousSettings.language,
+            previousSettings.difficulty,
+            matchingTheme.id, // topicId
+            undefined, // opponentElo - will be auto-assigned
+            previousSettings.isPracticeMode,
+            Math.random() < 0.5, // startsFirst - randomize
+            undefined, // matchId - will be generated
+            undefined, // vocabularyFromServer - will be generated
+            previousSettings.botId // botId - maintain same bot if practice mode
+          );
+        } else {
+          // If theme not found, fall back to match finder
+          setCurrentPage("duel");
+        }
+      } else {
+        // No previous settings, go back to match finder
+        setCurrentPage("duel");
+      }
     } finally {
       // Always reset saving state, even on error
       setIsSavingMatch(false);
