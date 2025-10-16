@@ -51,6 +51,7 @@ interface HeaderProps {
   dailyLoginStreak?: number;
   bestDailyLoginStreak?: number;
   isPremium?: boolean;
+  hideProfile?: boolean;
 }
 
 export default function Header({ 
@@ -68,7 +69,8 @@ export default function Header({
   bestWinStreak = 0,
   dailyLoginStreak = 0,
   bestDailyLoginStreak = 0,
-  isPremium = false
+  isPremium = false,
+  hideProfile = false
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
@@ -154,25 +156,27 @@ export default function Header({
               <SelectItem value="Italian" data-testid="option-italian-header">Italiano</SelectItem>
             </SelectContent>
           </Select>
-          {isPremium && (
-            <Badge 
-              variant="default" 
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
-              data-testid="badge-premium-header"
-            >
-              <Crown className="w-3 h-3 mr-1" />
-              PRO
-            </Badge>
-          )}
-          <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
-            {elo} Fluency
-          </Badge>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" data-testid="button-profile-dropdown">
-                <Avatar className="w-8 h-8">
-                  {profileImageUrl && <img src={profileImageUrl} alt={username} />}
+          {!hideProfile && (
+            <>
+              {isPremium && (
+                <Badge 
+                  variant="default" 
+                  className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
+                  data-testid="badge-premium-header"
+                >
+                  <Crown className="w-3 h-3 mr-1" />
+                  PRO
+                </Badge>
+              )}
+              <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
+                {elo} Fluency
+              </Badge>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" data-testid="button-profile-dropdown">
+                    <Avatar className="w-8 h-8">
+                      {profileImageUrl && <img src={profileImageUrl} alt={username} />}
                   <AvatarFallback className="text-xs">{username.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
               </Button>
@@ -201,6 +205,8 @@ export default function Header({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </>
+          )}
         </div>
       </div>
     </header>
