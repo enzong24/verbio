@@ -161,7 +161,7 @@ export default function Header({
               {isPremium && (
                 <Badge 
                   variant="default" 
-                  className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
+                  className="hidden md:flex bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
                   data-testid="badge-premium-header"
                 >
                   <Crown className="w-3 h-3 mr-1" />
@@ -175,12 +175,17 @@ export default function Header({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" data-testid="button-profile-dropdown">
-                    <Avatar className="w-8 h-8">
-                      {profileImageUrl && <img src={profileImageUrl} alt={username} />}
-                  <AvatarFallback className="text-xs">{username.slice(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
+                    <div className="relative">
+                      <Avatar className="w-8 h-8">
+                        {profileImageUrl && <img src={profileImageUrl} alt={username} />}
+                        <AvatarFallback className="text-xs">{username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      {isPremium && (
+                        <Crown className="w-4 h-4 text-yellow-500 absolute -top-1 -right-1 md:hidden" data-testid="icon-premium-crown-mobile" />
+                      )}
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-1.5">
                 <p className="text-sm font-semibold">{username}</p>
