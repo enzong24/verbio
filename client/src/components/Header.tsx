@@ -1,4 +1,4 @@
-import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX } from "lucide-react";
+import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/hooks/use-sound";
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MatchDetails from "@/components/MatchDetails";
 
 interface LeaderboardEntry {
   rank?: number;
@@ -70,6 +71,7 @@ export default function Header({
   isPremium = false
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const { setEnabled, isEnabled } = useSound();
   const [soundEnabled, setSoundEnabled] = useState(isEnabled());
 
@@ -152,84 +154,19 @@ export default function Header({
               <SelectItem value="Italian" data-testid="option-italian-header">Italiano</SelectItem>
             </SelectContent>
           </Select>
-          <div className="hidden sm:flex items-center gap-2">
-            {isPremium && (
-              <Badge 
-                variant="default" 
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
-                data-testid="badge-premium-header"
-              >
-                <Crown className="w-3 h-3 mr-1" />
-                PRO
-              </Badge>
-            )}
-            <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
-              {elo} Fluency
+          {isPremium && (
+            <Badge 
+              variant="default" 
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
+              data-testid="badge-premium-header"
+            >
+              <Crown className="w-3 h-3 mr-1" />
+              PRO
             </Badge>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button 
-                className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                data-testid="button-profile-menu"
-              >
-                <Avatar className="w-9 h-9 border border-border hover-elevate" data-testid="avatar-user">
-                  {profileImageUrl && (
-                    <img 
-                      src={profileImageUrl} 
-                      alt={username} 
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                  <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                    {username.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold">{username}</p>
-                  {isPremium && (
-                    <Badge 
-                      variant="default" 
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 font-bold"
-                      data-testid="badge-premium"
-                    >
-                      <Crown className="w-3 h-3" />
-                      PRO
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {elo} Fluency
-                </p>
-              </div>
-              <DropdownMenuSeparator />
-              {!isPremium && (
-                <DropdownMenuItem asChild data-testid="menu-item-upgrade">
-                  <a href="/subscribe" className="flex items-center cursor-pointer">
-                    <Crown className="w-4 h-4 mr-2 text-yellow-500" />
-                    <span>Upgrade to Premium</span>
-                  </a>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => {
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  window.location.href = "/api/logout";
-                }}
-                className="cursor-pointer text-destructive focus:text-destructive"
-                data-testid="menu-item-logout"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                <span>Log Out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          )}
+          <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
+            {elo} Fluency
+          </Badge>
         </div>
       </div>
     </header>
@@ -361,7 +298,12 @@ export default function Header({
                             {matches.slice(0, 5).map((match) => (
                               <div
                                 key={match.id}
-                                className="flex items-center gap-3 p-2 rounded-md hover-elevate"
+                                className="flex items-center gap-3 p-2 rounded-md hover-elevate cursor-pointer"
+                                onClick={() => {
+                                  setSelectedMatch(match);
+                                  setMobileMenuOpen(false);
+                                }}
+                                data-testid={`match-card-${match.id}`}
                               >
                                 <Badge
                                   variant={match.result === "win" ? "default" : "destructive"}
@@ -382,11 +324,19 @@ export default function Header({
                                     {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
                                   </div>
                                 </div>
-                                <div className={`font-mono font-bold text-sm ${
-                                  match.result === "win" ? "text-success" : "text-destructive"
-                                }`}>
-                                  {match.result === "win" ? "+" : ""}{match.eloChange}
-                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedMatch(match);
+                                    setMobileMenuOpen(false);
+                                  }}
+                                  data-testid={`button-view-match-${match.id}`}
+                                >
+                                  <Eye className="w-3 h-3" />
+                                </Button>
                               </div>
                             ))}
                           </div>
@@ -586,6 +536,14 @@ export default function Header({
           </Tabs>
         </SheetContent>
       </Sheet>
+
+      {selectedMatch && (
+        <MatchDetails
+          match={selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          language={currentLanguage}
+        />
+      )}
     </>
   );
 }
