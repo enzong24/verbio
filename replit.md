@@ -30,7 +30,7 @@ The backend uses Express.js with Node.js and TypeScript, providing RESTful APIs 
 - **Turn-Based Q&A**: Structured conversation flow with AI-driven question validation.
 - **Ultra-Detailed Premium AI Feedback System**: Premium users receive comprehensive message-by-message analysis, including grammar corrections, vocabulary suggestions, native speaker comparisons, strengths, and study recommendations.
 - **Guest Mode**: Limited features for guest users, rate-limited to 5 matches per day.
-- **Streaks**: Tracks competitive win streaks and daily login streaks.
+- **Streaks & Multiplier System**: Tracks competitive win streaks and daily login streaks. Features a streak-based Fluency Score multiplier: +5% per 3-day login streak tier (max +20%), +10% per 2-win streak tier (max +30%), with a total cap of 1.5x. Multipliers apply only to wins, not losses, and are calculated on the backend for consistency.
 - **Friend System**: Supports bidirectional friend relationships, discovery, and stat display.
 - **Private Match Invites**: Authenticated users can create unique, time-limited code-based invites.
 - **Premium Subscription System**: Stripe-powered subscriptions offering unlimited Medium/Hard matches, topic selection in practice mode, and detailed AI feedback for premium users. Free users receive daily limits and two free premium AI feedback matches.
