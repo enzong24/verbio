@@ -83,6 +83,7 @@ export const matches = pgTable("matches", {
   naturalnessScore: integer("naturalness_score").notNull(),
   overallScore: integer("overall_score").notNull(),
   isForfeit: integer("is_forfeit").notNull().default(0), // 0 = false, 1 = true (SQLite boolean)
+  isPracticeMode: integer("is_practice_mode").notNull().default(0), // 0 = competitive, 1 = practice
   conversation: jsonb("conversation"), // Full chat log as array of Message objects
   detailedFeedback: jsonb("detailed_feedback"), // Detailed AI feedback with corrections and suggestions
   topic: varchar("topic"), // Match topic for context

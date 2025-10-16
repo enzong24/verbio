@@ -17,6 +17,7 @@ interface MatchResultsProps {
   isPracticeMode?: boolean;
   onContinue?: () => void;
   onAIReview?: () => void;
+  isSaving?: boolean;
 }
 
 export default function MatchResults({
@@ -27,7 +28,8 @@ export default function MatchResults({
   opponentName = "Opponent",
   isPracticeMode = false,
   onContinue,
-  onAIReview
+  onAIReview,
+  isSaving = false
 }: MatchResultsProps) {
   const { playWin, playLoss } = useSound();
   const userScore = gradingResult.overall;
@@ -322,10 +324,21 @@ export default function MatchResults({
                 AI Review & Analysis
               </Button>
               <div className="flex gap-3">
-                <Button className="flex-1" onClick={onContinue} data-testid="button-continue">
-                  Continue
+                <Button 
+                  className="flex-1" 
+                  onClick={onContinue} 
+                  data-testid="button-continue"
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Saving..." : "Continue"}
                 </Button>
-                <Button variant="outline" className="flex-1" onClick={onContinue} data-testid="button-new-match">
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={onContinue} 
+                  data-testid="button-new-match"
+                  disabled={isSaving}
+                >
                   New Match
                 </Button>
               </div>

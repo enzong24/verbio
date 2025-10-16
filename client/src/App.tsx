@@ -527,66 +527,79 @@ function MainApp() {
     }
   };
 
+  const [isSavingMatch, setIsSavingMatch] = useState(false);
+
   const handleResultsContinue = async () => {
-    // Update Elo based on comparative scoring (user vs bot)
-    if (gradingResult && matchData) {
-      const userScore = gradingResult.overall;
-      const botScore = gradingResult.botOverall || 0;
-      const botElo = gradingResult.botElo || 1000;
-      const isForfeit = gradingResult.isForfeit || false;
-      
-      // Determine result based on comparative scoring
-      const hasOpponentScores = botScore > 0;
-      const isWin = userScore > botScore;
-      const isDraw = userScore === botScore;
-      const isLoss = userScore < botScore;
-      
-      // Calculate Elo change using standard Elo formula (only applies to competitive)
-      const K_FACTOR = 32;
-      const expectedScore = 1 / (1 + Math.pow(10, (botElo - userElo) / 400));
-      const actualScore = isWin ? 1 : (isDraw ? 0.5 : 0);
-      const change = Math.round(K_FACTOR * (actualScore - expectedScore));
-      
-      // Save match history for authenticated users (both practice and competitive)
-      if (isAuthenticated) {
-        try {
-          await apiRequest("POST", "/api/match/save", {
-            opponent: matchData.opponent,
-            result: isWin ? "win" : "loss",
-            eloChange: matchData.isPracticeMode ? 0 : change, // No Elo change for practice
-            language: matchData.language,
-            difficulty: matchData.difficulty,
-            scores: {
-              grammar: gradingResult.grammar,
-              fluency: gradingResult.fluency,
-              vocabulary: gradingResult.vocabulary,
-              naturalness: gradingResult.naturalness,
-              overall: gradingResult.overall,
-            },
-            isForfeit: isForfeit,
-            conversation: matchMessages || [], // Full chat log
-            detailedFeedback: {
-              messageAnalysis: gradingResult.messageAnalysis || [], // Detailed AI feedback with corrections (premium)
-              generalFeedback: gradingResult.feedback || [], // General feedback points (free users)
-            },
-            topic: matchData.topic || null, // Match topic
-          });
-          // Invalidate match history and skill progress queries
-          queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
-          queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`] });
-        } catch (error) {
-          console.error("Failed to save match:", error);
+    // Prevent duplicate saves
+    if (isSavingMatch) return;
+    setIsSavingMatch(true);
+    
+    try {
+      // Update Elo based on comparative scoring (user vs bot)
+      if (gradingResult && matchData) {
+        const userScore = gradingResult.overall;
+        const botScore = gradingResult.botOverall || 0;
+        const botElo = gradingResult.botElo || 1000;
+        const isForfeit = gradingResult.isForfeit || false;
+        
+        // Determine result based on comparative scoring
+        const hasOpponentScores = botScore > 0;
+        const isWin = userScore > botScore;
+        const isDraw = userScore === botScore;
+        const isLoss = userScore < botScore;
+        
+        // Calculate Elo change using standard Elo formula (only applies to competitive)
+        const K_FACTOR = 32;
+        const expectedScore = 1 / (1 + Math.pow(10, (botElo - userElo) / 400));
+        const actualScore = isWin ? 1 : (isDraw ? 0.5 : 0);
+        const change = Math.round(K_FACTOR * (actualScore - expectedScore));
+        
+        // Save match history for authenticated users (both practice and competitive)
+        if (isAuthenticated) {
+          try {
+            await apiRequest("POST", "/api/match/save", {
+              opponent: matchData.opponent,
+              result: isWin ? "win" : "loss",
+              eloChange: matchData.isPracticeMode ? 0 : change, // No Elo change for practice
+              language: matchData.language,
+              difficulty: matchData.difficulty,
+              scores: {
+                grammar: gradingResult.grammar,
+                fluency: gradingResult.fluency,
+                vocabulary: gradingResult.vocabulary,
+                naturalness: gradingResult.naturalness,
+                overall: gradingResult.overall,
+              },
+              isForfeit: isForfeit,
+              isPracticeMode: matchData.isPracticeMode || false, // Track if this was a practice match
+              conversation: matchMessages || [], // Full chat log
+              detailedFeedback: {
+                messageAnalysis: gradingResult.messageAnalysis || [], // Detailed AI feedback with corrections (premium)
+                generalFeedback: gradingResult.feedback || [], // General feedback points (free users)
+              },
+              topic: matchData.topic || null, // Match topic
+            });
+            // Invalidate match history and skill progress queries
+            queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
+            queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`] });
+          } catch (error) {
+            console.error("Failed to save match:", error);
+          }
+        }
+        
+        // Only update Elo stats if not in practice mode
+        if (!matchData.isPracticeMode) {
+          await updateStats(change, isWin, isLoss, isForfeit);
         }
       }
       
-      // Only update Elo stats if not in practice mode
-      if (!matchData.isPracticeMode) {
-        await updateStats(change, isWin, isLoss, isForfeit);
-      }
+      setMatchData(null);
+      setGradingResult(null);
+      setCurrentPage("duel");
+    } finally {
+      // Always reset saving state, even on error
+      setIsSavingMatch(false);
     }
-    setMatchData(null);
-    setGradingResult(null);
-    setCurrentPage("duel");
   };
 
   const handleForfeit = async () => {
@@ -709,6 +722,7 @@ function MainApp() {
             isPracticeMode={matchData.isPracticeMode}
             onContinue={handleResultsContinue}
             onAIReview={handleAIReview}
+            isSaving={isSavingMatch}
           />
         )}
         

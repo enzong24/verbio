@@ -377,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      const { opponent, result, eloChange, language, difficulty, scores, isForfeit, conversation, detailedFeedback, topic } = req.body;
+      const { opponent, result, eloChange, language, difficulty, scores, isForfeit, conversation, detailedFeedback, topic, isPracticeMode } = req.body;
       
       const match = await storage.createMatch({
         userId,
@@ -392,6 +392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         naturalnessScore: scores.naturalness,
         overallScore: scores.overall,
         isForfeit: isForfeit ? 1 : 0, // Convert boolean to integer for SQLite-style storage
+        isPracticeMode: isPracticeMode ? 1 : 0, // 0 = competitive, 1 = practice
         conversation: conversation || null, // Full chat log
         detailedFeedback: detailedFeedback || null, // Detailed AI feedback with corrections
         topic: topic || null, // Match topic
