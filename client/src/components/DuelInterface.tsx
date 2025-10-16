@@ -730,28 +730,6 @@ export default function DuelInterface({
               <Flag className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Forfeit</span>
             </Button>
-
-            <div className="flex items-center gap-2 md:gap-3 min-w-0">
-              <div className="min-w-0 text-right">
-                <div className="font-semibold flex items-center justify-end gap-1 md:gap-2 text-sm md:text-base truncate">
-                  <span className="truncate">{userName}</span>
-                  {isPremium && (
-                    <Badge className="text-xs flex-shrink-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold border-0">
-                      <Crown className="w-3 h-3 mr-0.5" />
-                      PRO
-                    </Badge>
-                  )}
-                </div>
-                {!isPracticeMode && difficulty !== "Beginner" && (
-                  <div className="text-xs text-muted-foreground font-mono">{userElo} Fluency</div>
-                )}
-              </div>
-              <Avatar className="w-8 h-8 md:w-10 md:h-10 border-2 border-accent flex-shrink-0">
-                <AvatarFallback className="bg-accent text-accent-foreground font-semibold text-xs md:text-sm">
-                  {userName.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-            </div>
           </div>
         </div>
       </div>
