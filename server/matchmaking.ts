@@ -375,9 +375,26 @@ export function setupMatchmaking(httpServer: Server) {
   });
 
   const queue = new MatchmakingQueue();
+  
+  // Connection tracking and limits
+  const MAX_CONNECTIONS = 500; // Maximum concurrent WebSocket connections
+  let activeConnections = 0;
 
   wss.on('connection', (ws: WebSocket) => {
-    console.log('New WebSocket connection');
+    // Check connection limit
+    activeConnections++;
+    if (activeConnections > MAX_CONNECTIONS) {
+      console.warn(`Connection limit reached: ${activeConnections}/${MAX_CONNECTIONS}`);
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Server is currently at capacity. Please try again in a few moments.'
+      }));
+      ws.close(1008, 'Server at capacity');
+      activeConnections--;
+      return;
+    }
+    
+    console.log(`New WebSocket connection (${activeConnections}/${MAX_CONNECTIONS} active)`);
 
     ws.on('message', async (data: Buffer) => {
       try {
@@ -491,6 +508,9 @@ export function setupMatchmaking(httpServer: Server) {
     });
 
     ws.on('close', () => {
+      // Decrement connection counter
+      activeConnections--;
+      
       // Get player info before cleanup
       const player = queue.getPlayerBySocket(ws);
       
@@ -502,11 +522,14 @@ export function setupMatchmaking(httpServer: Server) {
         queue.handlePlayerDisconnect(player.id, ws);
       }
       
-      console.log('WebSocket connection closed - player removed from queue');
+      console.log(`WebSocket connection closed - player removed from queue (${activeConnections}/${MAX_CONNECTIONS} active)`);
     });
 
     ws.on('error', (error) => {
       console.error('WebSocket error:', error);
+      
+      // Decrement connection counter
+      activeConnections--;
       
       // Get player info before cleanup
       const player = queue.getPlayerBySocket(ws);
@@ -518,6 +541,8 @@ export function setupMatchmaking(httpServer: Server) {
       if (player) {
         queue.handlePlayerDisconnect(player.id, ws);
       }
+      
+      console.log(`WebSocket error cleanup complete (${activeConnections}/${MAX_CONNECTIONS} active)`);
     });
   });
 
