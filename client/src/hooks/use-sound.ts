@@ -9,6 +9,8 @@ export function useSound() {
     playMessageSent: () => soundManager.playMessageSent(),
     playTurnComplete: () => soundManager.playTurnComplete(),
     playStreak: () => soundManager.playStreak(),
+    playDailyStreak: () => soundManager.playDailyStreak(),
+    playPremiumCelebration: () => soundManager.playPremiumCelebration(),
     playError: () => soundManager.playError(),
     playTimeWarning: () => soundManager.playTimeWarning(),
     setEnabled: (enabled: boolean) => soundManager.setEnabled(enabled),

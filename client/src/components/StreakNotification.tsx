@@ -2,21 +2,30 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Zap, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 interface StreakNotificationProps {
   type: "win" | "daily";
   streakCount: number;
   isVisible: boolean;
   onClose: () => void;
+  playSound?: () => void;
 }
 
-export function StreakNotification({ type, streakCount, isVisible, onClose }: StreakNotificationProps) {
+export function StreakNotification({ type, streakCount, isVisible, onClose, playSound }: StreakNotificationProps) {
   const isWinStreak = type === "win";
   const Icon = isWinStreak ? Flame : Zap;
   const title = isWinStreak ? "Win Streak!" : "Daily Streak!";
   const message = isWinStreak 
     ? `${streakCount} consecutive wins! Keep it up!`
     : `${streakCount} days in a row! Come back tomorrow!`;
+
+  // Play sound when notification appears
+  useEffect(() => {
+    if (isVisible && playSound) {
+      playSound();
+    }
+  }, [isVisible, playSound]);
 
   return (
     <AnimatePresence>

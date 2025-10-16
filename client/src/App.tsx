@@ -33,7 +33,7 @@ interface VocabWord {
 
 function MainApp() {
   const { user, isLoading, isAuthenticated } = useAuth();
-  const { playStreak } = useSound();
+  const { playStreak, playDailyStreak } = useSound();
   const [currentPage, setCurrentPage] = useState<Page>("duel");
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [matchData, setMatchData] = useState<{
@@ -107,7 +107,6 @@ function MainApp() {
 
     // Check if win streak increased
     if (currentWinStreak > previousWinStreak && currentWinStreak > 1) {
-      playStreak();
       setStreakNotification({
         type: "win",
         count: currentWinStreak,
@@ -121,7 +120,6 @@ function MainApp() {
     }
     // Check if daily streak increased (only if win streak didn't trigger)
     else if (currentDailyStreak > previousDailyStreak && currentDailyStreak > 1) {
-      playStreak();
       setStreakNotification({
         type: "daily",
         count: currentDailyStreak,
@@ -614,6 +612,7 @@ function MainApp() {
           streakCount={streakNotification.count}
           isVisible={streakNotification.visible}
           onClose={() => setStreakNotification(null)}
+          playSound={streakNotification.type === "win" ? playStreak : playDailyStreak}
         />
       )}
       

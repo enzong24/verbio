@@ -4,9 +4,11 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useSound } from "@/hooks/use-sound";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Crown } from "lucide-react";
+import { PremiumWelcomeModal } from "@/components/PremiumWelcomeModal";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
@@ -79,7 +81,9 @@ export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const { toast } = useToast();
+  const { playPremiumCelebration } = useSound();
 
   useEffect(() => {
     // Check if returning from successful payment
@@ -87,14 +91,12 @@ export default function Subscribe() {
     if (urlParams.get('payment') === 'success') {
       setPaymentSuccess(true);
       setIsLoading(false);
+      setShowPremiumModal(true);
+      playPremiumCelebration();
       toast({
         title: "Payment Successful!",
         description: "Welcome to Verbio Premium! Your account has been upgraded.",
       });
-      // Redirect to home after 3 seconds
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 3000);
       return;
     }
 
@@ -178,6 +180,14 @@ export default function Subscribe() {
   // Make SURE to wrap the form in <Elements> which provides the stripe context.
   return (
     <div className="min-h-screen bg-background py-12 px-4" data-testid="page-subscribe">
+      <PremiumWelcomeModal 
+        isOpen={showPremiumModal} 
+        onClose={() => {
+          setShowPremiumModal(false);
+          window.location.href = '/';
+        }} 
+      />
+      
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Premium Features */}
         <Card>

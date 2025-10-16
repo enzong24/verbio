@@ -97,11 +97,34 @@ class SoundManager {
     setTimeout(() => this.playTone(659.25, 0.15, 0.2), 100); // E5
   }
 
-  // Streak achievement sound
+  // Win streak achievement sound
   playStreak() {
     const notes = [659.25, 783.99, 1046.50]; // E5, G5, C6
     notes.forEach((freq, i) => {
       setTimeout(() => this.playTone(freq, 0.2, 0.2, 'sine'), i * 80);
+    });
+  }
+
+  // Daily streak achievement sound
+  playDailyStreak() {
+    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+    notes.forEach((freq, i) => {
+      setTimeout(() => this.playTone(freq, 0.15, 0.2, 'sine'), i * 60);
+    });
+  }
+
+  // Premium upgrade celebration sound - triumphant fanfare
+  playPremiumCelebration() {
+    const notes = [
+      { freq: 523.25, time: 0, duration: 0.15 },    // C5
+      { freq: 659.25, time: 100, duration: 0.15 },  // E5
+      { freq: 783.99, time: 200, duration: 0.15 },  // G5
+      { freq: 1046.50, time: 300, duration: 0.2 },  // C6
+      { freq: 1318.51, time: 450, duration: 0.25 }, // E6
+      { freq: 1568.00, time: 600, duration: 0.3 },  // G6
+    ];
+    notes.forEach(({ freq, time, duration }) => {
+      setTimeout(() => this.playTone(freq, duration, 0.25, 'sine'), time);
     });
   }
 
