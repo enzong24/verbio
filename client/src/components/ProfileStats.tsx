@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
 import type { Match } from "@shared/schema";
 import MatchDetails from "@/components/MatchDetails";
@@ -37,7 +37,6 @@ export default function ProfileStats({
   dailyLoginStreak = 0,
 }: ProfileStatsProps) {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [matchTab, setMatchTab] = useState<"all" | "competitive" | "practice">("all");
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
   // Fetch recent matches - explicitly pass language parameter
@@ -161,103 +160,9 @@ export default function ProfileStats({
               <CardTitle>Recent Matches</CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs value={matchTab} onValueChange={(v) => setMatchTab(v as "all" | "competitive" | "practice")}>
-                <TabsList className="grid w-full grid-cols-3 mb-4">
-                  <TabsTrigger value="all" data-testid="tab-all-matches">
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger value="competitive" data-testid="tab-competitive-matches">
-                    Competitive
-                  </TabsTrigger>
-                  <TabsTrigger value="practice" data-testid="tab-practice-matches">
-                    Practice
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="all">
-                  {matches && matches.length > 0 ? (
-                    <div className="space-y-3">
-                      {matches.map((match) => (
-                        <div
-                          key={match.id}
-                          className="flex items-center gap-4 p-3 rounded-md hover-elevate cursor-pointer transition-all"
-                          onClick={() => setSelectedMatch(match)}
-                          data-testid={`match-history-all-${match.id}`}
-                        >
-                          <Badge
-                            variant={match.isPracticeMode === 1 ? "outline" : (match.result === "win" ? "default" : "destructive")}
-                            className={`w-12 justify-center font-semibold ${match.isPracticeMode === 1 ? "bg-primary/10" : ""}`}
-                          >
-                            {match.isPracticeMode === 1 ? "P" : (match.result === "win" ? "W" : "L")}
-                          </Badge>
-                          <div className="flex-1">
-                            <div className="font-medium flex items-center gap-2">
-                              <span>{match.isPracticeMode === 1 ? "with" : "vs"} {match.opponent}</span>
-                              {match.isForfeit === 1 && (
-                                <Badge variant="outline" className="hidden md:inline-flex text-xs px-1.5 py-0 h-4">
-                                  Forfeit
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-                              <span>
-                                {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
-                                {match.topic && ` • ${match.topic}`}
-                              </span>
-                              {match.fluencyScore !== undefined && match.fluencyScore !== null && (
-                                <span className="flex items-center gap-1">
-                                  <MessageSquare className="w-3 h-3" />
-                                  {match.fluencyScore}
-                                </span>
-                              )}
-                              {match.vocabularyScore !== undefined && match.vocabularyScore !== null && (
-                                <span className="flex items-center gap-1">
-                                  <BookOpen className="w-3 h-3" />
-                                  {match.vocabularyScore}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {match.isPracticeMode === 1 ? (
-                              <div className="font-mono text-muted-foreground">
-                                {match.overallScore}%
-                              </div>
-                            ) : (
-                              <div className={`font-mono font-bold ${
-                                match.result === "win" ? "text-success" : "text-destructive"
-                              }`}>
-                                {match.result === "win" ? "+" : ""}{match.eloChange}
-                              </div>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="gap-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedMatch(match);
-                              }}
-                              data-testid={`button-view-match-all-${match.id}`}
-                            >
-                              <Eye className="w-4 h-4" />
-                              View
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-8">
-                      No matches played yet. Start a match to see your history!
-                    </p>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="competitive">
-                  {matches && matches.filter(m => m.isPracticeMode === 0).length > 0 ? (
-                    <div className="space-y-3">
-                      {matches.filter(m => m.isPracticeMode === 0).map((match) => (
+              {matches && matches.filter(m => m.isPracticeMode === 0).length > 0 ? (
+                <div className="space-y-3">
+                  {matches.filter(m => m.isPracticeMode === 0).map((match) => (
                         <div
                           key={match.id}
                           className="flex items-center gap-4 p-3 rounded-md hover-elevate cursor-pointer transition-all"
@@ -326,75 +231,6 @@ export default function ProfileStats({
                       No competitive matches yet. Start a competitive match to see your history!
                     </p>
                   )}
-                </TabsContent>
-
-                <TabsContent value="practice">
-                  {matches && matches.filter(m => m.isPracticeMode === 1).length > 0 ? (
-                    <div className="space-y-3">
-                      {matches.filter(m => m.isPracticeMode === 1).map((match) => (
-                        <div
-                          key={match.id}
-                          className="flex items-center gap-4 p-3 rounded-md hover-elevate cursor-pointer transition-all"
-                          onClick={() => setSelectedMatch(match)}
-                          data-testid={`match-history-practice-${match.id}`}
-                        >
-                          <Badge
-                            variant="outline"
-                            className="w-12 justify-center font-semibold bg-primary/10"
-                          >
-                            P
-                          </Badge>
-                          <div className="flex-1">
-                            <div className="font-medium flex items-center gap-2">
-                              <span>with {match.opponent}</span>
-                            </div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-                              <span>
-                                {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
-                                {match.topic && ` • ${match.topic}`}
-                              </span>
-                              {match.fluencyScore !== undefined && match.fluencyScore !== null && (
-                                <span className="flex items-center gap-1">
-                                  <MessageSquare className="w-3 h-3" />
-                                  {match.fluencyScore}
-                                </span>
-                              )}
-                              {match.vocabularyScore !== undefined && match.vocabularyScore !== null && (
-                                <span className="flex items-center gap-1">
-                                  <BookOpen className="w-3 h-3" />
-                                  {match.vocabularyScore}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="font-mono text-muted-foreground">
-                              {match.overallScore}%
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="gap-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedMatch(match);
-                              }}
-                              data-testid={`button-view-match-practice-${match.id}`}
-                            >
-                              <Eye className="w-4 h-4" />
-                              View
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-muted-foreground py-8">
-                      No practice sessions yet. Start a practice match to see your history!
-                    </p>
-                  )}
-                </TabsContent>
-              </Tabs>
             </CardContent>
           </Card>
 
