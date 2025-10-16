@@ -1,4 +1,4 @@
-import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye } from "lucide-react";
+import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/hooks/use-sound";
@@ -477,8 +477,21 @@ export default function Header({
                 )}
 
                 {/* Navigation Buttons */}
-                {isAuthenticated && (
-                  <div className="pt-4 border-t border-card-border space-y-3">
+                <div className="pt-4 border-t border-card-border space-y-3">
+                  <Button
+                    variant={currentPage === "analytics" ? "default" : "outline"}
+                    className="w-full gap-2"
+                    onClick={() => {
+                      onNavigate?.("analytics");
+                      setMobileMenuOpen(false);
+                    }}
+                    data-testid="button-nav-analytics"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    <span>Analytics</span>
+                  </Button>
+                  
+                  {isAuthenticated && (
                     <Button
                       variant={currentPage === "friends" ? "default" : "outline"}
                       className="w-full gap-2"
@@ -491,7 +504,10 @@ export default function Header({
                       <Users className="w-4 h-4" />
                       <span>Friends</span>
                     </Button>
-                    
+                  )}
+                  
+                  {isAuthenticated && (
+                    <>
                     {/* Subscription Management */}
                     {!isPremium ? (
                       <Button
@@ -531,8 +547,9 @@ export default function Header({
                         <span>Cancel Subscription</span>
                       </Button>
                     )}
-                  </div>
-                )}
+                    </>
+                  )}
+                </div>
                 
                 {/* Sign Out Button - Always visible */}
                 <div className="pt-4 border-t border-card-border">
