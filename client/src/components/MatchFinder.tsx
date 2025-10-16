@@ -54,11 +54,20 @@ export default function MatchFinder({
   isPremium = false,
   userId
 }: MatchFinderProps) {
-  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
+  // Load difficulty from localStorage, default to "Medium"
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(() => {
+    const saved = localStorage.getItem('selectedDifficulty');
+    return (saved as Difficulty) || "Medium";
+  });
   const [selectedTopic, setSelectedTopic] = useState<string>("random");
   const [isPracticeLoading, setIsPracticeLoading] = useState(false);
   const practiceLoadingRef = useRef(false);
   const { resumeAudio } = useSound();
+
+  // Save difficulty to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('selectedDifficulty', selectedDifficulty);
+  }, [selectedDifficulty]);
   
   // Premium access tracking
   const [difficultyAccess, setDifficultyAccess] = useState<{
