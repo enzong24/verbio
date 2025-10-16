@@ -301,49 +301,6 @@ export default function DuelInterface({
     }
   }, []);
 
-  // Disable scrolling when keyboard opens on mobile
-  useEffect(() => {
-    const input = inputRef.current;
-    if (!input) return;
-
-    const handleFocus = () => {
-      // Lock scroll when keyboard opens
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      scrollLockActiveRef.current = true;
-    };
-
-    const handleBlur = () => {
-      // Unlock scroll when keyboard closes
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      scrollLockActiveRef.current = false;
-    };
-
-    input.addEventListener('focus', handleFocus);
-    input.addEventListener('blur', handleBlur);
-
-    return () => {
-      input.removeEventListener('focus', handleFocus);
-      input.removeEventListener('blur', handleBlur);
-    };
-  }, []);
-
-  // Cleanup scroll lock on unmount
-  useEffect(() => {
-    return () => {
-      // Restore body styles and scroll position if component unmounts while scroll is locked
-      if (scrollLockActiveRef.current) {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        scrollLockActiveRef.current = false;
-      }
-    };
-  }, []);
 
   // Update when bot question is ready
   useEffect(() => {
