@@ -30,8 +30,8 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
-        <CardHeader className="border-b border-card-border flex flex-row items-center justify-between">
+      <Card className="w-full max-w-4xl h-[90vh] flex flex-col">
+        <CardHeader className="border-b border-card-border flex flex-row items-center justify-between flex-shrink-0">
           <div>
             <CardTitle className="text-2xl font-bold">Match Details</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
@@ -48,9 +48,8 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
           </Button>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-hidden p-0">
-          <ScrollArea className="h-full">
-            <div className="p-6 space-y-6">
+        <CardContent className="flex-1 overflow-y-auto p-0">
+          <div className="p-6 space-y-6">
               {/* Match Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 rounded-md bg-muted/50">
@@ -316,7 +315,6 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                 })}
               </div>
             </div>
-          </ScrollArea>
         </CardContent>
       </Card>
     </div>

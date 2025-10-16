@@ -298,7 +298,7 @@ export default function Header({
                             {matches.slice(0, 5).map((match) => (
                               <div
                                 key={match.id}
-                                className="flex items-center gap-3 p-2 rounded-md hover-elevate cursor-pointer"
+                                className="flex items-center gap-2 p-2 rounded-md hover-elevate cursor-pointer"
                                 onClick={() => {
                                   setSelectedMatch(match);
                                   setMobileMenuOpen(false);
@@ -324,19 +324,26 @@ export default function Header({
                                     {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
                                   </div>
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-7 px-2"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedMatch(match);
-                                    setMobileMenuOpen(false);
-                                  }}
-                                  data-testid={`button-view-match-${match.id}`}
-                                >
-                                  <Eye className="w-3 h-3" />
-                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <div className={`font-mono font-bold text-sm ${
+                                    match.result === "win" ? "text-success" : "text-destructive"
+                                  }`}>
+                                    {match.result === "win" ? "+" : ""}{match.eloChange}
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 w-7 p-0"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedMatch(match);
+                                      setMobileMenuOpen(false);
+                                    }}
+                                    data-testid={`button-view-match-${match.id}`}
+                                  >
+                                    <Eye className="w-3 h-3" />
+                                  </Button>
+                                </div>
                               </div>
                             ))}
                           </div>
