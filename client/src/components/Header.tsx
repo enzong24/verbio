@@ -343,7 +343,7 @@ export default function Header({
                             {matches.filter(m => !m.isPracticeMode).slice(0, 5).map((match) => (
                               <div
                                 key={match.id}
-                                className="p-2 rounded-md hover-elevate cursor-pointer overflow-x-auto scrollbar-thin"
+                                className="p-2 rounded-md hover-elevate cursor-pointer overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                                 onClick={() => {
                                   setSelectedMatch(match);
                                   setMobileMenuOpen(false);
