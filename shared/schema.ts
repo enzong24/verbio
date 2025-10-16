@@ -39,9 +39,7 @@ export const users = pgTable("users", {
   lastPremiumFeedbackDate: varchar("last_premium_feedback_date"), // Store as YYYY-MM-DD
   // Stripe integration fields (from blueprint:javascript_stripe)
   stripeCustomerId: varchar("stripe_customer_id"),
-  stripeSubscriptionId: varchar("stripe_subscription_id"),
-  // Initial setup tracking
-  hasCompletedInitialSetup: integer("has_completed_initial_setup").notNull().default(0) // 0 = not completed, 1 = completed
+  stripeSubscriptionId: varchar("stripe_subscription_id")
 });
 
 export type UpsertUser = typeof users.$inferInsert;
