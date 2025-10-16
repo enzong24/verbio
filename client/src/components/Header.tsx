@@ -181,6 +181,10 @@ export default function Header({
               <div className="px-2 py-1.5">
                 <p className="text-sm font-semibold">{username}</p>
                 <p className="text-xs text-muted-foreground">{currentLanguage}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
+                  <p className="text-xs font-mono font-semibold" data-testid="text-fluency-score-dropdown">{elo} Fluency Score</p>
+                </div>
               </div>
               <DropdownMenuSeparator />
               {isAuthenticated && (
@@ -232,7 +236,7 @@ export default function Header({
                     data-testid="menu-logout"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Log Out
+                    Sign Out
                   </DropdownMenuItem>
                 </>
               )}
