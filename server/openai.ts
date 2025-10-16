@@ -753,10 +753,10 @@ export async function generateVocabulary(
   difficulty: "Beginner" | "Easy" | "Medium" | "Hard"
 ): Promise<VocabularyWord[]> {
   const wordCounts = {
-    Beginner: 2,
-    Easy: 3,
-    Medium: 5,
-    Hard: 8
+    Beginner: 3,
+    Easy: 4,
+    Medium: 6,
+    Hard: 9
   };
   
   const count = wordCounts[difficulty];

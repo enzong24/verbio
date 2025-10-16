@@ -514,8 +514,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Handle legacy format (old matches with array directly)
-        if (Array.isArray(feedback) && !feedback.messageAnalysis) {
-          feedback.forEach((analysis: any) => {
+        if (Array.isArray(feedback) && !(feedback as any).messageAnalysis) {
+          (feedback as any[]).forEach((analysis: any) => {
             if (analysis.grammarCorrections) {
               analysis.grammarCorrections.forEach((correction: any) => {
                 const key = correction.explanation || correction.corrected;
@@ -972,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cancel subscription endpoint
-  app.post('/api/cancel-subscription', async (req, res) => {
+  app.post('/api/cancel-subscription', async (req: any, res) => {
     try {
       const userId = req.user?.id;
       if (!userId) {
