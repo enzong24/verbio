@@ -395,16 +395,15 @@ export default function MatchFinder({
                 </div>
                 <Button
                   className="w-full text-lg font-semibold min-h-[56px] md:min-h-[48px]"
-                  variant={isSearching ? "destructive" : "default"}
-                  style={!isSearching ? { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', borderColor: 'hsl(var(--accent))' } : undefined}
+                  variant="default"
                   onClick={handleFindMatch}
                   disabled={!isConnected || !canPlay || !difficultyAccess.allowed}
                   data-testid="button-find-match"
                 >
                   {isSearching ? (
                     <>
-                      <X className="w-5 h-5 mr-2" />
-                      Cancel Search
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Finding match...
                     </>
                   ) : (
                     <>
