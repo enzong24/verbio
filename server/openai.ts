@@ -351,21 +351,51 @@ ERROR PATTERN: Make 1 subtle mistake:
 
   const personalityContext = botPersonality ? `\n\nYour character/personality: ${botPersonality}` : '';
 
+  const practiceTeachingGuidelines: Record<string, string> = {
+    Beginner: `TEACHING APPROACH for ABSOLUTE BEGINNERS:
+- Use ONLY the most basic, fundamental vocabulary (be, have, want, like, go, eat, good, bad, big, small)
+- Keep questions VERY short and simple (3-6 words maximum)
+- Use only present tense and basic sentence patterns
+- Speak slowly and clearly, like teaching a child
+- Examples: "What do you like?", "Where do you go?", "Is this good?"`,
+    Easy: `TEACHING APPROACH for EARLY LEARNERS:
+- Use simple, everyday vocabulary appropriate for beginners
+- Keep questions short and clear (one simple sentence)
+- Use common daily verbs and nouns (think, know, say, home, food, friend)
+- Avoid idioms and complex grammar
+- Examples: "What food do you like to eat?", "Where is your home?"`,
+    Medium: `TEACHING APPROACH for INTERMEDIATE LEARNERS:
+- Use standard conversational vocabulary
+- Natural sentence structures with everyday expressions
+- Can include common idioms and phrases
+- Normal conversational pace and complexity
+- Examples: "What do you usually do on weekends?", "How do you feel about this topic?"`,
+    Hard: `TEACHING APPROACH for ADVANCED LEARNERS:
+- Use sophisticated, nuanced vocabulary
+- Complex sentence structures and advanced expressions
+- Include idiomatic phrases and cultural references
+- Challenge the learner with native-level language
+- Examples: "What implications does this have for our understanding?", "How would you characterize the relationship between these concepts?"`
+  };
+
   const prompt = isPracticeMode 
-    ? `You are a NATIVE ${language} speaker asking a question during a Q&A session about ${topic}.${personalityContext}
+    ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER asking a question during a Q&A practice session about ${topic}.${personalityContext}
+
+DIFFICULTY LEVEL: ${difficulty}
+${practiceTeachingGuidelines[difficulty] || practiceTeachingGuidelines.Medium}
 
 Target vocabulary to incorporate: ${vocabulary.join(", ")}
 ${previousQuestions.length > 0 ? `\nPrevious questions you asked:\n${previousQuestions.join("\n")}\n\nMake sure to ask a DIFFERENT question.` : ""}
 
-Generate ONE PERFECT question in ${language} that:
+Generate ONE question in ${language} that:
 - Uses at least one vocabulary word from the list
 - Is relevant to the topic "${topic}"
-- Uses PERFECT grammar, vocabulary, and natural phrasing
-- Sounds like a native speaker would speak
-- Is clear and natural
+- Uses PERFECT grammar (no mistakes - you are teaching!)
+- Matches the language complexity for ${difficulty} level learners
+- Helps the student practice at their appropriate level
 ${botPersonality ? '- Reflects your personality and background' : ''}
 
-IMPORTANT: Generate PERFECT ${language}. No mistakes. This is for language practice.
+CRITICAL: Use PERFECT ${language} with NO mistakes, but adjust vocabulary complexity and sentence length for ${difficulty} level. You are a teacher helping students learn at their level.
 
 Respond with ONLY the question in ${language}, nothing else.`
     : `You are roleplaying as a human ${language} language LEARNER (not a teacher) asking a question during a Q&A session about ${topic}.${personalityContext}
@@ -397,7 +427,7 @@ Respond with ONLY the question in ${language}, nothing else.`;
         {
           role: "system",
           content: isPracticeMode
-            ? `You are a NATIVE ${language} speaker. Generate PERFECT ${language} with no mistakes. This is for language practice.`
+            ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER. Generate PERFECT ${language} with no mistakes, but adjust vocabulary complexity and sentence length for ${difficulty} level learners. You are teaching, not testing - help students learn at their appropriate level.`
             : `You are roleplaying as a ${language} language learner at ${difficulty} level with ${targetAccuracy}% proficiency. You make realistic, believable mistakes that real learners make. You are NOT a teacher - you are a student with imperfect language skills.`
         },
         {
@@ -533,22 +563,52 @@ ERROR PATTERN: Make 1 subtle mistake:
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
   const personalityContext = botPersonality ? `\n\nYour character/personality: ${botPersonality}` : '';
 
+  const practiceTeachingGuidelinesAnswer: Record<string, string> = {
+    Beginner: `TEACHING APPROACH for ABSOLUTE BEGINNERS:
+- Use ONLY the most basic vocabulary (be, have, want, like, yes, no, good, bad)
+- Keep answers VERY short (3-8 words, one simple sentence)
+- Use only present tense and basic patterns
+- Speak simply and clearly, like teaching a child
+- Examples: "I like it.", "Yes, this is good.", "I want to go."`,
+    Easy: `TEACHING APPROACH for EARLY LEARNERS:
+- Use simple, everyday vocabulary
+- Keep answers short and clear (1-2 simple sentences)
+- Use common verbs and nouns (think, know, home, food, friend)
+- Avoid idioms and complex structures
+- Examples: "I like to eat pasta. It is very good.", "My home is in the city."`,
+    Medium: `TEACHING APPROACH for INTERMEDIATE LEARNERS:
+- Use standard conversational vocabulary
+- Natural sentences with everyday expressions (1-2 sentences)
+- Can include common idioms
+- Normal conversational complexity
+- Examples: "I usually spend weekends with my family. We often go to the park.", "I feel positive about this because it's very interesting."`,
+    Hard: `TEACHING APPROACH for ADVANCED LEARNERS:
+- Use sophisticated, nuanced vocabulary
+- Complex sentences with advanced expressions (1-2 sentences)
+- Include idiomatic phrases and cultural references
+- Challenge with native-level language
+- Examples: "This has significant implications for our understanding of the subject, particularly regarding the cultural context.", "I would characterize their relationship as nuanced and deeply influenced by historical factors."`
+  };
+
   const prompt = isPracticeMode
-    ? `You are a NATIVE ${language} speaker answering a question during a Q&A session about ${topic}.${personalityContext}
+    ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER answering a question during a Q&A practice session about ${topic}.${personalityContext}
+
+DIFFICULTY LEVEL: ${difficulty}
+${practiceTeachingGuidelinesAnswer[difficulty] || practiceTeachingGuidelinesAnswer.Medium}
 
 Question you're answering: ${userQuestion}
 
 Target vocabulary to incorporate: ${vocabulary.join(", ")}
 
-Answer the question in ${language} with 1-2 sentences that:
-- Directly answer the question
-- Naturally incorporate at least one vocabulary word from the list
-- Uses PERFECT grammar, vocabulary, and natural phrasing
-- Sounds like a native speaker would speak
-- Is clear and natural
+Answer the question in ${language} that:
+- Directly answers the question
+- Naturally incorporates at least one vocabulary word from the list
+- Uses PERFECT grammar (no mistakes - you are teaching!)
+- Matches the language complexity for ${difficulty} level learners
+- Helps the student learn at their appropriate level
 ${botPersonality ? '- Reflects your personality and background' : ''}
 
-IMPORTANT: Generate PERFECT ${language}. No mistakes. This is for language practice.
+CRITICAL: Use PERFECT ${language} with NO mistakes, but adjust vocabulary complexity and sentence length for ${difficulty} level. You are a teacher helping students learn at their level.
 
 Respond with ONLY the answer in ${language}, nothing else.`
     : `You are roleplaying as a human ${language} language LEARNER (not a native speaker) answering a question during a Q&A session about ${topic}.${personalityContext}
@@ -581,7 +641,7 @@ Respond with ONLY the answer in ${language}, nothing else.`;
         {
           role: "system",
           content: isPracticeMode 
-            ? `You are a NATIVE ${language} speaker. Generate PERFECT ${language} with no mistakes. This is for language practice.`
+            ? `You are a NATIVE ${language} speaker and LANGUAGE TEACHER. Generate PERFECT ${language} with no mistakes, but adjust vocabulary complexity and sentence length for ${difficulty} level learners. You are teaching, not testing - help students learn at their appropriate level.`
             : `You are roleplaying as a ${language} language learner at ${difficulty} level with ${targetAccuracy}% proficiency. You make realistic, believable mistakes that real learners make. You are NOT a native speaker - you are a student with imperfect language skills.`
         },
         {
