@@ -21,6 +21,7 @@ import Friends from "@/components/Friends";
 import Analytics from "@/components/Analytics";
 import { StreakNotification } from "@/components/StreakNotification";
 import LevelUpDialog from "@/components/LevelUpDialog";
+import InitialLevelDialog from "@/components/InitialLevelDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
@@ -67,6 +68,9 @@ function MainApp() {
     language: string;
   } | null>(null);
   
+  // Initial level selection state
+  const [showInitialLevelDialog, setShowInitialLevelDialog] = useState(false);
+  
   // Streak notification state
   const [streakNotification, setStreakNotification] = useState<{
     type: "win" | "daily";
@@ -93,6 +97,22 @@ function MainApp() {
     queryKey: [`/api/user/stats/${currentLanguage}`],
     enabled: isAuthenticated,
   });
+
+  // Check if user needs to select initial level
+  useEffect(() => {
+    if (isAuthenticated && languageStats) {
+      // For authenticated users, check if they've selected initial level
+      if (languageStats.initialLevelSelected === 0) {
+        setShowInitialLevelDialog(true);
+      }
+    } else if (isGuestMode) {
+      // For guests, check localStorage
+      const hasSelected = localStorage.getItem(`initial_level_selected_${currentLanguage}`) === 'true';
+      if (!hasSelected) {
+        setShowInitialLevelDialog(true);
+      }
+    }
+  }, [isAuthenticated, isGuestMode, languageStats, currentLanguage]);
 
   // Reset streak refs when language or user changes to prevent false notifications
   useEffect(() => {
@@ -627,6 +647,21 @@ function MainApp() {
     }
   };
 
+  const handleInitialLevelComplete = async (selectedElo?: number) => {
+    // For guests, update ELO in localStorage and mark as complete
+    if (isGuestMode && selectedElo) {
+      const newGuestStats = { elo: selectedElo, wins: 0, losses: 0 };
+      setGuestStats(newGuestStats);
+      localStorage.setItem(`guest_${currentLanguage}`, JSON.stringify(newGuestStats));
+      localStorage.setItem(`initial_level_selected_${currentLanguage}`, 'true');
+      setShowInitialLevelDialog(false);
+    } else if (!isGuestMode) {
+      // For authenticated users, refetch stats and close dialog
+      await refetchStats();
+      setShowInitialLevelDialog(false);
+    }
+  };
+
   const handleForfeit = async () => {
     if (!matchData) return;
     
@@ -690,6 +725,14 @@ function MainApp() {
           newLevel={levelUpInfo.newLevel}
         />
       )}
+      
+      {/* Initial Level Selection Dialog */}
+      <InitialLevelDialog
+        open={showInitialLevelDialog}
+        language={currentLanguage}
+        onComplete={handleInitialLevelComplete}
+        isGuestMode={isGuestMode}
+      />
       
       <Header 
         username={username} 

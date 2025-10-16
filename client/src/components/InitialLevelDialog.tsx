@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 interface InitialLevelDialogProps {
   open: boolean;
   language: string;
-  onComplete: () => void;
+  onComplete: (selectedElo?: number) => void;
+  isGuestMode?: boolean;
 }
 
 const levelOptions = [
@@ -40,7 +41,7 @@ const levelOptions = [
   }
 ];
 
-export default function InitialLevelDialog({ open, language, onComplete }: InitialLevelDialogProps) {
+export default function InitialLevelDialog({ open, language, onComplete, isGuestMode = false }: InitialLevelDialogProps) {
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -67,7 +68,17 @@ export default function InitialLevelDialog({ open, language, onComplete }: Initi
   const handleConfirm = () => {
     const level = levelOptions.find(l => l.id === selectedLevel);
     if (level) {
-      setInitialLevelMutation.mutate(level.elo);
+      if (isGuestMode) {
+        // For guests, just call onComplete with the selected ELO
+        toast({
+          title: "Level Set!",
+          description: `Your starting level for ${language} has been set.`
+        });
+        onComplete(level.elo);
+      } else {
+        // For authenticated users, make API call
+        setInitialLevelMutation.mutate(level.elo);
+      }
     }
   };
 
