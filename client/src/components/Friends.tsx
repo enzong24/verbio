@@ -256,6 +256,66 @@ export default function Friends() {
         </CardContent>
       </Card>
 
+      {/* Pending Match Challenges */}
+      {challenges.length > 0 && (
+        <Card className="mb-6 border-card-border border-primary/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Swords className="w-5 h-5 text-primary" />
+              Match Challenges ({challenges.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {challenges.map((challenge) => (
+                <div
+                  key={challenge.id}
+                  className="flex items-center justify-between p-3 rounded-md bg-muted/50"
+                  data-testid={`challenge-card-${challenge.id}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        {(challenge.creatorUser.firstName || challenge.creatorUser.email || "?")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium">{challenge.creatorUser.firstName || challenge.creatorUser.email}</div>
+                      <div className="text-xs text-muted-foreground flex gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">{challenge.language}</Badge>
+                        <Badge variant="outline" className="text-xs">{challenge.difficulty}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => acceptChallengeMutation.mutate(challenge.id)}
+                      disabled={acceptChallengeMutation.isPending}
+                      data-testid={`button-accept-challenge-${challenge.id}`}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => rejectChallengeMutation.mutate(challenge.id)}
+                      disabled={rejectChallengeMutation.isPending}
+                      data-testid={`button-reject-challenge-${challenge.id}`}
+                    >
+                      Ignore
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Pending Friend Requests */}
       {requests.length > 0 && (
         <Card className="mb-6 border-card-border">
