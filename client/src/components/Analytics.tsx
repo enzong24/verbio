@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Trophy, Target, Zap, Flame, BarChart3, Calendar } from "lucide-react";
+import { TrendingUp, Trophy, Target, Zap, Flame, BarChart3, Calendar, BookOpen, AlertCircle } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { formatDistanceToNow, format, subDays } from "date-fns";
 import type { Match, UserLanguageStats } from "@shared/schema";
@@ -32,6 +32,17 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
     naturalness: number;
   }>({
     queryKey: [`/api/user/skill-progress?language=${currentLanguage}`],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch study recommendations
+  const { data: studyRecommendations } = useQuery<{
+    grammarIssues: { issue: string; count: number }[];
+    vocabularyTips: { tip: string; count: number }[];
+    generalAdvice: { advice: string; count: number }[];
+    totalMatches: number;
+  }>({
+    queryKey: [`/api/user/study-recommendations?language=${currentLanguage}`],
     enabled: isAuthenticated,
   });
 
@@ -67,21 +78,12 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
       };
     });
 
-  // Performance by difficulty
-  const performanceByDifficulty = ['Beginner', 'Easy', 'Medium', 'Hard'].map(diff => {
-    const difficultyMatches = matches.filter(m => m.difficulty === diff);
-    const wins = difficultyMatches.filter(m => m.result === 'win').length;
-    const losses = difficultyMatches.filter(m => m.result === 'loss').length;
-    const total = wins + losses;
-    
-    return {
-      difficulty: diff,
-      wins,
-      losses,
-      winRate: total > 0 ? Math.round((wins / total) * 100) : 0,
-      total
-    };
-  }).filter(d => d.total > 0);
+  // Study recommendations data
+  const hasRecommendations = studyRecommendations && 
+    studyRecommendations.totalMatches > 0 && 
+    (studyRecommendations.grammarIssues.length > 0 || 
+     studyRecommendations.vocabularyTips.length > 0 || 
+     studyRecommendations.generalAdvice.length > 0);
 
   // Recent performance (last 10 matches)
   const recentMatches = matches.slice(0, 10);
@@ -205,33 +207,69 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance by Difficulty */}
-        {performanceByDifficulty.length > 0 && (
+        {/* Study Recommendations */}
+        {hasRecommendations && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
-                Performance by Difficulty
+                <BookOpen className="w-5 h-5" />
+                Focus Areas
               </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Based on {studyRecommendations.totalMatches} recent matches with AI feedback
+              </p>
             </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={performanceByDifficulty}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="difficulty" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--card-border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="wins" fill="hsl(var(--success))" name="Wins" />
-                  <Bar dataKey="losses" fill="hsl(var(--destructive))" name="Losses" />
-                </BarChart>
-              </ResponsiveContainer>
+            <CardContent className="space-y-4">
+              {studyRecommendations.grammarIssues.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4 text-destructive" />
+                    Common Grammar Patterns
+                  </h4>
+                  <div className="space-y-1.5">
+                    {studyRecommendations.grammarIssues.slice(0, 3).map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm">
+                        <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                        <span className="text-muted-foreground">{item.issue}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {studyRecommendations.vocabularyTips.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
+                    <Target className="w-4 h-4 text-primary" />
+                    Vocabulary Improvements
+                  </h4>
+                  <div className="space-y-1.5">
+                    {studyRecommendations.vocabularyTips.slice(0, 3).map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm">
+                        <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                        <span className="text-muted-foreground">{item.tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {studyRecommendations.generalAdvice.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4 text-success" />
+                    General Improvements
+                  </h4>
+                  <div className="space-y-1.5">
+                    {studyRecommendations.generalAdvice.slice(0, 3).map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-sm">
+                        <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                        <span className="text-muted-foreground">{item.advice}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
@@ -283,42 +321,26 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                <div>
-                  <p className="text-sm text-muted-foreground">Recent Win Rate</p>
-                  <p className="text-2xl font-bold font-mono">{recentWinRate}%</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {recentWins}W - {recentMatches.length - recentWins}L
-                  </p>
-                </div>
-                <div className="flex gap-1">
-                  {recentMatches.map((match, i) => (
-                    <div
-                      key={i}
-                      className={`w-8 h-8 rounded-md flex items-center justify-center ${
-                        match.result === 'win' 
-                          ? 'bg-success/20 text-success' 
-                          : 'bg-destructive/20 text-destructive'
-                      }`}
-                      title={`vs ${match.opponent} - ${match.result === 'win' ? 'Win' : 'Loss'}`}
-                    >
-                      {match.result === 'win' ? 'W' : 'L'}
-                    </div>
-                  ))}
-                </div>
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div>
+                <p className="text-sm text-muted-foreground">Recent Win Rate</p>
+                <p className="text-2xl font-bold font-mono">{recentWinRate}%</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {recentWins}W - {recentMatches.length - recentWins}L
+                </p>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {performanceByDifficulty.map((diff) => (
-                  <div key={diff.difficulty} className="p-3 border border-card-border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline">{diff.difficulty}</Badge>
-                      <span className="text-sm font-mono font-semibold">{diff.winRate}%</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {diff.wins}W - {diff.losses}L ({diff.total} total)
-                    </div>
+              <div className="flex gap-1">
+                {recentMatches.map((match, i) => (
+                  <div
+                    key={i}
+                    className={`w-8 h-8 rounded-md flex items-center justify-center ${
+                      match.result === 'win' 
+                        ? 'bg-success/20 text-success' 
+                        : 'bg-destructive/20 text-destructive'
+                    }`}
+                    title={`vs ${match.opponent} - ${match.result === 'win' ? 'Win' : 'Loss'}`}
+                  >
+                    {match.result === 'win' ? 'W' : 'L'}
                   </div>
                 ))}
               </div>
