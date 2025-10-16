@@ -1,5 +1,5 @@
 import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/hooks/use-sound";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, endOfMonth, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 import type { Match } from "@shared/schema";
 import {
   DropdownMenu,
@@ -80,9 +80,34 @@ export default function Header({
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const { setEnabled, isEnabled } = useSound();
   const [soundEnabled, setSoundEnabled] = useState(isEnabled());
+  const [timeUntilReset, setTimeUntilReset] = useState('');
 
   const totalMatches = wins + losses;
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+  // Calculate time until end of month
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const monthEnd = endOfMonth(now);
+      const days = differenceInDays(monthEnd, now);
+      const hours = differenceInHours(monthEnd, now) % 24;
+      const minutes = differenceInMinutes(monthEnd, now) % 60;
+
+      if (days > 0) {
+        setTimeUntilReset(`Resets in ${days}d ${hours}h`);
+      } else if (hours > 0) {
+        setTimeUntilReset(`Resets in ${hours}h ${minutes}m`);
+      } else {
+        setTimeUntilReset(`Resets in ${minutes}m`);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleSound = () => {
     const newState = !soundEnabled;
@@ -162,10 +187,6 @@ export default function Header({
           </Select>
           {!hideProfile && (
             <>
-              {isPremium && (
-                <Crown className="w-5 h-5 text-yellow-500 hidden md:block" data-testid="icon-premium-crown-header" />
-              )}
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" data-testid="button-profile-dropdown">
@@ -182,8 +203,38 @@ export default function Header({
                 </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-1.5">
-                <p className="text-sm font-semibold">{username}</p>
-                <p className="text-xs text-muted-foreground">{currentLanguage}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold">{username}</p>
+                  {isPremium && (
+                    <Badge 
+                      variant="default" 
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 font-bold"
+                      data-testid="badge-premium-dropdown"
+                    >
+                      <Crown className="w-3 h-3" />
+                      PRO
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-xs text-muted-foreground">{currentLanguage}</p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge 
+                        variant="outline" 
+                        className="font-bold text-xs cursor-help"
+                        data-testid="badge-fluency-level-dropdown"
+                      >
+                        {fluencyLevel.level}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs" data-testid="tooltip-fluency-level-dropdown">
+                      <p className="font-semibold mb-1">CEFR Level: {fluencyLevel.level}</p>
+                      <p className="text-xs text-muted-foreground mb-2">Common European Framework of Reference for Languages</p>
+                      <p className="text-sm">{fluencyLevel.description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
                   <p className="text-xs font-mono font-semibold" data-testid="text-fluency-score-dropdown">{elo} Fluency Score</p>
@@ -554,7 +605,7 @@ export default function Header({
             
             <TabsContent value="leaderboard" className="mt-4">
               <div className="mb-3 text-center">
-                <p className="text-xs text-muted-foreground">Resets every month</p>
+                <p className="text-xs text-muted-foreground">{timeUntilReset}</p>
               </div>
               <Card className="border-card-border">
                 <CardHeader className="pb-3">
