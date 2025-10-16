@@ -765,8 +765,7 @@ export default function DuelInterface({
             <div className="flex-1 overflow-y-auto p-2 md:p-6 space-y-2 md:space-y-4" data-testid="chat-messages">
               {messages.map((msg, idx) => {
                 const isBotMessage = msg.sender === "opponent";
-                const isBeginnerMode = difficulty === "Beginner";
-                const shouldShowTranslation = isBotMessage && isBeginnerMode;
+                const shouldShowTranslation = isBotMessage && isPracticeMode;
                 const isHovered = hoveredMessageIndex === idx;
                 const translation = translations[idx];
 
