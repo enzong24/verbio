@@ -301,6 +301,45 @@ export default function DuelInterface({
     }
   }, []);
 
+  // Lock body scroll when keyboard opens, but allow messages to scroll
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    const handleFocus = () => {
+      // Prevent body bounce/scroll on mobile when keyboard opens
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      scrollLockActiveRef.current = true;
+    };
+
+    const handleBlur = () => {
+      // Restore body scroll when keyboard closes
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      scrollLockActiveRef.current = false;
+    };
+
+    input.addEventListener('focus', handleFocus);
+    input.addEventListener('blur', handleBlur);
+
+    return () => {
+      input.removeEventListener('focus', handleFocus);
+      input.removeEventListener('blur', handleBlur);
+      // Cleanup on unmount
+      if (scrollLockActiveRef.current) {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        scrollLockActiveRef.current = false;
+      }
+    };
+  }, []);
 
   // Update when bot question is ready
   useEffect(() => {
