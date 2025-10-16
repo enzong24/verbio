@@ -33,7 +33,7 @@ const BOT_NAMES = [
 ];
 
 interface MatchFinderProps {
-  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number, isPracticeMode?: boolean, startsFirst?: boolean, matchId?: string, vocabularyFromServer?: any[]) => void;
+  onMatchFound?: (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topic?: string, opponentElo?: number, isPracticeMode?: boolean, startsFirst?: boolean, matchId?: string, vocabularyFromServer?: any[], botId?: string) => void;
   currentLanguage?: Language;
   userElo?: number;
   userWins?: number;
@@ -214,24 +214,25 @@ export default function MatchFinder({
     practiceLoadingRef.current = false;
   };
 
-  const handleBotSelected = (botId: string) => {
+  const handleBotSelected = async (botId: string) => {
     // Start practice match with selected bot
     setIsPracticeLoading(true);
     
-    // Fetch bot name from API (we'll use the botId and pass it to the match)
-    fetch(`/api/bots/${botId}`)
-      .then(res => res.json())
-      .then(bot => {
-        const topic = selectedTopic === "random" ? undefined : selectedTopic;
-        onMatchFound?.(bot.name, true, currentLanguage, selectedDifficulty, topic, 1000, true);
-      })
-      .catch(err => {
-        console.error('Error fetching bot:', err);
-        // Fallback to random bot name
-        const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
-        const topic = selectedTopic === "random" ? undefined : selectedTopic;
-        onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true);
-      });
+    try {
+      // Fetch bot details
+      const response = await fetch(`/api/bots/${botId}`);
+      const bot = await response.json();
+      
+      const topic = selectedTopic === "random" ? undefined : selectedTopic;
+      // Pass bot name, and botId as the last parameter
+      onMatchFound?.(bot.name, true, currentLanguage, selectedDifficulty, topic, 1000, true, undefined, undefined, undefined, botId);
+    } catch (err) {
+      console.error('Error fetching bot:', err);
+      // Fallback to random bot name without botId
+      const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+      const topic = selectedTopic === "random" ? undefined : selectedTopic;
+      onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true);
+    }
   };
 
   return (

@@ -49,6 +49,7 @@ function MainApp() {
     startsFirst?: boolean;
     matchId?: string;
     playerId?: string;
+    botId?: string;
   } | null>(null);
   const [gradingResult, setGradingResult] = useState<GradingResult | null>(null);
   const [matchMessages, setMatchMessages] = useState<any[]>([]);
@@ -327,7 +328,7 @@ function MainApp() {
   // Use authenticated userId if available, otherwise use session ID for guests
   const playerId = user?.id || getSessionId();
 
-  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean, matchId?: string, vocabularyFromServer?: any[]) => {
+  const handleMatchFound = async (opponent: string, isBot: boolean, language: Language, difficulty: Difficulty, topicId?: string, opponentElo?: number, isPracticeMode: boolean = false, startsFirst?: boolean, matchId?: string, vocabularyFromServer?: any[], botId?: string) => {
     // Use selected topic or random if not specified
     const theme = topicId ? THEMES.find(t => t.id === topicId) || THEMES[Math.floor(Math.random() * THEMES.length)] : THEMES[Math.floor(Math.random() * THEMES.length)];
     
@@ -354,6 +355,7 @@ function MainApp() {
         startsFirst,
         matchId,
         playerId: playerId,
+        botId,
       });
       setCurrentPage("match");
       return;
@@ -394,6 +396,7 @@ function MainApp() {
         startsFirst,
         matchId,
         playerId: playerId,
+        botId,
       });
       setCurrentPage("match");
     } catch (error) {
@@ -441,6 +444,7 @@ function MainApp() {
         startsFirst,
         matchId,
         playerId: playerId,
+        botId,
       });
       setCurrentPage("match");
     }
@@ -689,6 +693,7 @@ function MainApp() {
             onForfeit={handleForfeit}
             startsFirst={matchData.startsFirst}
             matchId={matchData.matchId}
+            botId={matchData.botId}
             playerId={matchData.playerId}
             multiplayerWsRef={multiplayerWsRef}
           />

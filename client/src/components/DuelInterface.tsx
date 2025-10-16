@@ -38,6 +38,7 @@ interface DuelInterfaceProps {
   matchId?: string;
   playerId?: string;
   multiplayerWsRef?: React.MutableRefObject<WebSocket | null>;
+  botId?: string;
 }
 
 type TurnPhase = "bot-question" | "user-answer" | "user-question" | "bot-answer";
@@ -63,7 +64,8 @@ export default function DuelInterface({
   startsFirst = false,
   matchId,
   playerId,
-  multiplayerWsRef
+  multiplayerWsRef,
+  botId
 }: DuelInterfaceProps) {
   const { toast } = useToast();
 
@@ -133,7 +135,8 @@ export default function DuelInterface({
         language,
         difficulty,
         previousQuestions: botQuestions,
-        isPracticeMode
+        isPracticeMode,
+        botId
       });
       return await response.json();
     },
@@ -202,7 +205,8 @@ export default function DuelInterface({
         vocabulary: vocabStrings,
         language,
         difficulty,
-        isPracticeMode
+        isPracticeMode,
+        botId
       });
       return await response.json();
     },
