@@ -350,13 +350,15 @@ ERROR PATTERN: Make 1 subtle mistake:
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
 
-  // Create rich character context for practice mode
+  // Create rich character context
   const characterContext = (botPersonality || botBackstory) 
     ? `\n\n=== YOUR CHARACTER ===
 ${botBackstory ? `Background: ${botBackstory}` : ''}
 ${botPersonality ? `${botBackstory ? '\n' : ''}Personality: ${botPersonality}` : ''}
 
-${isPracticeMode ? 'IMPORTANT: Let your personality and background shine through naturally in your teaching! Reference your experiences, use examples from your life, and teach in a way that reflects who you are.' : ''}` 
+${isPracticeMode 
+  ? 'IMPORTANT: Let your personality and background shine through naturally in your teaching! Reference your experiences, use examples from your life, and teach in a way that reflects who you are.' 
+  : 'IMPORTANT: Let your personality and background shine through in your questions! Ask about topics related to your interests and experiences. Your personality should be evident in what you ask and how you phrase it.'}` 
     : '';
 
   const practiceTeachingGuidelines: Record<string, string> = {
@@ -571,13 +573,15 @@ ERROR PATTERN: Make 1 subtle mistake:
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
   
-  // Create rich character context for practice mode
+  // Create rich character context
   const characterContext = (botPersonality || botBackstory) 
     ? `\n\n=== YOUR CHARACTER ===
 ${botBackstory ? `Background: ${botBackstory}` : ''}
 ${botPersonality ? `${botBackstory ? '\n' : ''}Personality: ${botPersonality}` : ''}
 
-${isPracticeMode ? 'IMPORTANT: Let your personality and background shine through naturally in your answers! Reference your experiences, use examples from your life, and respond in a way that reflects who you are.' : ''}` 
+${isPracticeMode 
+  ? 'IMPORTANT: Let your personality and background shine through naturally in your answers! Reference your experiences, use examples from your life, and respond in a way that reflects who you are.' 
+  : 'IMPORTANT: Let your personality and background shine through in your answers! Draw from your experiences and interests when answering. Your personality should be evident in your examples and how you respond.'}` 
     : '';
 
   const practiceTeachingGuidelinesAnswer: Record<string, string> = {
