@@ -423,6 +423,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Set initial proficiency level for a language
+  app.post("/api/user/set-initial-level", async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { language, elo } = req.body;
+      
+      if (!language || !elo) {
+        return res.status(400).json({ message: "Language and ELO are required" });
+      }
+
+      // Validate ELO is one of the allowed values
+      const allowedElos = [700, 1000, 1300];
+      if (!allowedElos.includes(elo)) {
+        return res.status(400).json({ message: "Invalid ELO value" });
+      }
+
+      // Get or create stats
+      let stats = await storage.getUserLanguageStats(userId, language);
+      
+      // Update the stats with the initial ELO and mark as selected
+      const updatedStats = await storage.setInitialLevel(userId, language, elo);
+
+      res.json(updatedStats);
+    } catch (error) {
+      console.error("Error setting initial level:", error);
+      res.status(500).json({ message: "Failed to set initial level" });
+    }
+  });
+
   // Save match result
   app.post("/api/match/save", async (req: any, res) => {
     try {

@@ -33,6 +33,7 @@ export interface IStorage {
   getUserLanguageStats(userId: string, language: string): Promise<UserLanguageStats | undefined>;
   upsertUserLanguageStats(stats: InsertUserLanguageStats): Promise<UserLanguageStats>;
   getAllLanguageStats(language: string): Promise<UserLanguageStats[]>;
+  setInitialLevel(userId: string, language: string, elo: number): Promise<UserLanguageStats>;
   
   // Match history
   createMatch(match: InsertMatch): Promise<Match>;
@@ -162,6 +163,7 @@ export class MemStorage implements IStorage {
       dailyLoginStreak: statsData.dailyLoginStreak ?? existing?.dailyLoginStreak ?? 0,
       lastLoginDate: statsData.lastLoginDate ?? existing?.lastLoginDate ?? null,
       highestFluencyLevel: statsData.highestFluencyLevel ?? existing?.highestFluencyLevel ?? "A1",
+      initialLevelSelected: existing?.initialLevelSelected ?? 0,
       createdAt: existing?.createdAt || new Date(),
       updatedAt: new Date(),
     };
@@ -171,6 +173,29 @@ export class MemStorage implements IStorage {
 
   async getAllLanguageStats(language: string): Promise<UserLanguageStats[]> {
     return Array.from(this.languageStats.values()).filter(stats => stats.language === language);
+  }
+
+  async setInitialLevel(userId: string, language: string, elo: number): Promise<UserLanguageStats> {
+    const key = `${userId}-${language}`;
+    const existing = this.languageStats.get(key);
+    const stats: UserLanguageStats = {
+      id: existing?.id || crypto.randomUUID(),
+      userId,
+      language,
+      elo,
+      wins: existing?.wins ?? 0,
+      losses: existing?.losses ?? 0,
+      winStreak: existing?.winStreak ?? 0,
+      bestWinStreak: existing?.bestWinStreak ?? 0,
+      dailyLoginStreak: existing?.dailyLoginStreak ?? 0,
+      lastLoginDate: existing?.lastLoginDate ?? null,
+      highestFluencyLevel: existing?.highestFluencyLevel ?? "A1",
+      initialLevelSelected: 1,
+      createdAt: existing?.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
+    this.languageStats.set(key, stats);
+    return stats;
   }
 
   async createMatch(matchData: InsertMatch): Promise<Match> {
@@ -636,6 +661,40 @@ export class DbStorage implements IStorage {
       .from(userLanguageStats)
       .where(eq(userLanguageStats.language, language))
       .orderBy(desc(userLanguageStats.elo));
+  }
+
+  async setInitialLevel(userId: string, language: string, elo: number): Promise<UserLanguageStats> {
+    // Check if stats already exist
+    const existing = await this.getUserLanguageStats(userId, language);
+    
+    if (existing) {
+      // Update existing stats with initial ELO and mark as selected
+      const result = await db
+        .update(userLanguageStats)
+        .set({
+          elo,
+          initialLevelSelected: 1,
+          updatedAt: new Date(),
+        })
+        .where(and(
+          eq(userLanguageStats.userId, userId),
+          eq(userLanguageStats.language, language)
+        ))
+        .returning();
+      return result[0];
+    } else {
+      // Insert new stats with initial ELO
+      const result = await db
+        .insert(userLanguageStats)
+        .values({
+          userId,
+          language,
+          elo,
+          initialLevelSelected: 1,
+        })
+        .returning();
+      return result[0];
+    }
   }
 
   async createMatch(matchData: InsertMatch): Promise<Match> {
