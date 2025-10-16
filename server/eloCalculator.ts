@@ -6,6 +6,37 @@ interface EloResult {
   result: "win" | "loss" | "draw";
 }
 
+interface StreakMultiplier {
+  multiplier: number;
+  dayStreakBonus: number;
+  winStreakBonus: number;
+}
+
+/**
+ * Calculate streak multiplier based on day streak and win streak
+ * Day streak: +5% per tier (every 3 days), capped at +20% (4 tiers max)
+ * Win streak: +10% per tier (every 2 wins), capped at +30% (3 tiers max)
+ * Total multiplier capped at 1.5x
+ */
+export function calculateStreakMultiplier(dayStreak: number, winStreak: number): StreakMultiplier {
+  // Day streak tiers: 1 tier per 3 days, max 4 tiers (20%)
+  const dayTiers = Math.min(4, Math.floor(dayStreak / 3));
+  const dayStreakBonus = dayTiers * 0.05;
+  
+  // Win streak tiers: 1 tier per 2 wins, max 3 tiers (30%)
+  const winTiers = Math.min(3, Math.floor(winStreak / 2));
+  const winStreakBonus = winTiers * 0.10;
+  
+  // Calculate total multiplier, capped at 1.5x
+  const multiplier = Math.min(1.5, 1 + dayStreakBonus + winStreakBonus);
+  
+  return {
+    multiplier,
+    dayStreakBonus,
+    winStreakBonus
+  };
+}
+
 /**
  * Calculate K-factor based on Elo rating (Chess.com style)
  * Higher K-factor for lower ratings, lower K-factor for higher ratings
@@ -23,13 +54,16 @@ function getKFactor(elo: number): number {
  * Implements Chess.com-style Elo calculation:
  * - Dynamic K-factor based on rating
  * - 300+ Elo difference rule: no gain for winning against much lower opponent, but still lose points
+ * - Streak multiplier on wins only
  */
 export function calculateComparativeElo(
   userElo: number,
   botElo: number,
   userScore: number,
-  botScore: number
-): EloResult {
+  botScore: number,
+  dayStreak: number = 0,
+  winStreak: number = 0
+): EloResult & { streakMultiplier?: StreakMultiplier } {
   // Determine result based on scores
   let result: "win" | "loss" | "draw";
   let actualScore: number; // 1 for win, 0 for loss, 0.5 for draw
@@ -73,12 +107,20 @@ export function calculateComparativeElo(
     }
   }
 
+  // Apply streak multiplier ONLY on wins
+  let streakMultiplier: StreakMultiplier | undefined;
+  if (result === "win" && eloChange > 0) {
+    streakMultiplier = calculateStreakMultiplier(dayStreak, winStreak);
+    eloChange = Math.round(eloChange * streakMultiplier.multiplier);
+  }
+
   const newElo = Math.max(0, userElo + eloChange);
 
   return {
     newElo,
     eloChange,
     result,
+    streakMultiplier,
   };
 }
 
