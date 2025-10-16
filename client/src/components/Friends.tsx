@@ -279,7 +279,7 @@ export default function Friends() {
             My Friends ({friends.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="max-h-[600px] overflow-y-auto">
           {friendsLoading && <div className="text-center py-8">Loading friends...</div>}
           
           {!friendsLoading && friends.length === 0 && (
@@ -298,8 +298,8 @@ export default function Friends() {
                     className="flex items-start justify-between p-4 rounded-md border border-card-border hover-elevate cursor-pointer transition-all"
                     data-testid={`friend-card-${friend.id}`}
                   >
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="relative">
+                    <div className="flex items-start gap-3 flex-1 min-w-0 overflow-hidden">
+                      <div className="relative flex-shrink-0">
                         <Avatar>
                           <AvatarFallback className="bg-primary/10 text-primary font-bold">
                             {(friend.friendUser.firstName || friend.friendUser.email || "?")
@@ -313,11 +313,11 @@ export default function Friends() {
                           }`}
                         />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium flex items-center gap-2">
-                          {friend.friendUser.firstName || friend.friendUser.email}
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="font-medium flex items-center gap-2 flex-wrap">
+                          <span className="truncate">{friend.friendUser.firstName || friend.friendUser.email}</span>
                           {online && (
-                            <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20">
+                            <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20 flex-shrink-0">
                               Online
                             </Badge>
                           )}
@@ -325,19 +325,19 @@ export default function Friends() {
                         <div className="text-sm text-muted-foreground truncate">
                           {friend.friendUser.email}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="text-xs text-muted-foreground mt-1 truncate">
                           {getLastSeenText(friend.friendUser)}
                         </div>
                         {friend.friendStats && (
-                          <div className="text-xs text-muted-foreground mt-2 flex gap-3">
-                            <span>Fluency Score: <span className="font-mono font-semibold text-foreground">{friend.friendStats.elo}</span></span>
-                            <span className="text-success">{friend.friendStats.wins}W</span>
-                            <span className="text-destructive">{friend.friendStats.losses}L</span>
+                          <div className="text-xs text-muted-foreground mt-2 flex gap-3 flex-wrap">
+                            <span className="truncate">Fluency Score: <span className="font-mono font-semibold text-foreground">{friend.friendStats.elo}</span></span>
+                            <span className="text-success flex-shrink-0">{friend.friendStats.wins}W</span>
+                            <span className="text-destructive flex-shrink-0">{friend.friendStats.losses}L</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 flex-shrink-0">
                       <Button
                         size="sm"
                         variant="default"

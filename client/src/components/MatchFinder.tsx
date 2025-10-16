@@ -396,6 +396,7 @@ export default function MatchFinder({
                 <Button
                   className="w-full text-lg font-semibold min-h-[56px] md:min-h-[48px]"
                   variant={isSearching ? "destructive" : "default"}
+                  style={!isSearching ? { backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))', borderColor: 'hsl(var(--accent))' } : undefined}
                   onClick={handleFindMatch}
                   disabled={!isConnected || !canPlay || !difficultyAccess.allowed}
                   data-testid="button-find-match"

@@ -168,7 +168,7 @@ export default function Header({
                   PRO
                 </Badge>
               )}
-              <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
+              <Badge variant="outline" className="font-mono font-semibold hidden md:flex" data-testid="badge-elo">
                 {elo} Fluency
               </Badge>
               
