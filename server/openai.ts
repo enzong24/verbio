@@ -269,27 +269,82 @@ export async function generateBotQuestion(
   };
 
   const difficultyInstructions: Record<string, string> = {
-    Beginner: `You are a TRUE BEGINNER learner (${targetAccuracy}% proficiency). Make 3-4 MAJOR mistakes:
-- Use VERY basic vocabulary (like "hello", "I", "you", "good") with many errors
+    Beginner: `You are a TRUE BEGINNER learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use ONLY the most basic, fundamental words that beginners learn first:
+- Basic verbs: be, have, want, like, go, eat, do, see, need
+- Basic nouns: I, you, he, she, thing, person, place, time, day
+- Basic adjectives: good, bad, big, small, happy, new, old
+- No complex words, no idioms, no advanced expressions
+- Stick to survival-level vocabulary only
+
+SENTENCE STRUCTURE: Use extremely simple structures:
+- Single words or 2-4 word fragments
+- Subject + verb only ("I go", "You like?")
+- No complex sentences, no subordinate clauses
+- Very basic, choppy expression
+
+ERROR PATTERN: Make 3-4 MAJOR mistakes:
 - Mix in English words when you don't know the target language word
-- Make SEVERE grammar mistakes - wrong word order, missing words, incorrect everything
-- Use single words or 2-3 word fragments instead of full sentences
+- SEVERE grammar mistakes - wrong word order, missing words, incorrect everything
 - Make it sound like someone in their first week of learning`,
-    Easy: `You are a BEGINNER learner (${targetAccuracy}% proficiency). Make 2-3 noticeable mistakes that beginners make:
-- Use extremely simple vocabulary but make basic grammar errors
-- Include hesitations or awkward phrasing
-- Make fundamental mistakes like wrong particles, basic word order, or article/gender errors
+    Easy: `You are a BEGINNER learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use simple, everyday vocabulary appropriate for early learners:
+- Common daily verbs: think, know, say, help, take, give, make, find
+- Common nouns: home, work, food, friend, family, city, country
+- Simple adjectives: nice, easy, difficult, important, interesting
+- Avoid idioms, avoid complex or technical terms
+- Elementary conversational level only
+
+SENTENCE STRUCTURE: Use simple, straightforward structures:
+- Short sentences with basic structures
+- Simple present/past tense primarily
+- Subject + verb + object patterns
+- Avoid complex clauses or advanced constructions
+
+ERROR PATTERN: Make 2-3 noticeable mistakes:
+- Basic grammar errors (particles, word order, articles/gender)
+- Include awkward phrasing or unnatural expressions
 - Keep questions short and simple despite the errors`,
-    Medium: `You are an INTERMEDIATE learner (${targetAccuracy}% proficiency). Make 1-2 moderate mistakes:
-- Use conversational vocabulary but include occasional grammar slips
-- Make mistakes like wrong verb conjugations, preposition errors, or measure word mistakes
+    Medium: `You are an INTERMEDIATE learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use standard conversational vocabulary:
+- Everyday conversational words and phrases
+- Common expressions and idioms
+- Mix of simple and moderately complex vocabulary
+- Normal social and casual register
+- Vocabulary appropriate for daily conversations
+
+SENTENCE STRUCTURE: Use natural conversational structures:
+- Full, complete sentences with natural flow
+- Mix of simple and compound sentences
+- Occasional complex structures
+- Normal spoken language patterns
+
+ERROR PATTERN: Make 1-2 moderate mistakes:
+- Occasional grammar slips (verb conjugations, prepositions, measure words)
 - Sound mostly natural but with noticeable learner imperfections
 - Questions are understandable but not perfect`,
-    Hard: `You are an ADVANCED learner (${targetAccuracy}% proficiency). Make 1 subtle mistake:
-- Use sophisticated vocabulary with minor errors
-- Include subtle issues like tone mistakes in Chinese, subjunctive errors in Spanish/Italian
-- Make mistakes that advanced learners commonly make
-- Questions are mostly fluent with only small imperfections`
+    Hard: `You are an ADVANCED learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use sophisticated, nuanced vocabulary:
+- Advanced vocabulary and expressions
+- Idiomatic phrases and cultural references
+- Precise, specific word choices
+- Formal and informal register variation
+- Near-native vocabulary range
+
+SENTENCE STRUCTURE: Use complex, natural structures:
+- Complex sentences with multiple clauses
+- Natural connecting phrases and transitions
+- Sophisticated grammatical constructions
+- Fluid, native-like expression
+
+ERROR PATTERN: Make 1 subtle mistake:
+- Minor errors that even advanced learners make (tone mistakes, subjunctive errors)
+- Mostly fluent with only small imperfections
+- Questions demonstrate high proficiency`
   };
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
@@ -396,27 +451,83 @@ export async function generateBotAnswer(
   };
 
   const difficultyInstructions: Record<string, string> = {
-    Beginner: `You are a TRUE BEGINNER learner (${targetAccuracy}% proficiency). Make 3-4 MAJOR mistakes:
-- Use VERY basic vocabulary (like "hello", "I", "you", "good") with many errors
+    Beginner: `You are a TRUE BEGINNER learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use ONLY the most basic, fundamental words that beginners learn first:
+- Basic verbs: be, have, want, like, go, eat, do, see, need
+- Basic nouns: I, you, he, she, thing, person, place, time, day
+- Basic adjectives: good, bad, big, small, happy, new, old
+- No complex words, no idioms, no advanced expressions
+- Stick to survival-level vocabulary only
+
+SENTENCE STRUCTURE: Use extremely simple structures:
+- Single words or 1-4 word fragments ("Good!", "I like", "Yes, me too")
+- Subject + verb only patterns
+- No complex sentences, no subordinate clauses
+- Very basic, choppy expression
+
+ERROR PATTERN: Make 3-4 MAJOR mistakes:
 - Mix in English words when you don't know the target language word
-- Make SEVERE grammar mistakes - wrong word order, missing words, incorrect everything
+- SEVERE grammar mistakes - wrong word order, missing words, incorrect everything
 - Keep answers VERY short - just 1-3 words or tiny fragments
 - Make it sound like someone in their first week of learning`,
-    Easy: `You are a BEGINNER learner (${targetAccuracy}% proficiency). Make 2-3 noticeable mistakes that beginners make:
-- Use extremely simple vocabulary but make basic grammar errors
+    Easy: `You are a BEGINNER learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use simple, everyday vocabulary appropriate for early learners:
+- Common daily verbs: think, know, say, help, take, give, make, find
+- Common nouns: home, work, food, friend, family, city, country
+- Simple adjectives: nice, easy, difficult, important, interesting
+- Avoid idioms, avoid complex or technical terms
+- Elementary conversational level only
+
+SENTENCE STRUCTURE: Use simple, straightforward structures:
+- Short sentences (1-2 simple sentences)
+- Simple present/past tense primarily
+- Subject + verb + object patterns
+- Avoid complex clauses or advanced constructions
+
+ERROR PATTERN: Make 2-3 noticeable mistakes:
+- Basic grammar errors (particles, word order, articles/gender)
 - Include awkward phrasing or unnatural expressions
-- Make fundamental mistakes like wrong particles, basic word order, or article/gender errors
-- Keep answers very short (1-2 simple sentences) despite the errors`,
-    Medium: `You are an INTERMEDIATE learner (${targetAccuracy}% proficiency). Make 1-2 moderate mistakes:
-- Use conversational vocabulary but include occasional grammar slips
-- Make mistakes like wrong verb conjugations, preposition errors, or measure word mistakes
+- Keep answers very short despite the errors`,
+    Medium: `You are an INTERMEDIATE learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use standard conversational vocabulary:
+- Everyday conversational words and phrases
+- Common expressions and idioms
+- Mix of simple and moderately complex vocabulary
+- Normal social and casual register
+- Vocabulary appropriate for daily conversations
+
+SENTENCE STRUCTURE: Use natural conversational structures:
+- Full, complete sentences (1-2 sentences)
+- Mix of simple and compound sentences
+- Occasional complex structures
+- Normal spoken language patterns
+
+ERROR PATTERN: Make 1-2 moderate mistakes:
+- Occasional grammar slips (verb conjugations, prepositions, measure words)
 - Sound mostly natural but with noticeable learner imperfections
 - Answers are understandable but not perfect`,
-    Hard: `You are an ADVANCED learner (${targetAccuracy}% proficiency). Make 1 subtle mistake:
-- Use sophisticated vocabulary with minor errors
-- Include subtle issues like tone mistakes in Chinese, subjunctive errors in Spanish/Italian
-- Make mistakes that advanced learners commonly make
-- Answers are mostly fluent with only small imperfections`
+    Hard: `You are an ADVANCED learner (${targetAccuracy}% proficiency).
+
+VOCABULARY LEVEL: Use sophisticated, nuanced vocabulary:
+- Advanced vocabulary and expressions
+- Idiomatic phrases and cultural references
+- Precise, specific word choices
+- Formal and informal register variation
+- Near-native vocabulary range
+
+SENTENCE STRUCTURE: Use complex, natural structures:
+- Complex sentences with multiple clauses (1-2 sentences)
+- Natural connecting phrases and transitions
+- Sophisticated grammatical constructions
+- Fluid, native-like expression
+
+ERROR PATTERN: Make 1 subtle mistake:
+- Minor errors that even advanced learners make (tone mistakes, subjunctive errors)
+- Mostly fluent with only small imperfections
+- Answers demonstrate high proficiency`
   };
 
   const mistakeTypes = mistakeGuidelines[language] || mistakeGuidelines.Chinese;
