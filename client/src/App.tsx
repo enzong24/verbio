@@ -19,12 +19,14 @@ import ProfileStats from "@/components/ProfileStats";
 import AIReview from "@/components/AIReview";
 import Friends from "@/components/Friends";
 import Analytics from "@/components/Analytics";
+import SkillProgress from "@/pages/SkillProgress";
+import MatchHistory from "@/pages/MatchHistory";
 import { StreakNotification } from "@/components/StreakNotification";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 import { incrementGuestMatches } from "@/utils/guestRateLimit";
 
-type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review" | "friends" | "analytics";
+type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review" | "friends" | "analytics" | "skill-progress" | "match-history";
 
 interface VocabWord {
   word: string;
@@ -731,6 +733,18 @@ function MainApp() {
         {currentPage === "analytics" && (
           <div className="max-w-7xl mx-auto px-4 py-8">
             <Analytics currentLanguage={currentLanguage} isAuthenticated={isAuthenticated} />
+          </div>
+        )}
+        
+        {currentPage === "skill-progress" && (
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <SkillProgress currentLanguage={currentLanguage} isAuthenticated={isAuthenticated} />
+          </div>
+        )}
+        
+        {currentPage === "match-history" && (
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <MatchHistory currentLanguage={currentLanguage} isAuthenticated={isAuthenticated} />
           </div>
         )}
         
