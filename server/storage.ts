@@ -213,11 +213,14 @@ export class MemStorage implements IStorage {
   }> {
     const userMatches = await this.getUserMatches(userId, language, 20);
     
-    if (userMatches.length === 0) {
+    // Filter out practice matches - only count competitive matches for skill progress
+    const competitiveMatches = userMatches.filter(match => match.isPracticeMode === 0);
+    
+    if (competitiveMatches.length === 0) {
       return { grammar: 0, fluency: 0, vocabulary: 0, naturalness: 0 };
     }
 
-    const totals = userMatches.reduce(
+    const totals = competitiveMatches.reduce(
       (acc, match) => ({
         grammar: acc.grammar + match.grammarScore,
         fluency: acc.fluency + match.fluencyScore,
@@ -228,10 +231,10 @@ export class MemStorage implements IStorage {
     );
 
     return {
-      grammar: Math.round(totals.grammar / userMatches.length),
-      fluency: Math.round(totals.fluency / userMatches.length),
-      vocabulary: Math.round(totals.vocabulary / userMatches.length),
-      naturalness: Math.round(totals.naturalness / userMatches.length),
+      grammar: Math.round(totals.grammar / competitiveMatches.length),
+      fluency: Math.round(totals.fluency / competitiveMatches.length),
+      vocabulary: Math.round(totals.vocabulary / competitiveMatches.length),
+      naturalness: Math.round(totals.naturalness / competitiveMatches.length),
     };
   }
 
@@ -661,11 +664,14 @@ export class DbStorage implements IStorage {
   }> {
     const userMatches = await this.getUserMatches(userId, language, 20);
     
-    if (userMatches.length === 0) {
+    // Filter out practice matches - only count competitive matches for skill progress
+    const competitiveMatches = userMatches.filter(match => match.isPracticeMode === 0);
+    
+    if (competitiveMatches.length === 0) {
       return { grammar: 0, fluency: 0, vocabulary: 0, naturalness: 0 };
     }
 
-    const totals = userMatches.reduce(
+    const totals = competitiveMatches.reduce(
       (acc, match) => ({
         grammar: acc.grammar + match.grammarScore,
         fluency: acc.fluency + match.fluencyScore,
@@ -676,10 +682,10 @@ export class DbStorage implements IStorage {
     );
 
     return {
-      grammar: Math.round(totals.grammar / userMatches.length),
-      fluency: Math.round(totals.fluency / userMatches.length),
-      vocabulary: Math.round(totals.vocabulary / userMatches.length),
-      naturalness: Math.round(totals.naturalness / userMatches.length),
+      grammar: Math.round(totals.grammar / competitiveMatches.length),
+      fluency: Math.round(totals.fluency / competitiveMatches.length),
+      vocabulary: Math.round(totals.vocabulary / competitiveMatches.length),
+      naturalness: Math.round(totals.naturalness / competitiveMatches.length),
     };
   }
 

@@ -655,23 +655,26 @@ function MainApp() {
         />
       )}
       
-      <Header 
-        username={username} 
-        elo={userElo} 
-        onNavigate={(page) => setCurrentPage(page as Page)}
-        currentPage={currentPage}
-        isAuthenticated={isAuthenticated}
-        profileImageUrl={user?.profileImageUrl}
-        currentLanguage={currentLanguage}
-        wins={userWins}
-        losses={userLosses}
-        onLanguageChange={(lang) => setCurrentLanguage(lang as Language)}
-        winStreak={isAuthenticated ? (languageStats?.winStreak ?? 0) : 0}
-        bestWinStreak={isAuthenticated ? (languageStats?.bestWinStreak ?? 0) : 0}
-        dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
-        bestDailyLoginStreak={0}
-        isPremium={user?.isPremium === 1}
-      />
+      {/* Hide header when in an active match */}
+      {currentPage !== "match" && (
+        <Header 
+          username={username} 
+          elo={userElo} 
+          onNavigate={(page) => setCurrentPage(page as Page)}
+          currentPage={currentPage}
+          isAuthenticated={isAuthenticated}
+          profileImageUrl={user?.profileImageUrl}
+          currentLanguage={currentLanguage}
+          wins={userWins}
+          losses={userLosses}
+          onLanguageChange={(lang) => setCurrentLanguage(lang as Language)}
+          winStreak={isAuthenticated ? (languageStats?.winStreak ?? 0) : 0}
+          bestWinStreak={isAuthenticated ? (languageStats?.bestWinStreak ?? 0) : 0}
+          dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
+          bestDailyLoginStreak={0}
+          isPremium={user?.isPremium === 1}
+        />
+      )}
       
       <main className={currentPage === "match" ? "" : "pt-16"}>
         {currentPage === "duel" && (
