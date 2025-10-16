@@ -177,7 +177,7 @@ export default function DuelInterface({
         setExampleText(data.example);
         setShowExample(true);
         setHelpUsedThisTurn(true);
-        setHelpPenalty(prev => prev + 15); // 15 point penalty for using help
+        setHelpPenalty(prev => prev + 10); // 10 point penalty for using help
       }
       // Otherwise, ignore stale response from a previous turn
     },
@@ -957,7 +957,7 @@ export default function DuelInterface({
                         className="h-8 md:h-9 flex-1 text-xs"
                       >
                         <HelpCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                        <span className="text-xs md:text-sm">{exampleMutation.isPending ? "Generating..." : "Need help? (-15pts)"}</span>
+                        <span className="text-xs md:text-sm">{exampleMutation.isPending ? "Generating..." : "Need help? (-10pts)"}</span>
                       </Button>
                     )}
                   </div>
@@ -985,9 +985,6 @@ export default function DuelInterface({
                       <div className="text-xs md:text-sm text-foreground">
                         <TextWithPinyin text={exampleText} language={language} />
                       </div>
-                      <p className="text-[10px] md:text-xs text-muted-foreground mt-1.5 md:mt-2 italic">
-                        Use this as inspiration! (-15 points applied)
-                      </p>
                     </CardContent>
                   </Card>
                 )}
