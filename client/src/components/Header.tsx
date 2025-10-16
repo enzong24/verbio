@@ -376,19 +376,6 @@ export default function Header({
                                     }`}>
                                       {match.result === "win" ? "+" : ""}{match.eloChange}
                                     </div>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-7 w-7 p-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedMatch(match);
-                                        setMobileMenuOpen(false);
-                                      }}
-                                      data-testid={`button-view-match-${match.id}`}
-                                    >
-                                      <Eye className="w-3 h-3" />
-                                    </Button>
                                   </div>
                                 </div>
                               </div>
