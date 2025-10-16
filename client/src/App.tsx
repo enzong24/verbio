@@ -63,6 +63,7 @@ function MainApp() {
   } | null>(null);
   const previousStreaksRef = useRef<{ winStreak: number; dailyLoginStreak: number } | null>(null);
   const streakTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasInitializedStreaksRef = useRef(false);
 
   // Track current language (persisted to localStorage)
   const [currentLanguage, setCurrentLanguage] = useState<Language>(() => {
@@ -81,6 +82,12 @@ function MainApp() {
     enabled: isAuthenticated,
   });
 
+  // Reset streak refs when language or user changes to prevent false notifications
+  useEffect(() => {
+    previousStreaksRef.current = null;
+    hasInitializedStreaksRef.current = false;
+  }, [currentLanguage, user?.id]);
+
   // Detect streak increases and show notifications
   useEffect(() => {
     if (!languageStats || !isAuthenticated) return;
@@ -90,6 +97,18 @@ function MainApp() {
 
     // Initialize previous values on first load
     if (previousStreaksRef.current === null) {
+      previousStreaksRef.current = {
+        winStreak: currentWinStreak,
+        dailyLoginStreak: currentDailyStreak
+      };
+      hasInitializedStreaksRef.current = true;
+      return;
+    }
+
+    // Don't show notifications on the very first initialization (login/page load)
+    // Only show when streaks actually change after initialization
+    if (!hasInitializedStreaksRef.current) {
+      hasInitializedStreaksRef.current = true;
       previousStreaksRef.current = {
         winStreak: currentWinStreak,
         dailyLoginStreak: currentDailyStreak
