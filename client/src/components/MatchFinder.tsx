@@ -65,6 +65,7 @@ export default function MatchFinder({
   const practiceLoadingRef = useRef(false);
   const { resumeAudio } = useSound();
   const [showBotSelection, setShowBotSelection] = useState(false);
+  const [selectedBot, setSelectedBot] = useState<{ id: string; name: string } | null>(null);
 
   // Save difficulty to localStorage when it changes
   useEffect(() => {
@@ -196,7 +197,15 @@ export default function MatchFinder({
     }
   };
 
-  const handlePractice = () => {
+  const handleChooseBot = () => {
+    // Resume audio on user interaction
+    resumeAudio();
+    
+    // Show bot selection dialog
+    setShowBotSelection(true);
+  };
+
+  const handlePractice = async () => {
     // Resume audio on user interaction
     resumeAudio();
     
@@ -209,29 +218,53 @@ export default function MatchFinder({
       return;
     }
     
-    // Show bot selection dialog
-    setShowBotSelection(true);
-    practiceLoadingRef.current = false;
+    setIsPracticeLoading(true);
+    
+    try {
+      let botId = selectedBot?.id;
+      let botName = selectedBot?.name;
+      
+      // If no bot selected, pick a random one
+      if (!botId) {
+        const response = await fetch(`/api/bots?language=${currentLanguage}`);
+        const bots = await response.json();
+        
+        if (bots.length > 0) {
+          const randomBot = bots[Math.floor(Math.random() * bots.length)];
+          botId = randomBot.id;
+          botName = randomBot.name;
+        } else {
+          // Fallback to hardcoded bot name
+          botName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+        }
+      }
+      
+      const topic = selectedTopic === "random" ? undefined : selectedTopic;
+      onMatchFound?.(botName!, true, currentLanguage, selectedDifficulty, topic, 1000, true, undefined, undefined, undefined, botId);
+    } catch (err) {
+      console.error('Error starting practice:', err);
+      // Fallback
+      const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
+      const topic = selectedTopic === "random" ? undefined : selectedTopic;
+      onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true);
+    } finally {
+      setIsPracticeLoading(false);
+      practiceLoadingRef.current = false;
+    }
   };
 
   const handleBotSelected = async (botId: string) => {
-    // Start practice match with selected bot
-    setIsPracticeLoading(true);
-    
     try {
       // Fetch bot details
       const response = await fetch(`/api/bots/${botId}`);
       const bot = await response.json();
       
-      const topic = selectedTopic === "random" ? undefined : selectedTopic;
-      // Pass bot name, and botId as the last parameter
-      onMatchFound?.(bot.name, true, currentLanguage, selectedDifficulty, topic, 1000, true, undefined, undefined, undefined, botId);
+      // Save selected bot
+      setSelectedBot({ id: botId, name: bot.name });
+      setShowBotSelection(false);
     } catch (err) {
       console.error('Error fetching bot:', err);
-      // Fallback to random bot name without botId
-      const randomBotName = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
-      const topic = selectedTopic === "random" ? undefined : selectedTopic;
-      onMatchFound?.(randomBotName, true, currentLanguage, selectedDifficulty, topic, 1000, true);
+      setShowBotSelection(false);
     }
   };
 
@@ -389,6 +422,31 @@ export default function MatchFinder({
                   <h3 className="text-2xl font-bold mb-2">Practice Mode</h3>
                   <p className="text-sm text-muted-foreground">Perfect native-level AI • {isPremium ? 'Choose your topic' : 'Random topics only'} • No scoring or competition</p>
                 </div>
+                
+                {/* Bot Selection */}
+                <div className="flex items-center gap-3 mb-4">
+                  <Bot className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <div className="flex-1 px-3 py-2 rounded-md border bg-background text-sm">
+                      {selectedBot ? (
+                        <span className="font-medium" data-testid="text-selected-bot">{selectedBot.name}</span>
+                      ) : (
+                        <span className="text-muted-foreground" data-testid="text-random-bot">Random Bot</span>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleChooseBot}
+                      disabled={isPracticeLoading || isSearching}
+                      data-testid="button-choose-bot"
+                    >
+                      Choose Bot
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Topic Selection */}
                 <div className="flex items-center gap-3 mb-4">
                   <BookOpen className="w-5 h-5 text-muted-foreground" />
                   <div className="flex-1 relative">
@@ -434,7 +492,7 @@ export default function MatchFinder({
                   ) : (
                     <>
                       <Bot className="w-5 h-5 mr-2" />
-                      Practice with AI Bot
+                      Start Practice
                     </>
                   )}
                 </Button>
