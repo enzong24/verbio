@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import MatchDetails from "@/components/MatchDetails";
 import { getFluencyLevel } from "@shared/fluencyLevels";
 
@@ -248,7 +249,24 @@ export default function Header({
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{currentLanguage}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-muted-foreground">{currentLanguage}</p>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge 
+                            variant="outline" 
+                            className="font-bold text-xs cursor-help"
+                            data-testid="badge-fluency-level-mobile"
+                          >
+                            {fluencyLevel.level}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs" data-testid="tooltip-fluency-level">
+                          <p className="font-semibold mb-1">CEFR Level: {fluencyLevel.level}</p>
+                          <p className="text-sm">{fluencyLevel.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                   </div>
                 </div>
                 
