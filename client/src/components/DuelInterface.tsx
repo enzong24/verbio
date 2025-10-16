@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Flag, Clock, HelpCircle, Swords, Type, ChevronDown, ChevronUp } from "lucide-react";
+import { Send, Flag, Clock, HelpCircle, Swords, Type, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -630,8 +630,13 @@ export default function DuelInterface({
                 <span className="truncate">{opponentName}</span>
                 {isBot && <Badge className="text-xs flex-shrink-0 bg-accent/20 text-accent border-accent/30">Bot</Badge>}
               </div>
-              {!isPracticeMode && (
+              {!isPracticeMode ? (
                 <div className="text-xs text-muted-foreground font-mono">{opponentElo} Fluency</div>
+              ) : (
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Hover over bot messages for translations
+                </div>
               )}
             </div>
           </div>
