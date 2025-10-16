@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Trophy, Target, Zap, Flame, BarChart3, Calendar, BookOpen, AlertCircle, Brain, Activity, Swords, Eye, TrendingDown } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, Trophy, Target, Zap, Flame, BarChart3, BookOpen, AlertCircle, Activity, Swords, Eye, TrendingDown } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatDistanceToNow, format } from "date-fns";
 import type { Match, UserLanguageStats } from "@shared/schema";
 import { useState } from "react";
@@ -85,55 +85,48 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
       };
     });
 
+  // Calculate skill improvement (compare recent matches vs previous matches)
+  const calculateImprovement = () => {
+    // Need at least 4 matches to show meaningful improvement (2 vs 2 minimum)
+    if (matches.length < 4) return null;
+    
+    // Calculate how many matches to compare (half of total, up to 10)
+    const compareSize = Math.min(10, Math.floor(matches.length / 2));
+    
+    const recentMatches = matches.slice(0, compareSize);
+    const olderMatches = matches.slice(compareSize, compareSize * 2);
+
+    const recentAvg = {
+      grammar: recentMatches.reduce((sum, m) => sum + m.grammarScore, 0) / recentMatches.length,
+      fluency: recentMatches.reduce((sum, m) => sum + m.fluencyScore, 0) / recentMatches.length,
+      vocabulary: recentMatches.reduce((sum, m) => sum + m.vocabularyScore, 0) / recentMatches.length,
+      naturalness: recentMatches.reduce((sum, m) => sum + m.naturalnessScore, 0) / recentMatches.length,
+    };
+
+    const olderAvg = {
+      grammar: olderMatches.reduce((sum, m) => sum + m.grammarScore, 0) / olderMatches.length,
+      fluency: olderMatches.reduce((sum, m) => sum + m.fluencyScore, 0) / olderMatches.length,
+      vocabulary: olderMatches.reduce((sum, m) => sum + m.vocabularyScore, 0) / olderMatches.length,
+      naturalness: olderMatches.reduce((sum, m) => sum + m.naturalnessScore, 0) / olderMatches.length,
+    };
+
+    return {
+      grammar: Math.round(recentAvg.grammar - olderAvg.grammar),
+      fluency: Math.round(recentAvg.fluency - olderAvg.fluency),
+      vocabulary: Math.round(recentAvg.vocabulary - olderAvg.vocabulary),
+      naturalness: Math.round(recentAvg.naturalness - olderAvg.naturalness),
+      compareSize, // Return the comparison size for display
+    };
+  };
+
+  const improvement = calculateImprovement();
+
   // Study recommendations data
   const hasRecommendations = studyRecommendations && 
     studyRecommendations.totalMatches > 0 && 
     (studyRecommendations.grammarIssues.length > 0 || 
      studyRecommendations.vocabularyTips.length > 0 || 
      studyRecommendations.generalAdvice.length > 0);
-
-  // Recent performance (last 10 matches)
-  const recentMatches = matches.slice(0, 10);
-  const recentWins = recentMatches.filter(m => m.result === 'win').length;
-  const recentWinRate = recentMatches.length > 0 ? Math.round((recentWins / recentMatches.length) * 100) : 0;
-
-  // Skill progression over last 20 matches
-  const skillProgression = matches.slice(-20).map((match, idx) => ({
-    match: idx + 1,
-    grammar: match.grammarScore,
-    fluency: match.fluencyScore,
-    vocabulary: match.vocabularyScore,
-    naturalness: match.naturalnessScore,
-  }));
-
-  // Calculate average scores by difficulty
-  const difficultyGroups = matches.reduce((acc, match) => {
-    if (!acc[match.difficulty]) {
-      acc[match.difficulty] = { total: 0, count: 0, grammar: 0, fluency: 0, vocabulary: 0, naturalness: 0 };
-    }
-    acc[match.difficulty].grammar += match.grammarScore;
-    acc[match.difficulty].fluency += match.fluencyScore;
-    acc[match.difficulty].vocabulary += match.vocabularyScore;
-    acc[match.difficulty].naturalness += match.naturalnessScore;
-    acc[match.difficulty].count += 1;
-    return acc;
-  }, {} as Record<string, any>);
-
-  const difficultyData = Object.entries(difficultyGroups).map(([difficulty, data]) => ({
-    difficulty,
-    grammar: Math.round(data.grammar / data.count),
-    fluency: Math.round(data.fluency / data.count),
-    vocabulary: Math.round(data.vocabulary / data.count),
-    naturalness: Math.round(data.naturalness / data.count),
-  }));
-
-  // Skill distribution pie chart data
-  const skillData = skillProgress ? [
-    { name: "Grammar", value: skillProgress.grammar, color: "hsl(var(--chart-1))" },
-    { name: "Fluency", value: skillProgress.fluency, color: "hsl(var(--chart-2))" },
-    { name: "Vocabulary", value: skillProgress.vocabulary, color: "hsl(var(--chart-3))" },
-    { name: "Naturalness", value: skillProgress.naturalness, color: "hsl(var(--chart-4))" },
-  ] : [];
 
   // Get difficulty badge color
   const getDifficultyColor = (difficulty: string) => {
@@ -254,7 +247,7 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
         </Card>
       )}
 
-      {/* Current Skill Levels */}
+      {/* Current Skill Levels with Improvement */}
       {skillProgress && (
         <Card>
           <CardHeader>
@@ -262,33 +255,90 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
               <Activity className="w-5 h-5" />
               Current Skill Levels
             </CardTitle>
+            {improvement && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Comparing last {improvement.compareSize} matches to previous {improvement.compareSize} matches
+              </p>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Grammar</span>
-                <span className="font-semibold font-mono">{skillProgress.grammar}%</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold font-mono">{skillProgress.grammar}%</span>
+                  {improvement && improvement.grammar !== 0 && (
+                    <span className={`text-xs font-semibold flex items-center gap-0.5 ${
+                      improvement.grammar > 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {improvement.grammar > 0 ? (
+                        <><TrendingUp className="w-3 h-3" />+{improvement.grammar}%</>
+                      ) : (
+                        <><TrendingDown className="w-3 h-3" />{improvement.grammar}%</>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
               <Progress value={skillProgress.grammar} className="h-3" />
             </div>
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Fluency</span>
-                <span className="font-semibold font-mono">{skillProgress.fluency}%</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold font-mono">{skillProgress.fluency}%</span>
+                  {improvement && improvement.fluency !== 0 && (
+                    <span className={`text-xs font-semibold flex items-center gap-0.5 ${
+                      improvement.fluency > 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {improvement.fluency > 0 ? (
+                        <><TrendingUp className="w-3 h-3" />+{improvement.fluency}%</>
+                      ) : (
+                        <><TrendingDown className="w-3 h-3" />{improvement.fluency}%</>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
               <Progress value={skillProgress.fluency} className="h-3" />
             </div>
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Vocabulary</span>
-                <span className="font-semibold font-mono">{skillProgress.vocabulary}%</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold font-mono">{skillProgress.vocabulary}%</span>
+                  {improvement && improvement.vocabulary !== 0 && (
+                    <span className={`text-xs font-semibold flex items-center gap-0.5 ${
+                      improvement.vocabulary > 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {improvement.vocabulary > 0 ? (
+                        <><TrendingUp className="w-3 h-3" />+{improvement.vocabulary}%</>
+                      ) : (
+                        <><TrendingDown className="w-3 h-3" />{improvement.vocabulary}%</>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
               <Progress value={skillProgress.vocabulary} className="h-3" />
             </div>
             <div className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Naturalness</span>
-                <span className="font-semibold font-mono">{skillProgress.naturalness}%</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold font-mono">{skillProgress.naturalness}%</span>
+                  {improvement && improvement.naturalness !== 0 && (
+                    <span className={`text-xs font-semibold flex items-center gap-0.5 ${
+                      improvement.naturalness > 0 ? 'text-success' : 'text-destructive'
+                    }`}>
+                      {improvement.naturalness > 0 ? (
+                        <><TrendingUp className="w-3 h-3" />+{improvement.naturalness}%</>
+                      ) : (
+                        <><TrendingDown className="w-3 h-3" />{improvement.naturalness}%</>
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
               <Progress value={skillProgress.naturalness} className="h-3" />
             </div>
@@ -296,226 +346,69 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Skill Distribution */}
-        {skillData.length > 0 && skillData.some(s => s.value > 0) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Brain className="w-5 h-5" />
-                Skill Distribution
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={skillData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {skillData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--card-border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Study Recommendations */}
-        {hasRecommendations && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <BookOpen className="w-5 h-5" />
-                Focus Areas
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Based on {studyRecommendations.totalMatches} recent matches with AI feedback
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {studyRecommendations.grammarIssues.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4 text-destructive" />
-                    Common Grammar Patterns
-                  </h4>
-                  <div className="space-y-1.5">
-                    {studyRecommendations.grammarIssues.slice(0, 3).map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-sm">
-                        <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
-                        <span className="text-muted-foreground">{item.issue}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {studyRecommendations.vocabularyTips.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
-                    <Target className="w-4 h-4 text-primary" />
-                    Vocabulary Improvements
-                  </h4>
-                  <div className="space-y-1.5">
-                    {studyRecommendations.vocabularyTips.slice(0, 3).map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-sm">
-                        <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
-                        <span className="text-muted-foreground">{item.tip}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {studyRecommendations.generalAdvice.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4 text-success" />
-                    General Improvements
-                  </h4>
-                  <div className="space-y-1.5">
-                    {studyRecommendations.generalAdvice.slice(0, 3).map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-sm">
-                        <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
-                        <span className="text-muted-foreground">{item.advice}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Skill Progression Over Time */}
-      {skillProgression.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Skill Progression (Last 20 Matches)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={skillProgression}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="match" 
-                  stroke="hsl(var(--muted-foreground))"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--card-border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Line type="monotone" dataKey="grammar" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="fluency" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="vocabulary" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="naturalness" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Performance by Difficulty */}
-      {difficultyData.length > 0 && (
+      {/* Study Recommendations */}
+      {hasRecommendations && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <BookOpen className="w-5 h-5" />
-              Average Performance by Difficulty
+              Focus Areas
             </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Based on {studyRecommendations.totalMatches} recent matches with AI feedback
+            </p>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={difficultyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="difficulty" 
-                  stroke="hsl(var(--muted-foreground))"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--card-border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar dataKey="grammar" fill="hsl(var(--chart-1))" />
-                <Bar dataKey="fluency" fill="hsl(var(--chart-2))" />
-                <Bar dataKey="vocabulary" fill="hsl(var(--chart-3))" />
-                <Bar dataKey="naturalness" fill="hsl(var(--chart-4))" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Recent Performance */}
-      {recentMatches.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Recent Performance (Last 10 Matches)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <CardContent className="space-y-4">
+            {studyRecommendations.grammarIssues.length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground">Recent Win Rate</p>
-                <p className="text-2xl font-bold font-mono">{recentWinRate}%</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {recentWins}W - {recentMatches.length - recentWins}L
-                </p>
+                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4 text-destructive" />
+                  Common Grammar Patterns
+                </h4>
+                <div className="space-y-1.5">
+                  {studyRecommendations.grammarIssues.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                      <span className="text-muted-foreground">{item.issue}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-1">
-                {recentMatches.map((match, i) => (
-                  <div
-                    key={i}
-                    className={`w-8 h-8 rounded-md flex items-center justify-center ${
-                      match.result === 'win' 
-                        ? 'bg-success/20 text-success' 
-                        : 'bg-destructive/20 text-destructive'
-                    }`}
-                    title={`vs ${match.opponent} - ${match.result === 'win' ? 'Win' : 'Loss'}`}
-                  >
-                    {match.result === 'win' ? 'W' : 'L'}
-                  </div>
-                ))}
+            )}
+            
+            {studyRecommendations.vocabularyTips.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
+                  <Target className="w-4 h-4 text-primary" />
+                  Vocabulary Improvements
+                </h4>
+                <div className="space-y-1.5">
+                  {studyRecommendations.vocabularyTips.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                      <span className="text-muted-foreground">{item.tip}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {studyRecommendations.generalAdvice.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
+                  <TrendingUp className="w-4 h-4 text-success" />
+                  General Improvements
+                </h4>
+                <div className="space-y-1.5">
+                  {studyRecommendations.generalAdvice.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                      <span className="text-muted-foreground">{item.advice}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
