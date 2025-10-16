@@ -707,7 +707,6 @@ function MainApp() {
         dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
         bestDailyLoginStreak={0}
         isPremium={user?.isPremium === 1}
-        hideProfile={currentPage === "match"}
       />
       
       <main className="pt-16">
