@@ -39,6 +39,11 @@ export default function Friends() {
     queryKey: ["/api/friends/requests"],
   });
 
+  // Fetch pending match challenges
+  const { data: challenges = [] } = useQuery<Array<any>>({
+    queryKey: ["/api/friends/challenges"],
+  });
+
   // Send friend request mutation
   const sendRequestMutation = useMutation({
     mutationFn: async (username: string) => {
@@ -134,33 +139,74 @@ export default function Friends() {
   };
 
   // Create private match invite mutation for a specific friend
-  const createInviteMutation = useMutation({
+  // Create friend challenge mutation
+  const createChallengeMutation = useMutation({
     mutationFn: async (friendId: string) => {
-      return await apiRequest("POST", "/api/private-match/create", {
+      return await apiRequest("POST", "/api/friends/challenge", {
+        friendId,
         language: "Chinese",
         difficulty: "Medium",
         topic: null,
       });
     },
-    onSuccess: (data: any) => {
+    onSuccess: () => {
       toast({
         title: "Challenge sent!",
-        description: `Private match invite created. Share code ${data.inviteCode} with your friend.`,
+        description: "Your friend will be notified of your challenge.",
       });
       setSelectedFriendForInvite(null);
     },
     onError: () => {
       toast({
-        title: "Failed to create challenge",
+        title: "Failed to send challenge",
         variant: "destructive",
       });
       setSelectedFriendForInvite(null);
     },
   });
 
+  // Accept challenge mutation
+  const acceptChallengeMutation = useMutation({
+    mutationFn: async (challengeId: string) => {
+      return await apiRequest("POST", `/api/friends/challenges/${challengeId}/accept`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/friends/challenges"] });
+      toast({
+        title: "Challenge accepted!",
+        description: "Redirecting to match...",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to accept challenge",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reject challenge mutation
+  const rejectChallengeMutation = useMutation({
+    mutationFn: async (challengeId: string) => {
+      return await apiRequest("POST", `/api/friends/challenges/${challengeId}/reject`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/friends/challenges"] });
+      toast({
+        title: "Challenge ignored",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to reject challenge",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleChallengeFriend = (friendId: string) => {
     setSelectedFriendForInvite(friendId);
-    createInviteMutation.mutate(friendId);
+    createChallengeMutation.mutate(friendId);
   };
 
   const isOnline = (user: User) => {

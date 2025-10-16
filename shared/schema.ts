@@ -112,12 +112,13 @@ export type InsertFriend = typeof friends.$inferInsert;
 // Private match invites for friend challenges
 export const privateMatchInvites = pgTable("private_match_invites", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  inviteCode: varchar("invite_code").notNull().unique(),
+  inviteCode: varchar("invite_code").unique(), // Optional for code-based invites
+  recipientId: varchar("recipient_id").references(() => users.id), // Direct friend challenges
   creatorId: varchar("creator_id").notNull().references(() => users.id),
   language: varchar("language").notNull(),
   difficulty: varchar("difficulty").notNull(),
   topic: varchar("topic"),
-  status: varchar("status").notNull().default("pending"), // 'pending', 'active', 'completed', 'expired'
+  status: varchar("status").notNull().default("pending"), // 'pending', 'accepted', 'rejected', 'expired'
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

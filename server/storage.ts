@@ -370,7 +370,8 @@ export class MemStorage implements IStorage {
   async createPrivateMatchInvite(inviteData: InsertPrivateMatchInvite): Promise<PrivateMatchInvite> {
     const invite: PrivateMatchInvite = {
       id: crypto.randomUUID(),
-      inviteCode: inviteData.inviteCode!,
+      inviteCode: inviteData.inviteCode || null,
+      recipientId: inviteData.recipientId || null,
       creatorId: inviteData.creatorId!,
       language: inviteData.language!,
       difficulty: inviteData.difficulty!,
@@ -380,7 +381,9 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     
-    this.privateInvites.set(invite.inviteCode, invite);
+    // Store by inviteCode if provided, otherwise by id
+    const key = invite.inviteCode || invite.id;
+    this.privateInvites.set(key, invite);
     return invite;
   }
 
@@ -388,11 +391,22 @@ export class MemStorage implements IStorage {
     return this.privateInvites.get(inviteCode);
   }
 
-  async updatePrivateMatchInviteStatus(inviteCode: string, status: string): Promise<void> {
-    const invite = this.privateInvites.get(inviteCode);
+  async getPendingMatchChallenges(userId: string): Promise<Array<PrivateMatchInvite & { creatorUser: User }>> {
+    const pending = Array.from(this.privateInvites.values()).filter(invite =>
+      invite.recipientId === userId && invite.status === "pending"
+    );
+    
+    return pending.map(invite => ({
+      ...invite,
+      creatorUser: this.users.get(invite.creatorId)!,
+    }));
+  }
+
+  async updatePrivateMatchInviteStatus(inviteId: string, status: string): Promise<void> {
+    const invite = this.privateInvites.get(inviteId);
     if (invite) {
       invite.status = status;
-      this.privateInvites.set(inviteCode, invite);
+      this.privateInvites.set(inviteId, invite);
     }
   }
 

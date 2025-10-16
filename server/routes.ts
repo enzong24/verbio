@@ -735,7 +735,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create private match invite
+  // Create friend challenge (direct, no code)
+  app.post("/api/friends/challenge", async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { friendId, language, difficulty, topic } = req.body;
+      
+      if (!friendId) {
+        return res.status(400).json({ message: "Friend ID is required" });
+      }
+      
+      // Verify friendship
+      const friends = await storage.getFriends(userId);
+      const isFriend = friends.some(f => 
+        (f.userId === friendId || f.friendId === friendId) && 
+        f.status === "accepted"
+      );
+      
+      if (!isFriend) {
+        return res.status(403).json({ message: "You can only challenge friends" });
+      }
+      
+      // Challenge expires in 24 hours
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      
+      const invite = await storage.createPrivateMatchInvite({
+        recipientId: friendId,
+        creatorId: userId,
+        language: language || "Chinese",
+        difficulty: difficulty || "Medium",
+        topic: topic || null,
+        status: "pending",
+        expiresAt,
+      });
+      
+      res.json(invite);
+    } catch (error) {
+      console.error("Error creating friend challenge:", error);
+      res.status(500).json({ message: "Failed to create challenge" });
+    }
+  });
+
+  // Get pending match challenges
+  app.get("/api/friends/challenges", async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const challenges = await storage.getPendingMatchChallenges(userId);
+      res.json(challenges);
+    } catch (error) {
+      console.error("Error fetching challenges:", error);
+      res.status(500).json({ message: "Failed to fetch challenges" });
+    }
+  });
+
+  // Accept friend challenge
+  app.post("/api/friends/challenges/:challengeId/accept", async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { challengeId } = req.params;
+      const challenge = await storage.getPrivateMatchInvite(challengeId);
+      
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      
+      if (challenge.recipientId !== userId) {
+        return res.status(403).json({ message: "This challenge is not for you" });
+      }
+      
+      if (challenge.status !== "pending") {
+        return res.status(400).json({ message: "Challenge already responded to" });
+      }
+      
+      // Check if expired
+      if (new Date() > new Date(challenge.expiresAt)) {
+        return res.status(410).json({ message: "Challenge expired" });
+      }
+      
+      await storage.updatePrivateMatchInviteStatus(challengeId, "accepted");
+      
+      res.json({
+        success: true,
+        challenge: { ...challenge, status: "accepted" }
+      });
+    } catch (error) {
+      console.error("Error accepting challenge:", error);
+      res.status(500).json({ message: "Failed to accept challenge" });
+    }
+  });
+
+  // Reject/ignore friend challenge
+  app.post("/api/friends/challenges/:challengeId/reject", async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { challengeId } = req.params;
+      const challenge = await storage.getPrivateMatchInvite(challengeId);
+      
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      
+      if (challenge.recipientId !== userId) {
+        return res.status(403).json({ message: "This challenge is not for you" });
+      }
+      
+      await storage.updatePrivateMatchInviteStatus(challengeId, "rejected");
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error rejecting challenge:", error);
+      res.status(500).json({ message: "Failed to reject challenge" });
+    }
+  });
+
+  // Create private match invite (legacy code-based system)
   app.post("/api/private-match/create", async (req: any, res) => {
     try {
       const userId = req.user?.id;
