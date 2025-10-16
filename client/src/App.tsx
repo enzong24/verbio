@@ -22,6 +22,7 @@ import Analytics from "@/components/Analytics";
 import { StreakNotification } from "@/components/StreakNotification";
 import LevelUpDialog from "@/components/LevelUpDialog";
 import InitialLevelDialog from "@/components/InitialLevelDialog";
+import InitialLanguageDialog from "@/components/InitialLanguageDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
@@ -68,7 +69,8 @@ function MainApp() {
     language: string;
   } | null>(null);
   
-  // Initial level selection state
+  // Initial language and level selection state
+  const [showInitialLanguageDialog, setShowInitialLanguageDialog] = useState(false);
   const [showInitialLevelDialog, setShowInitialLevelDialog] = useState(false);
   
   // Streak notification state
@@ -98,8 +100,22 @@ function MainApp() {
     enabled: isAuthenticated,
   });
 
-  // Check if user needs to select initial level
+  // Check if user needs to select initial language (first-time users)
   useEffect(() => {
+    if (isAuthenticated || isGuestMode) {
+      // Check if user has ever selected a language
+      const hasSelectedLanguage = localStorage.getItem('has_selected_initial_language') === 'true';
+      if (!hasSelectedLanguage) {
+        setShowInitialLanguageDialog(true);
+      }
+    }
+  }, [isAuthenticated, isGuestMode]);
+
+  // Check if user needs to select initial level (only after language is selected)
+  useEffect(() => {
+    // Don't check for level if language dialog is showing
+    if (showInitialLanguageDialog) return;
+    
     if (isAuthenticated && languageStats) {
       // For authenticated users, check if they've selected initial level
       if (languageStats.initialLevelSelected === 0) {
@@ -112,7 +128,7 @@ function MainApp() {
         setShowInitialLevelDialog(true);
       }
     }
-  }, [isAuthenticated, isGuestMode, languageStats, currentLanguage]);
+  }, [isAuthenticated, isGuestMode, languageStats, currentLanguage, showInitialLanguageDialog]);
 
   // Reset streak refs when language or user changes to prevent false notifications
   useEffect(() => {
@@ -647,6 +663,16 @@ function MainApp() {
     }
   };
 
+  const handleInitialLanguageComplete = (selectedLanguage: string) => {
+    // Update current language
+    setCurrentLanguage(selectedLanguage as Language);
+    // Mark that user has selected their initial language
+    localStorage.setItem('has_selected_initial_language', 'true');
+    // Close language dialog
+    setShowInitialLanguageDialog(false);
+    // The level dialog will automatically open via the useEffect
+  };
+
   const handleInitialLevelComplete = async (selectedElo?: number) => {
     // For guests, update ELO in localStorage and mark as complete
     if (isGuestMode && selectedElo) {
@@ -725,6 +751,12 @@ function MainApp() {
           newLevel={levelUpInfo.newLevel}
         />
       )}
+      
+      {/* Initial Language Selection Dialog */}
+      <InitialLanguageDialog
+        open={showInitialLanguageDialog}
+        onComplete={handleInitialLanguageComplete}
+      />
       
       {/* Initial Level Selection Dialog */}
       <InitialLevelDialog
