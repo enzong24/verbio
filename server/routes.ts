@@ -468,31 +468,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
-      const { opponent, result, eloChange, language, difficulty, scores, isForfeit, conversation, detailedFeedback, topic, isPracticeMode } = req.body;
+      const { opponent, result, language, difficulty, scores, isForfeit, conversation, detailedFeedback, topic, isPracticeMode, botElo, botScore } = req.body;
       
-      // Get current stats to check for level-up (only for competitive matches)
+      // Get current stats
+      const currentStats = await storage.getUserLanguageStats(userId, language);
+      if (!currentStats) {
+        return res.status(400).json({ message: "User stats not found" });
+      }
+
+      // Calculate ELO change with streak multiplier (only for competitive matches)
+      let eloChange = 0;
+      let streakMultiplier = null;
+      
+      if (!isPracticeMode) {
+        const userScore = scores.overall;
+        const opponentElo = botElo || 1000;
+        const opponentScore = botScore || 0;
+        
+        // Import ELO calculator
+        const { calculateComparativeElo } = await import("./eloCalculator");
+        
+        // Calculate ELO with streak multiplier
+        const eloResult = calculateComparativeElo(
+          currentStats.elo,
+          opponentElo,
+          userScore,
+          opponentScore,
+          currentStats.dailyLoginStreak,
+          currentStats.winStreak
+        );
+        
+        eloChange = eloResult.eloChange;
+        streakMultiplier = eloResult.streakMultiplier;
+      }
+      
+      // Get level-up info (only for competitive matches)
       let levelUpInfo = null;
       if (!isPracticeMode && eloChange !== 0) {
-        const currentStats = await storage.getUserLanguageStats(userId, language);
-        if (currentStats) {
-          const oldElo = currentStats.elo;
-          const newElo = oldElo + eloChange;
+        const oldElo = currentStats.elo;
+        const newElo = oldElo + eloChange;
+        
+        // Check if user leveled up
+        const { checkLevelUp, getFluencyLevel } = await import("@shared/fluencyLevels");
+        const levelCheck = checkLevelUp(oldElo, newElo);
+        
+        if (levelCheck.leveledUp) {
+          // Update highest fluency level achieved
+          const newLevel = getFluencyLevel(newElo);
+          await storage.updateHighestFluencyLevel(userId, language, newLevel.level);
           
-          // Check if user leveled up
-          const { checkLevelUp, getFluencyLevel } = await import("@shared/fluencyLevels");
-          const levelCheck = checkLevelUp(oldElo, newElo);
-          
-          if (levelCheck.leveledUp) {
-            // Update highest fluency level achieved
-            const newLevel = getFluencyLevel(newElo);
-            await storage.updateHighestFluencyLevel(userId, language, newLevel.level);
-            
-            levelUpInfo = {
-              leveledUp: true,
-              oldLevel: levelCheck.oldLevel,
-              newLevel: levelCheck.newLevel,
-            };
-          }
+          levelUpInfo = {
+            leveledUp: true,
+            oldLevel: levelCheck.oldLevel,
+            newLevel: levelCheck.newLevel,
+          };
         }
       }
       
@@ -520,7 +549,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateWinStreak(userId, language, result === 'win', isForfeit || false);
       }
 
-      res.json({ ...match, levelUpInfo });
+      res.json({ ...match, levelUpInfo, eloChange, streakMultiplier });
     } catch (error) {
       console.error("Error saving match:", error);
       res.status(500).json({ message: "Failed to save match" });
