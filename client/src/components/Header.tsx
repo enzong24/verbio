@@ -335,7 +335,7 @@ export default function Header({
                       <CardContent>
                         {matches && matches.length > 0 ? (
                           <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {matches.slice(0, 5).map((match) => (
+                            {matches.filter(m => !m.isPracticeMode).slice(0, 5).map((match) => (
                               <div
                                 key={match.id}
                                 className="flex items-center gap-2 p-2 rounded-md hover-elevate cursor-pointer"

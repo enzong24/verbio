@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { X, CheckCircle2, AlertCircle, Lightbulb, Trophy, TrendingUp } from "lucide-react";
+import { X, CheckCircle2, AlertCircle, Lightbulb, Trophy, TrendingUp, MessageSquare, BookOpen } from "lucide-react";
 import type { Match, Message, MessageAnalysis } from "@shared/schema";
 import TextWithPinyin from "@/components/TextWithPinyin";
 
@@ -65,10 +65,12 @@ export default function MatchDetails({ match, onClose, language = "Chinese" }: M
                   <div className="text-xs text-muted-foreground">Grammar</div>
                 </div>
                 <div className="text-center p-4 rounded-md bg-muted/50">
+                  <MessageSquare className="w-5 h-5 mx-auto mb-2 text-blue-500" />
                   <div className="font-bold text-lg">{match.fluencyScore}</div>
                   <div className="text-xs text-muted-foreground">Fluency</div>
                 </div>
                 <div className="text-center p-4 rounded-md bg-muted/50">
+                  <BookOpen className="w-5 h-5 mx-auto mb-2 text-purple-500" />
                   <div className="font-bold text-lg">{match.vocabularyScore}</div>
                   <div className="text-xs text-muted-foreground">Vocabulary</div>
                 </div>
