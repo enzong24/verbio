@@ -221,10 +221,6 @@ export default function Header({
                   <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
                   <p className="text-xs font-mono font-semibold" data-testid="text-fluency-score-dropdown">{elo} Fluency Score</p>
                 </div>
-                <div className="bg-primary/5 rounded-md p-2.5 border border-primary/10 mt-2" data-testid="card-cefr-info-dropdown">
-                  <p className="text-xs font-semibold text-primary mb-1">CEFR {fluencyLevel.level}: {fluencyLevel.name}</p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">{fluencyLevel.description}</p>
-                </div>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem
