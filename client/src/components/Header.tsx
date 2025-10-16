@@ -263,6 +263,7 @@ export default function Header({
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs" data-testid="tooltip-fluency-level">
                           <p className="font-semibold mb-1">CEFR Level: {fluencyLevel.level}</p>
+                          <p className="text-xs text-muted-foreground mb-2">Common European Framework of Reference for Languages</p>
                           <p className="text-sm">{fluencyLevel.description}</p>
                         </TooltipContent>
                       </Tooltip>
