@@ -55,6 +55,7 @@ function MainApp() {
   const [matchMessages, setMatchMessages] = useState<any[]>([]);
   const multiplayerWsRef = useRef<WebSocket | null>(null);
   const [waitingForOpponentResult, setWaitingForOpponentResult] = useState(false);
+  const [isSavingMatch, setIsSavingMatch] = useState(false);
   
   // Streak notification state
   const [streakNotification, setStreakNotification] = useState<{
@@ -526,8 +527,6 @@ function MainApp() {
       localStorage.setItem(`guest_${currentLanguage}`, JSON.stringify(newGuestStats));
     }
   };
-
-  const [isSavingMatch, setIsSavingMatch] = useState(false);
 
   const handleResultsContinue = async () => {
     // Prevent duplicate saves
