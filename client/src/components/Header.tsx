@@ -152,28 +152,21 @@ export default function Header({
               <SelectItem value="Italian" data-testid="option-italian-header">Italiano</SelectItem>
             </SelectContent>
           </Select>
-          <div className="hidden sm:flex">
+          <div className="hidden sm:flex items-center gap-2">
+            {isPremium && (
+              <Badge 
+                variant="default" 
+                className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 border-0"
+                data-testid="badge-premium-header"
+              >
+                <Crown className="w-3 h-3 mr-1" />
+                PRO
+              </Badge>
+            )}
             <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
               {elo} Fluency
             </Badge>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              // Clear all local storage
-              localStorage.clear();
-              sessionStorage.clear();
-              
-              // Redirect to logout endpoint
-              window.location.href = "/api/logout";
-            }}
-            className="gap-2"
-            data-testid="button-sign-out"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden md:inline">Sign Out</span>
-          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
@@ -201,7 +194,7 @@ export default function Header({
                   {isPremium && (
                     <Badge 
                       variant="default" 
-                      className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5"
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 font-bold"
                       data-testid="badge-premium"
                     >
                       <Crown className="w-3 h-3" />
@@ -217,7 +210,7 @@ export default function Header({
               {!isPremium ? (
                 <DropdownMenuItem asChild data-testid="menu-item-upgrade">
                   <a href="/subscribe" className="flex items-center cursor-pointer">
-                    <Crown className="w-4 h-4 mr-2 text-accent" />
+                    <Crown className="w-4 h-4 mr-2 text-yellow-500" />
                     <span>Upgrade to Premium</span>
                   </a>
                 </DropdownMenuItem>
@@ -246,6 +239,19 @@ export default function Header({
                   <span>Cancel Subscription</span>
                 </DropdownMenuItem>
               )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.href = "/api/logout";
+                }}
+                className="cursor-pointer text-destructive focus:text-destructive"
+                data-testid="menu-item-logout"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                <span>Log Out</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -272,7 +278,19 @@ export default function Header({
                     <AvatarFallback>{username.slice(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <p className="font-semibold">{username}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">{username}</p>
+                      {isPremium && (
+                        <Badge 
+                          variant="default" 
+                          className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 font-bold"
+                          data-testid="badge-premium-mobile"
+                        >
+                          <Crown className="w-3 h-3" />
+                          PRO
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">{currentLanguage}</p>
                   </div>
                 </div>
@@ -452,7 +470,7 @@ export default function Header({
 
                 {/* Navigation Buttons */}
                 {isAuthenticated && (
-                  <div className="pt-4 border-t border-card-border">
+                  <div className="pt-4 border-t border-card-border space-y-3">
                     <Button
                       variant={currentPage === "friends" ? "default" : "outline"}
                       className="w-full gap-2"
@@ -464,6 +482,61 @@ export default function Header({
                     >
                       <Users className="w-4 h-4" />
                       <span>Friends</span>
+                    </Button>
+                    
+                    {/* Subscription Management */}
+                    {!isPremium ? (
+                      <Button
+                        variant="default"
+                        className="w-full gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white border-0"
+                        onClick={() => {
+                          window.location.href = "/subscribe";
+                        }}
+                        data-testid="button-mobile-upgrade"
+                      >
+                        <Crown className="w-4 h-4" />
+                        <span>Upgrade to Premium</span>
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2"
+                        onClick={async () => {
+                          if (confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
+                            try {
+                              const res = await fetch('/api/cancel-subscription', { method: 'POST' });
+                              const data = await res.json();
+                              if (res.ok) {
+                                alert(data.message);
+                                window.location.reload();
+                              } else {
+                                alert(data.message || 'Failed to cancel subscription');
+                              }
+                            } catch (error) {
+                              alert('Failed to cancel subscription');
+                            }
+                          }
+                        }}
+                        data-testid="button-mobile-cancel-subscription"
+                      >
+                        <Crown className="w-4 h-4" />
+                        <span>Cancel Subscription</span>
+                      </Button>
+                    )}
+                    
+                    {/* Logout Button */}
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2 text-destructive hover:text-destructive border-destructive/30"
+                      onClick={() => {
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        window.location.href = "/api/logout";
+                      }}
+                      data-testid="button-mobile-logout"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Log Out</span>
                     </Button>
                   </div>
                 )}
