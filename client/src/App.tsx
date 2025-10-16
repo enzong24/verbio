@@ -515,9 +515,9 @@ function MainApp() {
         // Invalidate and refetch stats to ensure fresh data
         queryClient.invalidateQueries({ queryKey: [`/api/user/stats/${currentLanguage}`] });
         await refetchStats();
-        queryClient.invalidateQueries({ queryKey: [`/api/user/matches`, currentLanguage] });
-        queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress`, currentLanguage] });
-        queryClient.invalidateQueries({ queryKey: [`/api/leaderboard`, currentLanguage] });
+        queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${currentLanguage}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${currentLanguage}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/leaderboard?language=${currentLanguage}`] });
       } catch (error) {
         console.error("Failed to update stats:", error);
       }
@@ -580,8 +580,8 @@ function MainApp() {
               topic: matchData.topic || null, // Match topic
             });
             // Invalidate match history and skill progress queries
-            queryClient.invalidateQueries({ queryKey: [`/api/user/matches`, matchData.language] });
-            queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress`, matchData.language] });
+            queryClient.invalidateQueries({ queryKey: [`/api/user/matches?language=${matchData.language}`] });
+            queryClient.invalidateQueries({ queryKey: [`/api/user/skill-progress?language=${matchData.language}`] });
           } catch (error) {
             console.error("Failed to save match:", error);
           }
