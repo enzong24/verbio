@@ -160,9 +160,9 @@ export default function ProfileStats({
               <CardTitle>Recent Matches</CardTitle>
             </CardHeader>
             <CardContent>
-              {matches && matches.length > 0 ? (
+              {matches && matches.filter(m => m.isPracticeMode === 0).length > 0 ? (
                 <div className="space-y-3">
-                  {matches.map((match) => (
+                  {matches.filter(m => m.isPracticeMode === 0).map((match) => (
                         <div
                           key={match.id}
                           className="flex items-center gap-4 p-3 rounded-md hover-elevate cursor-pointer transition-all"
@@ -178,11 +178,6 @@ export default function ProfileStats({
                           <div className="flex-1">
                             <div className="font-medium flex items-center gap-2">
                               <span>vs {match.opponent}</span>
-                              {match.isPracticeMode === 1 && (
-                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-blue-500/10 text-blue-600 border-blue-500/30">
-                                  Practice
-                                </Badge>
-                              )}
                               {match.isForfeit === 1 && (
                                 <Badge variant="outline" className="hidden md:inline-flex text-xs px-1.5 py-0 h-4">
                                   Forfeit
@@ -209,13 +204,11 @@ export default function ProfileStats({
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            {match.isPracticeMode === 0 && (
-                              <div className={`font-mono font-bold ${
-                                match.result === "win" ? "text-success" : "text-destructive"
-                              }`}>
-                                {match.result === "win" ? "+" : ""}{match.eloChange}
-                              </div>
-                            )}
+                            <div className={`font-mono font-bold ${
+                              match.result === "win" ? "text-success" : "text-destructive"
+                            }`}>
+                              {match.result === "win" ? "+" : ""}{match.eloChange}
+                            </div>
                             <Button
                               size="sm"
                               variant="ghost"
@@ -235,7 +228,7 @@ export default function ProfileStats({
                     </div>
                   ) : (
                     <p className="text-center text-muted-foreground py-8">
-                      No matches yet. Start a match to see your history!
+                      No competitive matches yet. Start a competitive match to see your history!
                     </p>
                   )}
             </CardContent>
