@@ -369,10 +369,10 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
                   <AlertCircle className="w-4 h-4 text-destructive" />
                   Common Grammar Patterns
                 </h4>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {studyRecommendations.grammarIssues.slice(0, 3).map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm">
-                      <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                    <div key={idx} className="flex items-start gap-2 text-base">
+                      <Badge variant="outline" className="text-sm shrink-0">{item.count}×</Badge>
                       <span className="text-muted-foreground">{item.issue}</span>
                     </div>
                   ))}
@@ -386,10 +386,10 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
                   <Target className="w-4 h-4 text-primary" />
                   Vocabulary Improvements
                 </h4>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {studyRecommendations.vocabularyTips.slice(0, 3).map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm">
-                      <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                    <div key={idx} className="flex items-start gap-2 text-base">
+                      <Badge variant="outline" className="text-sm shrink-0">{item.count}×</Badge>
                       <span className="text-muted-foreground">{item.tip}</span>
                     </div>
                   ))}
@@ -403,10 +403,10 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
                   <TrendingUp className="w-4 h-4 text-success" />
                   General Improvements
                 </h4>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {studyRecommendations.generalAdvice.slice(0, 3).map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-sm">
-                      <Badge variant="outline" className="text-xs shrink-0">{item.count}×</Badge>
+                    <div key={idx} className="flex items-start gap-2 text-base">
+                      <Badge variant="outline" className="text-sm shrink-0">{item.count}×</Badge>
                       <span className="text-muted-foreground">{item.advice}</span>
                     </div>
                   ))}
