@@ -888,10 +888,10 @@ export async function generateExampleResponse(params: {
   const { language, difficulty, topic, vocabulary, phase, context } = params;
 
   const phaseInstruction = phase === "user-question" 
-    ? `Generate an example QUESTION in ${language} about the topic "${topic}".`
-    : `Generate an example ANSWER in ${language} to this question: "${context}"`;
+    ? `Generate a HINT to help them ask a question in ${language} about the topic "${topic}".`
+    : `Generate a HINT to help them answer this question: "${context}"`;
 
-  const prompt = `You are a ${language} language teacher helping a BEGINNER student who is stuck and needs an example.
+  const prompt = `You are a ${language} language teacher helping a ${difficulty} level student who is stuck and needs a hint.
 
 ${phaseInstruction}
 
@@ -899,17 +899,21 @@ Topic: ${topic}
 Difficulty: ${difficulty}
 Available vocabulary to use: ${vocabulary.join(", ")}
 
-Create a GOOD example response that:
-- Is appropriate for ${difficulty} level (simple and clear for beginners)
-- Uses at least ONE word from the vocabulary list
-- Is grammatically correct and natural
-- Is helpful but not overly complex
-- Shows what a good response looks like
-${phase === "user-answer" ? "- Actually answers the question asked" : "- Asks a relevant, clear question"}
+Create a HELPFUL HINT that:
+- Gives a clue without providing the full answer
+- Suggests 1-2 vocabulary words they could use
+- Provides guidance about grammar structure or approach
+- Encourages them to construct their own response
+- Is appropriate for ${difficulty} level
 
-IMPORTANT: Generate a HELPFUL, CLEAR example that a beginner can learn from. Keep it simple!
+IMPORTANT: Give a HINT, NOT a complete answer. Help them think through it themselves!
 
-Respond with ONLY the example ${phase === "user-question" ? "question" : "answer"} in ${language}, nothing else.`;
+Examples of good hints:
+- "Try using the word '___' to talk about this topic"
+- "Think about how you would describe this in simple terms using '___'"
+- "Start with a basic greeting, then mention '___'"
+
+Respond with ONLY the hint in English, keeping it brief (1-2 sentences).`;
 
   try {
     const response = await openai.chat.completions.create({

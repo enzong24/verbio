@@ -39,7 +39,7 @@ export default function VocabularyBadge({
         <PopoverTrigger asChild>
           <button
             type="button"
-            className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-md text-xs font-semibold ${variantClasses[variant]} ${className} cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
+            className={`inline-flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-md text-xs font-semibold ${variantClasses[variant]} ${className} cursor-pointer focus:outline-none`}
             data-testid={`vocab-badge-${chinese}`}
             onMouseEnter={() => setIsOpen(true)}
             onMouseLeave={() => setIsOpen(false)}

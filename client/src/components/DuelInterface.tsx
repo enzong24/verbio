@@ -462,10 +462,15 @@ export default function DuelInterface({
   const handleTimeUp = () => {
     shouldCountRef.current = false;
     
-    if (currentTurnPhaseRef.current === "user-answer") {
-      handleDontKnow();
-    } else if (currentTurnPhaseRef.current === "user-question") {
-      handleDontKnow();
+    // Running out of time results in a forfeit/loss
+    if (currentTurnPhaseRef.current === "user-answer" || currentTurnPhaseRef.current === "user-question") {
+      // Add a message indicating time ran out
+      setMessages(prev => [...prev, { sender: "user", text: "(Ran out of time)", timestamp: Date.now() }]);
+      
+      // Trigger forfeit after a brief delay to show the message
+      setTimeout(() => {
+        handleForfeit();
+      }, 500);
     }
   };
 
@@ -852,7 +857,7 @@ export default function DuelInterface({
                           : "bg-muted text-muted-foreground"
                       } ${shouldShowTranslation ? "cursor-help transition-all" : ""}`}
                       onMouseEnter={() => {
-                        if (shouldShowTranslation && msg.text !== "(Skipped)") {
+                        if (shouldShowTranslation && msg.text !== "(Skipped)" && msg.text !== "(Ran out of time)") {
                           setHoveredMessageIndex(idx);
                           // Fetch translation if not already cached
                           if (!translations[idx]) {
@@ -875,6 +880,8 @@ export default function DuelInterface({
                     >
                       {msg.text === "(Skipped)" ? (
                         <span className="italic opacity-60">Skipped question</span>
+                      ) : msg.text === "(Ran out of time)" ? (
+                        <span className="italic opacity-60 text-destructive">Ran out of time</span>
                       ) : (
                         <div className="flex flex-col gap-2">
                           <div>
