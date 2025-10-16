@@ -359,11 +359,6 @@ export default function Header({
                                 <div className="flex-1 min-w-0">
                                   <div className="font-medium text-sm">
                                     vs {match.opponent}
-                                    {(match.isForfeit === 1 || (match as any).is_forfeit === 1) && (
-                                      <Badge variant="outline" className="ml-2 text-xs px-1.5 py-0 h-4">
-                                        Forfeit
-                                      </Badge>
-                                    )}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
                                     {match.createdAt ? formatDistanceToNow(new Date(match.createdAt), { addSuffix: true }) : "Unknown"}
