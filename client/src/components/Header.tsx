@@ -222,13 +222,10 @@ export default function Header({
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           
-          <Tabs defaultValue="profile" className="mt-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="profile" data-testid="tab-profile">Profile</TabsTrigger>
-              <TabsTrigger value="leaderboard" data-testid="tab-leaderboard">Leaderboard</TabsTrigger>
-            </TabsList>
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-4">Profile</h3>
             
-            <TabsContent value="profile" className="mt-4 space-y-4">
+            <div className="space-y-4">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-12 h-12">
@@ -551,73 +548,8 @@ export default function Header({
                   </Button>
                 </div>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="leaderboard" className="mt-4">
-              <Card className="border-card-border">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-gold" />
-                    Top {currentLanguage} Learners
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingLeaderboard ? (
-                    <div className="text-center text-muted-foreground text-sm py-4">
-                      Loading leaderboard...
-                    </div>
-                  ) : leaderboardEntries.length > 0 ? (
-                    <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {leaderboardEntries.slice(0, 20).map((entry) => (
-                        <div
-                          key={entry.rank}
-                          className={`flex items-center gap-3 p-2 rounded-md ${
-                            entry.username === username
-                              ? 'bg-primary/10 border border-primary/20'
-                              : 'hover-elevate'
-                          }`}
-                          data-testid={`leaderboard-entry-${entry.rank}`}
-                        >
-                          <div className="w-8 text-center">
-                            {getRankIcon(entry.rank!) || (
-                              <span className="font-mono font-bold text-xs text-muted-foreground">
-                                #{entry.rank}
-                              </span>
-                            )}
-                          </div>
-                          <Avatar className="w-8 h-8">
-                            <AvatarFallback className="text-xs">
-                              {entry.username.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate flex items-center gap-2">
-                              {entry.username}
-                              {entry.username === username && (
-                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
-                                  You
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {entry.wins}W - {entry.losses}L
-                            </div>
-                          </div>
-                          <div className="font-mono font-bold text-sm">
-                            {entry.elo}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-center text-muted-foreground text-sm py-4">
-                      No players ranked yet
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
 
