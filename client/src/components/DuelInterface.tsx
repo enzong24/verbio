@@ -446,13 +446,51 @@ export default function DuelInterface({
     }
   };
 
-  // Helper function to mark vocabulary as used in a message (case-insensitive)
-  const markVocabularyAsUsed = (text: string) => {
+  // Helper function to check if vocab word matches with conjugations/declensions
+  const isVocabWordUsed = (text: string, vocabWord: string): boolean => {
     const lowerText = text.toLowerCase();
+    const lowerVocab = vocabWord.toLowerCase();
+    
+    // Exact substring match (existing behavior)
+    if (lowerText.includes(lowerVocab)) {
+      return true;
+    }
+    
+    // Split text into words and check for conjugations/declensions
+    const words = lowerText.split(/\s+/);
+    
+    for (const word of words) {
+      // Remove common punctuation
+      const cleanWord = word.replace(/[.,!?;:"""''()]/g, '');
+      
+      // Check if word starts with vocab (conjugations: have → having, had)
+      if (cleanWord.startsWith(lowerVocab) && cleanWord.length >= lowerVocab.length) {
+        return true;
+      }
+      
+      // Check if vocab starts with word (declensions: good → better)
+      if (lowerVocab.startsWith(cleanWord) && cleanWord.length >= 3) {
+        return true;
+      }
+      
+      // For Chinese/Japanese characters, check if vocab is contained or contains the word
+      if (cleanWord.length >= 2 && lowerVocab.length >= 2) {
+        // Bidirectional substring match for compound words
+        if (cleanWord.includes(lowerVocab) || lowerVocab.includes(cleanWord)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  };
+
+  // Helper function to mark vocabulary as used in a message (case-insensitive with fuzzy matching)
+  const markVocabularyAsUsed = (text: string) => {
     const newUsedVocab = new Set(usedVocabulary);
     
     vocabulary.forEach((vocabItem) => {
-      if (lowerText.includes(vocabItem.word.toLowerCase())) {
+      if (isVocabWordUsed(text, vocabItem.word)) {
         newUsedVocab.add(vocabItem.word);
       }
     });
@@ -961,13 +999,11 @@ export default function DuelInterface({
                     resetInactivity();
                     if (validationError) setValidationError("");
                     
-                    // Check for vocabulary words in real-time (case-insensitive)
+                    // Check for vocabulary words in real-time with fuzzy matching
                     const newUsedVocab = new Set(usedVocabulary); // Start with already used words
-                    const lowerInput = newInput.toLowerCase();
                     
                     vocabulary.forEach((vocabItem) => {
-                      // Case-insensitive check
-                      if (lowerInput.includes(vocabItem.word.toLowerCase())) {
+                      if (isVocabWordUsed(newInput, vocabItem.word)) {
                         newUsedVocab.add(vocabItem.word);
                       }
                     });
