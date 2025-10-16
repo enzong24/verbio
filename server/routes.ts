@@ -244,27 +244,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { question, topic, vocabulary, language = "Chinese", messages = [] } = req.body;
       
+      // Normalize text for comparison (remove diacritics, spaces, punctuation, convert to lowercase)
+      const normalizeText = (text: string) => 
+        text.normalize('NFD') // Decompose combined characters
+          .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+          .toLowerCase()
+          .replace(/[^a-z0-9\u4e00-\u9fff]/g, '') // Remove all non-letter/number characters
+          .trim();
+      
+      const normalizedNewQuestion = normalizeText(question);
+      
+      // Check if user is repeating their own previous question
+      const userQuestions = messages
+        .filter((m: any) => m.sender === "user")
+        .map((m: any) => m.text || "");
+      
+      for (const prevQuestion of userQuestions) {
+        const normalizedPrevQuestion = normalizeText(prevQuestion || "");
+        
+        if (normalizedNewQuestion && normalizedPrevQuestion) {
+          const similarity = normalizedNewQuestion === normalizedPrevQuestion ||
+                           normalizedNewQuestion.includes(normalizedPrevQuestion) ||
+                           normalizedPrevQuestion.includes(normalizedNewQuestion);
+          
+          if (similarity) {
+            return res.json({
+              isValid: false,
+              message: "You already asked this question. Please ask something different."
+            });
+          }
+        }
+      }
+      
       // Check for duplicate questions (copying opponent's question)
       const opponentMessages = messages.filter((m: any) => m.sender === "opponent");
       if (opponentMessages.length > 0) {
         const lastOpponentQuestion = opponentMessages[opponentMessages.length - 1]?.text || "";
-        
-        // Normalize both questions for comparison (remove diacritics, spaces, punctuation, convert to lowercase)
-        const normalizeText = (text: string) => 
-          text.normalize('NFD') // Decompose combined characters
-            .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
-            .toLowerCase()
-            .replace(/[^a-z0-9\u4e00-\u9fff]/g, '') // Remove all non-letter/number characters
-            .trim();
-        
-        const normalizedUserQuestion = normalizeText(question);
-        const normalizedOpponentQuestion = normalizeText(lastOpponentQuestion);
+        const normalizedOpponentQuestion = normalizeText(lastOpponentQuestion || "");
         
         // Check if questions are too similar (exact match or substring match)
-        if (normalizedUserQuestion && normalizedOpponentQuestion) {
-          const similarity = normalizedUserQuestion === normalizedOpponentQuestion ||
-                           normalizedUserQuestion.includes(normalizedOpponentQuestion) ||
-                           normalizedOpponentQuestion.includes(normalizedUserQuestion);
+        if (normalizedNewQuestion && normalizedOpponentQuestion) {
+          const similarity = normalizedNewQuestion === normalizedOpponentQuestion ||
+                           normalizedNewQuestion.includes(normalizedOpponentQuestion) ||
+                           normalizedOpponentQuestion.includes(normalizedNewQuestion);
           
           if (similarity) {
             return res.json({
