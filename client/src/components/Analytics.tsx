@@ -214,6 +214,42 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
         </Card>
       </div>
 
+      {/* Streak Multiplier Info Card */}
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
+            Streak Multiplier System
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Build streaks to earn bonus Fluency Score on wins! Multipliers only apply to winning matches.
+          </p>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <Zap className="w-4 h-4 text-blue-500 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Daily Login Streak</p>
+                <p className="text-xs text-muted-foreground">+5% per 3 days (capped at +20%)</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Flame className="w-4 h-4 text-orange-500 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Win Streak</p>
+                <p className="text-xs text-muted-foreground">+10% per 2 wins (capped at +30%)</p>
+              </div>
+            </div>
+          </div>
+          <div className="pt-2 border-t border-border">
+            <p className="text-xs text-muted-foreground">
+              <strong>Maximum bonus:</strong> 1.5x total multiplier • <strong>Note:</strong> Multipliers only apply to wins, not losses
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Fluency Score Over Time */}
       {fluencyOverTime.length > 0 && (
         <Card>
