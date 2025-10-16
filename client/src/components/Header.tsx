@@ -218,22 +218,22 @@ export default function Header({
                 </div>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-xs text-muted-foreground">{currentLanguage}</p>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                  <Popover>
+                    <PopoverTrigger asChild>
                       <Badge 
                         variant="outline" 
-                        className="font-bold text-xs cursor-help"
+                        className="font-bold text-xs cursor-pointer hover-elevate"
                         data-testid="badge-fluency-level-dropdown"
                       >
                         {fluencyLevel.level}
                       </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs" data-testid="tooltip-fluency-level-dropdown">
+                    </PopoverTrigger>
+                    <PopoverContent className="max-w-xs" data-testid="popover-fluency-level-dropdown">
                       <p className="font-semibold mb-1">CEFR Level: {fluencyLevel.level}</p>
                       <p className="text-xs text-muted-foreground mb-2">Common European Framework of Reference for Languages</p>
                       <p className="text-sm">{fluencyLevel.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
