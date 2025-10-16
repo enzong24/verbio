@@ -170,16 +170,6 @@ export default function Header({
                   PRO
                 </Badge>
               )}
-              <Badge 
-                variant="outline" 
-                className="font-bold hidden md:flex" 
-                data-testid="badge-fluency-level"
-              >
-                {fluencyLevel.level}
-              </Badge>
-              <Badge variant="outline" className="font-mono font-semibold hidden md:flex" data-testid="badge-elo">
-                {elo} Fluency
-              </Badge>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
