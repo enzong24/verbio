@@ -216,24 +216,21 @@ export default function Header({
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <p className="text-xs text-muted-foreground">{currentLanguage}</p>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Badge 
-                        variant="outline" 
-                        className="font-bold text-xs cursor-pointer hover-elevate"
-                        data-testid="badge-fluency-level-dropdown"
-                      >
-                        {fluencyLevel.level}
-                      </Badge>
-                    </PopoverTrigger>
-                    <PopoverContent className="max-w-xs" data-testid="popover-fluency-level-dropdown">
-                      <p className="font-semibold mb-1">CEFR Level: {fluencyLevel.level}</p>
-                      <p className="text-xs text-muted-foreground mb-2">Common European Framework of Reference for Languages</p>
-                      <p className="text-sm">{fluencyLevel.description}</p>
-                    </PopoverContent>
-                  </Popover>
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground">{currentLanguage}</p>
+                    <Badge 
+                      variant="outline" 
+                      className="font-bold text-xs"
+                      data-testid="badge-fluency-level-dropdown"
+                    >
+                      {fluencyLevel.level}
+                    </Badge>
+                  </div>
+                  <div className="bg-muted/30 rounded-md p-2 border border-border/50">
+                    <p className="text-xs font-medium mb-0.5">CEFR {fluencyLevel.level}: {fluencyLevel.name}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{fluencyLevel.description}</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1">
                   <Trophy className="w-3.5 h-3.5 text-muted-foreground" />
