@@ -161,6 +161,7 @@ export class MemStorage implements IStorage {
       bestWinStreak: statsData.bestWinStreak ?? existing?.bestWinStreak ?? 0,
       dailyLoginStreak: statsData.dailyLoginStreak ?? existing?.dailyLoginStreak ?? 0,
       lastLoginDate: statsData.lastLoginDate ?? existing?.lastLoginDate ?? null,
+      highestFluencyLevel: statsData.highestFluencyLevel ?? existing?.highestFluencyLevel ?? "A1",
       createdAt: existing?.createdAt || new Date(),
       updatedAt: new Date(),
     };
@@ -278,6 +279,14 @@ export class MemStorage implements IStorage {
       ...stats,
       dailyLoginStreak: isConsecutive ? stats.dailyLoginStreak + 1 : 1,
       lastLoginDate: today,
+    });
+  }
+
+  async updateHighestFluencyLevel(userId: string, language: string, level: string): Promise<UserLanguageStats> {
+    const stats = await this.getUserLanguageStats(userId, language) || await this.upsertUserLanguageStats({ userId, language });
+    return this.upsertUserLanguageStats({
+      ...stats,
+      highestFluencyLevel: level,
     });
   }
 
@@ -762,6 +771,21 @@ export class DbStorage implements IStorage {
       .set({
         dailyLoginStreak: newStreak,
         lastLoginDate: today,
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(userLanguageStats.userId, userId),
+        eq(userLanguageStats.language, language)
+      ))
+      .returning();
+    return result[0];
+  }
+
+  async updateHighestFluencyLevel(userId: string, language: string, level: string): Promise<UserLanguageStats> {
+    const result = await db
+      .update(userLanguageStats)
+      .set({
+        highestFluencyLevel: level,
         updatedAt: new Date(),
       })
       .where(and(

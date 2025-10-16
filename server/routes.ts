@@ -433,6 +433,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { opponent, result, eloChange, language, difficulty, scores, isForfeit, conversation, detailedFeedback, topic, isPracticeMode } = req.body;
       
+      // Get current stats to check for level-up (only for competitive matches)
+      let levelUpInfo = null;
+      if (!isPracticeMode && eloChange !== 0) {
+        const currentStats = await storage.getUserLanguageStats(userId, language);
+        if (currentStats) {
+          const oldElo = currentStats.elo;
+          const newElo = oldElo + eloChange;
+          
+          // Check if user leveled up
+          const { checkLevelUp, getFluencyLevel } = await import("@shared/fluencyLevels");
+          const levelCheck = checkLevelUp(oldElo, newElo);
+          
+          if (levelCheck.leveledUp) {
+            // Update highest fluency level achieved
+            const newLevel = getFluencyLevel(newElo);
+            await storage.updateHighestFluencyLevel(userId, language, newLevel.level);
+            
+            levelUpInfo = {
+              leveledUp: true,
+              oldLevel: levelCheck.oldLevel,
+              newLevel: levelCheck.newLevel,
+            };
+          }
+        }
+      }
+      
       const match = await storage.createMatch({
         userId,
         opponent,
@@ -457,7 +483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateWinStreak(userId, language, result === 'win', isForfeit || false);
       }
 
-      res.json(match);
+      res.json({ ...match, levelUpInfo });
     } catch (error) {
       console.error("Error saving match:", error);
       res.status(500).json({ message: "Failed to save match" });
