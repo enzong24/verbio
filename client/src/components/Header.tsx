@@ -239,7 +239,14 @@ export default function Header({
                     <div className="flex items-center gap-2">
                       <p className="font-semibold">{username}</p>
                       {isPremium && (
-                        <Crown className="w-4 h-4 text-yellow-500" data-testid="icon-premium-crown" />
+                        <Badge 
+                          variant="default" 
+                          className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 font-bold"
+                          data-testid="badge-premium-mobile"
+                        >
+                          <Crown className="w-3 h-3" />
+                          PRO
+                        </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
