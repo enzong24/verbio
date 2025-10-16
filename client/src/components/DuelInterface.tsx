@@ -657,7 +657,7 @@ export default function DuelInterface({
   const isUserTurn = turnPhase === "user-answer" || turnPhase === "user-question";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem-env(safe-area-inset-top))]" style={{ marginTop: '4rem' }}>
+    <div className="flex flex-col h-[calc(100dvh-4rem-env(safe-area-inset-top))] md:h-[calc(100vh-4rem-env(safe-area-inset-top))]" style={{ marginTop: '4rem' }}>
       {/* Desktop Header - opponent info, timer, forfeit, user info */}
       <div className="border-b bg-card p-2 md:p-4 shadow-sm hidden md:block">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
@@ -735,7 +735,7 @@ export default function DuelInterface({
       </div>
       
       {/* Mobile-only compact header with timer and forfeit */}
-      <div className="md:hidden border-b bg-card px-2 py-1 flex items-center justify-between">
+      <div className="md:hidden bg-card px-2 py-1.5 flex items-center justify-between flex-shrink-0 border-b border-card-border/50">
         <div className="flex items-center gap-2">
           <Clock className="w-3 h-3 text-primary" />
           <span className={`font-mono font-bold text-sm ${timeLeft <= 10 ? 'text-destructive' : 'text-primary'}`}>
@@ -758,7 +758,7 @@ export default function DuelInterface({
         <div className="max-w-7xl mx-auto h-full flex flex-col md:flex-row">
           <div className="flex-1 flex flex-col min-h-0">
             {/* Topic Header */}
-            <div className="border-b bg-card flex-shrink-0">
+            <div className="bg-card flex-shrink-0 border-b border-card-border/50">
               <button 
                 className="w-full p-1.5 md:p-4 flex items-center justify-between cursor-pointer hover-elevate text-left"
                 onClick={() => setShowTopicHeader(!showTopicHeader)}
