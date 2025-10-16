@@ -15,10 +15,10 @@ export function getBotElo(difficulty: string): number {
 // Bot target accuracy by difficulty (affects grading expectations)
 export function getBotTargetAccuracy(difficulty: string): number {
   const accuracyRanges: Record<string, { min: number; max: number }> = {
-    Beginner: { min: 40, max: 52 }, // Bot performs at 40-52% for Beginner (many mistakes)
-    Easy: { min: 55, max: 67 },     // Bot performs at 55-67% for Easy (beginner level)
-    Medium: { min: 68, max: 78 },   // Bot performs at 68-78% for Medium (intermediate)
-    Hard: { min: 82, max: 92 },     // Bot performs at 82-92% for Hard (advanced)
+    Beginner: { min: 50, max: 60 }, // Bot performs at 50-60% for Beginner (many mistakes)
+    Easy: { min: 60, max: 70 },     // Bot performs at 60-70% for Easy (beginner level)
+    Medium: { min: 70, max: 80 },   // Bot performs at 70-80% for Medium (intermediate)
+    Hard: { min: 80, max: 90 },     // Bot performs at 80-90% for Hard (advanced)
   };
 
   const range = accuracyRanges[difficulty] || accuracyRanges.Medium;
