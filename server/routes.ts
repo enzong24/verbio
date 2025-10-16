@@ -242,7 +242,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Validate user question with AI
   app.post("/api/validate-question", async (req, res) => {
     try {
-      const { question, topic, vocabulary, language = "Chinese" } = req.body;
+      const { question, topic, vocabulary, language = "Chinese", messages = [] } = req.body;
+      
+      // Check for duplicate questions (copying opponent's question)
+      const opponentMessages = messages.filter((m: any) => m.sender === "opponent");
+      if (opponentMessages.length > 0) {
+        const lastOpponentQuestion = opponentMessages[opponentMessages.length - 1]?.text || "";
+        
+        // Normalize both questions for comparison (remove diacritics, spaces, punctuation, convert to lowercase)
+        const normalizeText = (text: string) => 
+          text.normalize('NFD') // Decompose combined characters
+            .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+            .toLowerCase()
+            .replace(/[^a-z0-9\u4e00-\u9fff]/g, '') // Remove all non-letter/number characters
+            .trim();
+        
+        const normalizedUserQuestion = normalizeText(question);
+        const normalizedOpponentQuestion = normalizeText(lastOpponentQuestion);
+        
+        // Check if questions are too similar (exact match or substring match)
+        if (normalizedUserQuestion && normalizedOpponentQuestion) {
+          const similarity = normalizedUserQuestion === normalizedOpponentQuestion ||
+                           normalizedUserQuestion.includes(normalizedOpponentQuestion) ||
+                           normalizedOpponentQuestion.includes(normalizedUserQuestion);
+          
+          if (similarity) {
+            return res.json({
+              isValid: false,
+              message: "Please ask your own original question. Don't copy your opponent's question."
+            });
+          }
+        }
+      }
+      
       const result = await validateQuestion(question, topic, vocabulary, language);
       res.json(result);
     } catch (error: any) {
@@ -398,8 +430,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         topic: topic || null, // Match topic
       });
 
-      // Update win streak
-      await storage.updateWinStreak(userId, language, result === 'win', isForfeit || false);
+      // Update win streak (only for competitive matches, not practice)
+      if (!isPracticeMode) {
+        await storage.updateWinStreak(userId, language, result === 'win', isForfeit || false);
+      }
 
       res.json(match);
     } catch (error) {

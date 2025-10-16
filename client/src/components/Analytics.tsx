@@ -20,10 +20,13 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   // Fetch matches for the current language
-  const { data: matches = [] } = useQuery<Match[]>({
+  const { data: allMatches = [] } = useQuery<Match[]>({
     queryKey: [`/api/user/matches?language=${currentLanguage}`],
     enabled: isAuthenticated,
   });
+
+  // Filter out practice matches for analytics
+  const matches = allMatches.filter(m => !m.isPracticeMode);
 
   // Fetch language stats
   const { data: languageStats } = useQuery<UserLanguageStats>({

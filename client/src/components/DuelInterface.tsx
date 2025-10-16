@@ -214,7 +214,8 @@ export default function DuelInterface({
         question,
         topic,
         vocabulary: vocabStrings,
-        language
+        language,
+        messages // Pass conversation history for duplicate detection
       });
       return await response.json();
     },
