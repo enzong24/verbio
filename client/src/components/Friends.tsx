@@ -413,13 +413,13 @@ export default function Friends() {
                 return (
                   <div
                     key={friend.id}
-                    className="flex items-start justify-between p-4 rounded-md border border-card-border hover-elevate cursor-pointer transition-all"
+                    className="flex flex-col sm:flex-row items-start sm:justify-between p-3 sm:p-4 rounded-md border border-card-border hover-elevate cursor-pointer transition-all gap-3"
                     data-testid={`friend-card-${friend.id}`}
                   >
-                    <div className="flex items-start gap-3 flex-1 min-w-0 overflow-hidden">
+                    <div className="flex items-start gap-3 flex-1 min-w-0 w-full sm:w-auto overflow-hidden">
                       <div className="relative flex-shrink-0">
-                        <Avatar>
-                          <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        <Avatar className="w-10 h-10 sm:w-10 sm:h-10">
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
                             {(friend.friendUser.firstName || friend.friendUser.email || "?")
                               .slice(0, 2)
                               .toUpperCase()}
@@ -432,39 +432,40 @@ export default function Friends() {
                         />
                       </div>
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="font-medium flex items-center gap-2 flex-wrap">
+                        <div className="font-medium text-sm sm:text-base flex items-center gap-2 flex-wrap">
                           <span className="truncate">{friend.friendUser.firstName || friend.friendUser.email}</span>
                           {online && (
-                            <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/20 flex-shrink-0">
+                            <Badge variant="outline" className="text-[10px] sm:text-xs bg-success/10 text-success border-success/20 flex-shrink-0 px-1.5 py-0">
                               Online
                             </Badge>
                           )}
                         </div>
-                        <div className="text-sm text-muted-foreground truncate">
+                        <div className="text-xs sm:text-sm text-muted-foreground truncate">
                           {friend.friendUser.email}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1 truncate">
+                        <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">
                           {getLastSeenText(friend.friendUser)}
                         </div>
                         {friend.friendStats && (
-                          <div className="text-xs text-muted-foreground mt-2 flex gap-3 flex-wrap">
-                            <span className="truncate">Fluency Score: <span className="font-mono font-semibold text-foreground">{friend.friendStats.elo}</span></span>
+                          <div className="text-[10px] sm:text-xs text-muted-foreground mt-2 flex gap-2 sm:gap-3 flex-wrap">
+                            <span className="truncate">ELO: <span className="font-mono font-semibold text-foreground">{friend.friendStats.elo}</span></span>
                             <span className="text-success flex-shrink-0">{friend.friendStats.wins}W</span>
                             <span className="text-destructive flex-shrink-0">{friend.friendStats.losses}L</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 flex-shrink-0">
+                    <div className="flex sm:flex-col flex-row gap-2 w-full sm:w-auto flex-shrink-0">
                       <Button
                         size="sm"
                         variant="default"
                         onClick={() => handleChallengeFriend(friend.friendUser.id)}
                         disabled={createChallengeMutation.isPending && selectedFriendForInvite === friend.friendUser.id}
                         data-testid={`button-challenge-${friend.id}`}
+                        className="flex-1 sm:flex-initial"
                       >
-                        <Swords className="w-4 h-4 mr-1" />
-                        Challenge
+                        <Swords className="w-4 h-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Challenge</span>
                       </Button>
                       <Button
                         size="sm"
@@ -472,8 +473,10 @@ export default function Friends() {
                         onClick={() => removeMutation.mutate(friend.id)}
                         disabled={removeMutation.isPending}
                         data-testid={`button-remove-${friend.id}`}
+                        className="flex-1 sm:flex-initial"
                       >
-                        Remove
+                        <X className="w-4 h-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Remove</span>
                       </Button>
                     </div>
                   </div>
