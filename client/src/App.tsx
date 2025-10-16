@@ -18,12 +18,13 @@ import Leaderboard from "@/components/Leaderboard";
 import ProfileStats from "@/components/ProfileStats";
 import AIReview from "@/components/AIReview";
 import Friends from "@/components/Friends";
+import Analytics from "@/components/Analytics";
 import { StreakNotification } from "@/components/StreakNotification";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 import { incrementGuestMatches } from "@/utils/guestRateLimit";
 
-type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review" | "friends";
+type Page = "duel" | "leaderboard" | "profile" | "match" | "results" | "ai-review" | "friends" | "analytics";
 
 interface VocabWord {
   word: string;
@@ -702,6 +703,12 @@ function MainApp() {
         )}
         
         {currentPage === "friends" && isAuthenticated && <Friends />}
+        
+        {currentPage === "analytics" && (
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <Analytics currentLanguage={currentLanguage} isAuthenticated={isAuthenticated} />
+          </div>
+        )}
         
         {currentPage === "ai-review" && matchData && (
           <AIReview
