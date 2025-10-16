@@ -920,11 +920,37 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async updatePrivateMatchInviteStatus(inviteCode: string, status: string): Promise<void> {
+  async getPendingMatchChallenges(userId: string): Promise<Array<PrivateMatchInvite & { creatorUser: User }>> {
+    const challenges = await db
+      .select()
+      .from(privateMatchInvites)
+      .where(
+        and(
+          eq(privateMatchInvites.recipientId, userId),
+          eq(privateMatchInvites.status, "pending")
+        )
+      );
+    
+    const result = [];
+    for (const challenge of challenges) {
+      const creatorUser = await this.getUser(challenge.creatorId);
+      
+      if (creatorUser) {
+        result.push({
+          ...challenge,
+          creatorUser,
+        });
+      }
+    }
+    
+    return result;
+  }
+
+  async updatePrivateMatchInviteStatus(inviteId: string, status: string): Promise<void> {
     await db
       .update(privateMatchInvites)
       .set({ status })
-      .where(eq(privateMatchInvites.inviteCode, inviteCode));
+      .where(eq(privateMatchInvites.id, inviteId));
   }
 
   async checkDailyMediumHardLimit(userId: string, today: string): Promise<{ allowed: boolean; remaining: number; limit: number }> {

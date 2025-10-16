@@ -448,7 +448,7 @@ export default function Friends() {
                         size="sm"
                         variant="default"
                         onClick={() => handleChallengeFriend(friend.friendUser.id)}
-                        disabled={createInviteMutation.isPending && selectedFriendForInvite === friend.friendUser.id}
+                        disabled={createChallengeMutation.isPending && selectedFriendForInvite === friend.friendUser.id}
                         data-testid={`button-challenge-${friend.id}`}
                       >
                         <Swords className="w-4 h-4 mr-1" />
