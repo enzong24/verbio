@@ -20,6 +20,7 @@ import AIReview from "@/components/AIReview";
 import Friends from "@/components/Friends";
 import Analytics from "@/components/Analytics";
 import { StreakNotification } from "@/components/StreakNotification";
+import InstallPrompt from "@/components/InstallPrompt";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
 import { incrementGuestMatches } from "@/utils/guestRateLimit";
@@ -764,6 +765,7 @@ function MainApp() {
         )}
       </main>
       
+      <InstallPrompt />
       <Toaster />
     </div>
   );
