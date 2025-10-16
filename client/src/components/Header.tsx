@@ -1,4 +1,4 @@
-import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3, Brain, Swords } from "lucide-react";
+import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/hooks/use-sound";
@@ -448,32 +448,6 @@ export default function Header({
                   >
                     <BarChart3 className="w-4 h-4" />
                     <span>Analytics</span>
-                  </Button>
-                  
-                  <Button
-                    variant={currentPage === "skill-progress" ? "default" : "outline"}
-                    className="w-full gap-2"
-                    onClick={() => {
-                      onNavigate?.("skill-progress");
-                      setMobileMenuOpen(false);
-                    }}
-                    data-testid="button-nav-skill-progress"
-                  >
-                    <Brain className="w-4 h-4" />
-                    <span>Skill Progress</span>
-                  </Button>
-                  
-                  <Button
-                    variant={currentPage === "match-history" ? "default" : "outline"}
-                    className="w-full gap-2"
-                    onClick={() => {
-                      onNavigate?.("match-history");
-                      setMobileMenuOpen(false);
-                    }}
-                    data-testid="button-nav-match-history"
-                  >
-                    <Swords className="w-4 h-4" />
-                    <span>Match History</span>
                   </Button>
                   
                   {isAuthenticated && (

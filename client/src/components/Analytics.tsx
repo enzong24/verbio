@@ -1,10 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Trophy, Target, Zap, Flame, BarChart3, Calendar, BookOpen, AlertCircle } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { formatDistanceToNow, format, subDays } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
+import { TrendingUp, Trophy, Target, Zap, Flame, BarChart3, Calendar, BookOpen, AlertCircle, Brain, Activity, Swords, Eye, TrendingDown } from "lucide-react";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { formatDistanceToNow, format } from "date-fns";
 import type { Match, UserLanguageStats } from "@shared/schema";
+import { useState } from "react";
+import MatchDetails from "@/components/MatchDetails";
 
 interface AnalyticsProps {
   currentLanguage: string;
@@ -12,6 +17,8 @@ interface AnalyticsProps {
 }
 
 export default function Analytics({ currentLanguage, isAuthenticated }: AnalyticsProps) {
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+
   // Fetch matches for the current language
   const { data: matches = [] } = useQuery<Match[]>({
     queryKey: [`/api/user/matches?language=${currentLanguage}`],
@@ -90,13 +97,54 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
   const recentWins = recentMatches.filter(m => m.result === 'win').length;
   const recentWinRate = recentMatches.length > 0 ? Math.round((recentWins / recentMatches.length) * 100) : 0;
 
-  // Skill breakdown data for pie chart
+  // Skill progression over last 20 matches
+  const skillProgression = matches.slice(-20).map((match, idx) => ({
+    match: idx + 1,
+    grammar: match.grammarScore,
+    fluency: match.fluencyScore,
+    vocabulary: match.vocabularyScore,
+    naturalness: match.naturalnessScore,
+  }));
+
+  // Calculate average scores by difficulty
+  const difficultyGroups = matches.reduce((acc, match) => {
+    if (!acc[match.difficulty]) {
+      acc[match.difficulty] = { total: 0, count: 0, grammar: 0, fluency: 0, vocabulary: 0, naturalness: 0 };
+    }
+    acc[match.difficulty].grammar += match.grammarScore;
+    acc[match.difficulty].fluency += match.fluencyScore;
+    acc[match.difficulty].vocabulary += match.vocabularyScore;
+    acc[match.difficulty].naturalness += match.naturalnessScore;
+    acc[match.difficulty].count += 1;
+    return acc;
+  }, {} as Record<string, any>);
+
+  const difficultyData = Object.entries(difficultyGroups).map(([difficulty, data]) => ({
+    difficulty,
+    grammar: Math.round(data.grammar / data.count),
+    fluency: Math.round(data.fluency / data.count),
+    vocabulary: Math.round(data.vocabulary / data.count),
+    naturalness: Math.round(data.naturalness / data.count),
+  }));
+
+  // Skill distribution pie chart data
   const skillData = skillProgress ? [
-    { name: 'Grammar', value: skillProgress.grammar, color: '#3b82f6' },
-    { name: 'Fluency', value: skillProgress.fluency, color: '#10b981' },
-    { name: 'Vocabulary', value: skillProgress.vocabulary, color: '#f59e0b' },
-    { name: 'Naturalness', value: skillProgress.naturalness, color: '#8b5cf6' },
+    { name: "Grammar", value: skillProgress.grammar, color: "hsl(var(--chart-1))" },
+    { name: "Fluency", value: skillProgress.fluency, color: "hsl(var(--chart-2))" },
+    { name: "Vocabulary", value: skillProgress.vocabulary, color: "hsl(var(--chart-3))" },
+    { name: "Naturalness", value: skillProgress.naturalness, color: "hsl(var(--chart-4))" },
   ] : [];
+
+  // Get difficulty badge color
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case "Beginner": return "bg-green-500/20 text-green-500 border-green-500/30";
+      case "Easy": return "bg-blue-500/20 text-blue-500 border-blue-500/30";
+      case "Medium": return "bg-yellow-500/20 text-yellow-500 border-yellow-500/30";
+      case "Hard": return "bg-red-500/20 text-red-500 border-red-500/30";
+      default: return "bg-muted/20 text-muted-foreground border-muted/30";
+    }
+  };
 
   const totalMatches = (languageStats?.wins || 0) + (languageStats?.losses || 0);
   const overallWinRate = totalMatches > 0 ? Math.round(((languageStats?.wins || 0) / totalMatches) * 100) : 0;
@@ -206,7 +254,88 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
         </Card>
       )}
 
+      {/* Current Skill Levels */}
+      {skillProgress && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Activity className="w-5 h-5" />
+              Current Skill Levels
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Grammar</span>
+                <span className="font-semibold font-mono">{skillProgress.grammar}%</span>
+              </div>
+              <Progress value={skillProgress.grammar} className="h-3" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Fluency</span>
+                <span className="font-semibold font-mono">{skillProgress.fluency}%</span>
+              </div>
+              <Progress value={skillProgress.fluency} className="h-3" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Vocabulary</span>
+                <span className="font-semibold font-mono">{skillProgress.vocabulary}%</span>
+              </div>
+              <Progress value={skillProgress.vocabulary} className="h-3" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Naturalness</span>
+                <span className="font-semibold font-mono">{skillProgress.naturalness}%</span>
+              </div>
+              <Progress value={skillProgress.naturalness} className="h-3" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Skill Distribution */}
+        {skillData.length > 0 && skillData.some(s => s.value > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Brain className="w-5 h-5" />
+                Skill Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={skillData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {skillData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--card-border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Study Recommendations */}
         {hasRecommendations && (
           <Card>
@@ -275,6 +404,84 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
         )}
       </div>
 
+      {/* Skill Progression Over Time */}
+      {skillProgression.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Skill Progression (Last 20 Matches)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={skillProgression}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="match" 
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--card-border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Line type="monotone" dataKey="grammar" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="fluency" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="vocabulary" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="naturalness" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Performance by Difficulty */}
+      {difficultyData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              Average Performance by Difficulty
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={difficultyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="difficulty" 
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--card-border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar dataKey="grammar" fill="hsl(var(--chart-1))" />
+                <Bar dataKey="fluency" fill="hsl(var(--chart-2))" />
+                <Bar dataKey="vocabulary" fill="hsl(var(--chart-3))" />
+                <Bar dataKey="naturalness" fill="hsl(var(--chart-4))" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Recent Performance */}
       {recentMatches.length > 0 && (
         <Card>
@@ -313,6 +520,117 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
         </Card>
       )}
 
+      {/* Match History */}
+      {matches.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Swords className="w-5 h-5" />
+              Match History ({matches.length} Matches)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[600px] pr-4">
+              <div className="space-y-3">
+                {matches.map((match) => (
+                  <div
+                    key={match.id}
+                    className={`p-4 rounded-lg border ${
+                      match.result === 'win' 
+                        ? 'border-success/30 bg-success/5' 
+                        : 'border-destructive/30 bg-destructive/5'
+                    } hover-elevate transition-all`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge 
+                            variant="outline" 
+                            className={match.result === 'win' ? 'border-success text-success' : 'border-destructive text-destructive'}
+                          >
+                            {match.result === 'win' ? (
+                              <><Trophy className="w-3 h-3 mr-1" /> Victory</>
+                            ) : (
+                              <>Defeat</>
+                            )}
+                          </Badge>
+                          <Badge variant="outline" className={getDifficultyColor(match.difficulty)}>
+                            {match.difficulty}
+                          </Badge>
+                          {match.isForfeit === 1 && (
+                            <Badge variant="outline" className="border-muted text-muted-foreground">
+                              Forfeit
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <p className="font-semibold">vs {match.opponent}</p>
+                          <p className="text-sm text-muted-foreground">{match.topic || 'No topic'}</p>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1">
+                            <span className="text-muted-foreground">Score:</span>
+                            <span className="font-mono font-semibold">{match.overallScore}/100</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {match.eloChange >= 0 ? (
+                              <>
+                                <TrendingUp className="w-4 h-4 text-success" />
+                                <span className="font-mono font-semibold text-success">+{match.eloChange}</span>
+                              </>
+                            ) : (
+                              <>
+                                <TrendingDown className="w-4 h-4 text-destructive" />
+                                <span className="font-mono font-semibold text-destructive">{match.eloChange}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Grammar:</span>
+                            <span className="ml-1 font-semibold">{match.grammarScore}%</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Fluency:</span>
+                            <span className="ml-1 font-semibold">{match.fluencyScore}%</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Vocabulary:</span>
+                            <span className="ml-1 font-semibold">{match.vocabularyScore}%</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Naturalness:</span>
+                            <span className="ml-1 font-semibold">{match.naturalnessScore}%</span>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(match.createdAt || new Date()), { addSuffix: true })}
+                        </p>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedMatch(match)}
+                        data-testid={`button-view-match-${match.id}`}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Details
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
+
       {/* No Data Message */}
       {matches.length === 0 && (
         <Card>
@@ -324,6 +642,15 @@ export default function Analytics({ currentLanguage, isAuthenticated }: Analytic
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Match Details Dialog */}
+      {selectedMatch && (
+        <MatchDetails
+          match={selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          language={currentLanguage}
+        />
       )}
     </div>
   );
