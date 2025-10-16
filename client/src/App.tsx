@@ -69,6 +69,13 @@ function MainApp() {
     language: string;
   } | null>(null);
   
+  // Streak multiplier info
+  const [streakMultiplierInfo, setStreakMultiplierInfo] = useState<{
+    multiplier: number;
+    dayStreakBonus: number;
+    winStreakBonus: number;
+  } | null>(null);
+  
   // Initial language and level selection state
   const [showInitialLanguageDialog, setShowInitialLanguageDialog] = useState(false);
   const [showInitialLevelDialog, setShowInitialLevelDialog] = useState(false);
@@ -593,11 +600,9 @@ function MainApp() {
         const isDraw = userScore === botScore;
         const isLoss = userScore < botScore;
         
-        // Calculate Elo change using standard Elo formula (only applies to competitive)
-        const K_FACTOR = 32;
-        const expectedScore = 1 / (1 + Math.pow(10, (botElo - userElo) / 400));
-        const actualScore = isWin ? 1 : (isDraw ? 0.5 : 0);
-        const change = Math.round(K_FACTOR * (actualScore - expectedScore));
+        // Backend will calculate ELO change with streak multiplier
+        let change = 0;
+        let streakMultiplierInfo = null;
         
         // Save match history for authenticated users (both practice and competitive)
         if (isAuthenticated) {
@@ -605,9 +610,10 @@ function MainApp() {
             const response = await apiRequest("POST", "/api/match/save", {
               opponent: matchData.opponent,
               result: isWin ? "win" : "loss",
-              eloChange: matchData.isPracticeMode ? 0 : change, // No Elo change for practice
               language: matchData.language,
               difficulty: matchData.difficulty,
+              botElo: botElo, // Send bot ELO to backend for calculation
+              botScore: botScore, // Send bot score to backend for calculation
               scores: {
                 grammar: gradingResult.grammar,
                 fluency: gradingResult.fluency,
@@ -625,8 +631,17 @@ function MainApp() {
               topic: matchData.topic || null, // Match topic
             });
             
-            // Check for level-up
+            // Get ELO change and streak multiplier from backend
             const data = await response.json() as any;
+            change = data.eloChange || 0;
+            streakMultiplierInfo = data.streakMultiplier;
+            
+            // Store streak multiplier info for display
+            if (streakMultiplierInfo) {
+              setStreakMultiplierInfo(streakMultiplierInfo);
+            }
+            
+            // Check for level-up
             if (data.levelUpInfo) {
               // Convert level strings to FluencyLevelInfo objects
               const oldLevelInfo = FLUENCY_LEVELS[data.levelUpInfo.oldLevel as FluencyLevel];
