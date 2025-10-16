@@ -6,14 +6,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Star, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface BotProfile {
   id: string;
   name: string;
   languages: string[];
-  rating: number;
   backstory: string;
   personality: string;
   description: string;
@@ -41,15 +39,6 @@ export default function BotSelection({ open, onClose, language, onSelectBot }: B
     }
   };
 
-  const getRatingDisplay = (rating: number) => {
-    return Array.from({ length: 5 }).map((_, i) => (
-      <Star
-        key={i}
-        className={`w-3 h-3 ${i < rating ? 'fill-primary text-primary' : 'text-muted-foreground/30'}`}
-      />
-    ));
-  };
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -65,7 +54,7 @@ export default function BotSelection({ open, onClose, language, onSelectBot }: B
         <DialogHeader>
           <DialogTitle>Choose Your Practice Partner</DialogTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Select a bot to practice {language} with
+            Practice {language} with a native speaker
           </p>
         </DialogHeader>
         
@@ -106,9 +95,7 @@ export default function BotSelection({ open, onClose, language, onSelectBot }: B
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center justify-between gap-2">
                           <h3 className="font-semibold">{bot.name}</h3>
-                          <div className="flex items-center gap-0.5">
-                            {getRatingDisplay(bot.rating)}
-                          </div>
+                          <Badge variant="secondary" className="text-xs">Native Speaker</Badge>
                         </div>
                         
                         <p className="text-sm text-muted-foreground">{bot.description}</p>

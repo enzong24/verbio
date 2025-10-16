@@ -115,17 +115,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get bots by language
+  // Get practice bots by language (for bot selection in practice mode)
   app.get("/api/bots", async (req, res) => {
     try {
       const { language } = req.query;
-      const { getBotsByLanguage } = await import('./botProfiles.js');
+      const { getPracticeBotsByLanguage } = await import('./botProfiles.js');
       
       if (!language || typeof language !== 'string') {
         return res.status(400).json({ message: "Language parameter is required" });
       }
       
-      const bots = getBotsByLanguage(language);
+      const bots = getPracticeBotsByLanguage(language);
       res.json(bots);
     } catch (error) {
       console.error("Error fetching bots:", error);

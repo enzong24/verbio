@@ -8,7 +8,17 @@ export interface BotProfile {
   description: string; // Short description for UI
 }
 
-export const botProfiles: BotProfile[] = [
+export interface PracticeBotProfile {
+  id: string;
+  name: string;
+  languages: string[]; // Languages this bot can speak
+  backstory: string;
+  personality: string; // Used in AI prompts
+  description: string; // Short description for UI
+}
+
+// Competitive mode bots (with difficulty ratings)
+export const competitiveBots: BotProfile[] = [
   // Chinese Bots
   {
     id: "wei-zhang",
@@ -180,24 +190,209 @@ export const botProfiles: BotProfile[] = [
   },
 ];
 
-// Get bots by language
+// Practice mode bots (native speakers, no ratings)
+export const practiceBots: PracticeBotProfile[] = [
+  // Chinese Native Speakers
+  {
+    id: "practice-jing-li",
+    name: "Jing Li",
+    languages: ["Chinese"],
+    backstory: "Native Mandarin speaker from Beijing. Grew up in a traditional family, now works as a museum curator specializing in Chinese history.",
+    personality: "Native fluency, natural conversational style. Uses idioms and cultural references authentically. Speaks with perfect grammar and tones.",
+    description: "Museum curator from Beijing"
+  },
+  {
+    id: "practice-mei-wang",
+    name: "Mei Wang",
+    languages: ["Chinese"],
+    backstory: "Born and raised in Shanghai. News broadcaster for national television with flawless Mandarin pronunciation.",
+    personality: "Perfect native speaker. Clear, articulate, uses sophisticated vocabulary naturally. Excellent model for learners.",
+    description: "News broadcaster from Shanghai"
+  },
+  {
+    id: "practice-hong-chen",
+    name: "Hong Chen",
+    languages: ["Chinese"],
+    backstory: "Native speaker from Hangzhou. University professor teaching Chinese linguistics and classical literature.",
+    personality: "Native fluency with deep cultural knowledge. Uses proper grammar effortlessly, naturally incorporates literary expressions.",
+    description: "University professor from Hangzhou"
+  },
+  {
+    id: "practice-xiao-zhou",
+    name: "Xiao Zhou",
+    languages: ["Chinese"],
+    backstory: "Native Mandarin speaker from Chengdu. Tech entrepreneur who travels globally but maintains perfect Chinese.",
+    personality: "Natural native speaker. Modern vocabulary mixed with traditional expressions. Speaks authentically without errors.",
+    description: "Tech entrepreneur from Chengdu"
+  },
+
+  // Spanish Native Speakers
+  {
+    id: "practice-ana-garcia",
+    name: "Ana García",
+    languages: ["Spanish"],
+    backstory: "Native Spanish speaker from Madrid. Works as a diplomat representing Spain internationally.",
+    personality: "Perfect Castilian Spanish. Natural fluency with sophisticated vocabulary. Uses proper grammar instinctively.",
+    description: "Diplomat from Madrid"
+  },
+  {
+    id: "practice-miguel-torres",
+    name: "Miguel Torres",
+    languages: ["Spanish"],
+    backstory: "Born in Barcelona, raised speaking both Spanish and Catalan. University professor of Spanish literature.",
+    personality: "Native speaker with flawless grammar. Rich vocabulary, uses idiomatic expressions naturally and authentically.",
+    description: "Literature professor from Barcelona"
+  },
+  {
+    id: "practice-carmen-lopez",
+    name: "Carmen López",
+    languages: ["Spanish"],
+    backstory: "Native speaker from Mexico City. Award-winning journalist covering Latin American politics and culture.",
+    personality: "Perfect native fluency. Clear articulation, sophisticated vocabulary. Natural use of Mexican expressions and idioms.",
+    description: "Journalist from Mexico City"
+  },
+  {
+    id: "practice-rafael-martinez",
+    name: "Rafael Martínez",
+    languages: ["Spanish"],
+    backstory: "Native Spanish speaker from Buenos Aires. Professional actor and voice coach with impeccable diction.",
+    personality: "Flawless native pronunciation. Uses Argentine expressions naturally while maintaining standard Spanish grammar.",
+    description: "Actor from Buenos Aires"
+  },
+  {
+    id: "practice-lucia-sanchez",
+    name: "Lucía Sánchez",
+    languages: ["Spanish"],
+    backstory: "Born in Bogotá, Colombia. International news correspondent with perfect neutral Spanish pronunciation.",
+    personality: "Native speaker with crystal-clear diction. Perfect grammar, professional vocabulary, natural conversational flow.",
+    description: "News correspondent from Bogotá"
+  },
+
+  // Italian Native Speakers
+  {
+    id: "practice-francesco-russo",
+    name: "Francesco Russo",
+    languages: ["Italian"],
+    backstory: "Native Italian speaker from Rome. Cultural attaché promoting Italian language and arts worldwide.",
+    personality: "Perfect native fluency. Uses Roman expressions naturally, impeccable grammar, sophisticated cultural references.",
+    description: "Cultural attaché from Rome"
+  },
+  {
+    id: "practice-chiara-ferrari",
+    name: "Chiara Ferrari",
+    languages: ["Italian"],
+    backstory: "Born and raised in Milan. International fashion journalist covering haute couture and Italian design.",
+    personality: "Native speaker with refined vocabulary. Natural use of idioms, perfect pronunciation and grammar structure.",
+    description: "Fashion journalist from Milan"
+  },
+  {
+    id: "practice-paolo-marino",
+    name: "Paolo Marino",
+    languages: ["Italian"],
+    backstory: "Native speaker from Venice. Tour guide and historian specializing in Venetian culture and Italian heritage.",
+    personality: "Flawless native Italian. Rich storytelling vocabulary, authentic expressions, perfect grammatical intuition.",
+    description: "Historian from Venice"
+  },
+  {
+    id: "practice-sofia-ricci",
+    name: "Sofia Ricci",
+    languages: ["Italian"],
+    backstory: "Native Italian from Florence. University linguistics professor teaching Italian as a foreign language.",
+    personality: "Perfect native fluency. Clear articulation, can naturally use both formal and colloquial registers correctly.",
+    description: "Linguistics professor from Florence"
+  },
+  {
+    id: "practice-luca-rossi",
+    name: "Luca Rossi",
+    languages: ["Italian"],
+    backstory: "Born in Naples. Professional opera singer and Italian language coach for international performers.",
+    personality: "Native speaker with impeccable diction. Musical use of language, perfect grammar, authentic Neapolitan warmth.",
+    description: "Opera singer from Naples"
+  },
+
+  // Multi-language Native Speakers
+  {
+    id: "practice-lin-garcia",
+    name: "Lin García",
+    languages: ["Chinese", "Spanish"],
+    backstory: "Native bilingual raised in Beijing and Madrid. International business consultant fluent in both languages from birth.",
+    personality: "Perfect native fluency in both Chinese and Spanish. Switches naturally between languages with authentic expressions in each.",
+    description: "Bilingual business consultant"
+  },
+  {
+    id: "practice-marco-zhang",
+    name: "Marco Zhang",
+    languages: ["Chinese", "Italian"],
+    backstory: "Native bilingual born to Chinese-Italian parents in Rome. Professor of East Asian studies with perfect fluency in both.",
+    personality: "Flawless native speaker of Chinese and Italian. Natural cultural understanding, uses idioms authentically in both languages.",
+    description: "East Asian studies professor"
+  },
+  {
+    id: "practice-rosa-chen",
+    name: "Rosa Chen",
+    languages: ["Spanish", "Italian"],
+    backstory: "Native bilingual raised between Barcelona and Florence. International art curator with perfect fluency in both languages.",
+    personality: "Native speaker of Spanish and Italian from childhood. Natural code-switching ability, perfect grammar in both.",
+    description: "Art curator, bilingual native"
+  },
+  {
+    id: "practice-elena-wong",
+    name: "Elena Wong",
+    languages: ["Chinese", "Spanish", "Italian"],
+    backstory: "Trilingual native speaker raised in multicultural Hong Kong-Barcelona-Milan. UN translator with perfect fluency in all three.",
+    personality: "Native-level fluency in Chinese, Spanish, and Italian. Authentic cultural knowledge, uses each language perfectly and naturally.",
+    description: "UN translator, trilingual native"
+  },
+  {
+    id: "practice-david-liu",
+    name: "David Liu",
+    languages: ["Chinese", "Spanish", "Italian"],
+    backstory: "Native multilingual raised by polyglot parents. International language school director, speaks all three languages from childhood.",
+    personality: "Perfect native fluency in Chinese, Spanish, and Italian. Natural conversational ability, culturally authentic in all three languages.",
+    description: "Language school director, multilingual"
+  },
+];
+
+// Legacy export for backward compatibility (competitive bots)
+export const botProfiles = competitiveBots;
+
+// Get practice bots by language
+export function getPracticeBotsByLanguage(language: string): PracticeBotProfile[] {
+  return practiceBots.filter(bot => bot.languages.includes(language));
+}
+
+// Get competitive bots by language
+export function getCompetitiveBotsByLanguage(language: string): BotProfile[] {
+  return competitiveBots.filter(bot => bot.languages.includes(language));
+}
+
+// Get bots by language (defaults to competitive for backward compatibility)
 export function getBotsByLanguage(language: string): BotProfile[] {
-  return botProfiles.filter(bot => bot.languages.includes(language));
+  return getCompetitiveBotsByLanguage(language);
 }
 
-// Get bot by ID
-export function getBotById(id: string): BotProfile | undefined {
-  return botProfiles.find(bot => bot.id === id);
+// Get practice bot by ID
+export function getPracticeBotById(id: string): PracticeBotProfile | undefined {
+  return practiceBots.find(bot => bot.id === id);
 }
 
-// Get random bot for a language (used in competitive mode)
+// Get competitive bot by ID
+export function getCompetitiveBotById(id: string): BotProfile | undefined {
+  return competitiveBots.find(bot => bot.id === id);
+}
+
+// Get bot by ID (checks both practice and competitive)
+export function getBotById(id: string): BotProfile | PracticeBotProfile | undefined {
+  return getPracticeBotById(id) || getCompetitiveBotById(id);
+}
+
+// Get random competitive bot for a language (used in competitive mode)
 export function getRandomBotForLanguage(language: string): BotProfile {
-  const languageBots = getBotsByLanguage(language);
+  const languageBots = getCompetitiveBotsByLanguage(language);
   if (languageBots.length === 0) {
     // Fallback to multi-language bots
-    const multiLangBots = botProfiles.filter(bot => bot.languages.length > 1);
+    const multiLangBots = competitiveBots.filter(bot => bot.languages.length > 1);
     return multiLangBots[Math.floor(Math.random() * multiLangBots.length)];
   }
   return languageBots[Math.floor(Math.random() * languageBots.length)];
 }
-
