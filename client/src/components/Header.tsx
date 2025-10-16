@@ -167,6 +167,77 @@ export default function Header({
           <Badge variant="outline" className="font-mono font-semibold" data-testid="badge-elo">
             {elo} Fluency
           </Badge>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" data-testid="button-profile-dropdown">
+                <Avatar className="w-8 h-8">
+                  {profileImageUrl && <img src={profileImageUrl} alt={username} />}
+                  <AvatarFallback className="text-xs">{username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-semibold">{username}</p>
+                <p className="text-xs text-muted-foreground">{currentLanguage}</p>
+              </div>
+              <DropdownMenuSeparator />
+              {isAuthenticated && (
+                <>
+                  <DropdownMenuItem onClick={() => onNavigate?.("friends")} data-testid="menu-friends">
+                    <Users className="w-4 h-4 mr-2" />
+                    Friends
+                  </DropdownMenuItem>
+                  {!isPremium ? (
+                    <DropdownMenuItem 
+                      onClick={() => window.location.href = "/subscribe"}
+                      data-testid="menu-upgrade"
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Upgrade to Premium
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        if (confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
+                          try {
+                            const res = await fetch('/api/cancel-subscription', { method: 'POST' });
+                            const data = await res.json();
+                            if (res.ok) {
+                              alert(data.message);
+                              window.location.reload();
+                            } else {
+                              alert(data.message || 'Failed to cancel subscription');
+                            }
+                          } catch (error) {
+                            alert('Failed to cancel subscription');
+                          }
+                        }
+                      }}
+                      data-testid="menu-cancel-subscription"
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Cancel Subscription
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => {
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      window.location.href = "/api/logout";
+                    }}
+                    data-testid="menu-logout"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Log Out
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
