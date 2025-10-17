@@ -28,8 +28,34 @@ export default function InstallPrompt() {
     
     // Show prompt only if: mobile, not standalone, and not previously dismissed
     if (isMobile && !isStandalone && !wasDismissed) {
-      // Delay showing the prompt slightly so it doesn't appear immediately
-      setTimeout(() => setShowPrompt(true), 2000);
+      // Check if user is a new user (hasn't seen How to Play dialog yet)
+      const hasSeenHowToPlay = localStorage.getItem('hasSeenHowToPlay') === 'true';
+      
+      if (hasSeenHowToPlay) {
+        // Existing user - show prompt after short delay
+        setTimeout(() => setShowPrompt(true), 2000);
+      } else {
+        // New user - wait longer to allow other dialogs to show first
+        // Check periodically if How to Play dialog has been seen
+        const checkInterval = setInterval(() => {
+          const nowHasSeen = localStorage.getItem('hasSeenHowToPlay') === 'true';
+          if (nowHasSeen) {
+            clearInterval(checkInterval);
+            // Show install prompt after How to Play dialog is dismissed
+            setTimeout(() => setShowPrompt(true), 1000);
+          }
+        }, 500);
+        
+        // Fallback: show after 15 seconds even if How to Play isn't dismissed
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          if (!showPrompt) {
+            setShowPrompt(true);
+          }
+        }, 15000);
+        
+        return () => clearInterval(checkInterval);
+      }
     }
   }, []);
 
