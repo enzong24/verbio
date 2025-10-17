@@ -1,4 +1,4 @@
-import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3 } from "lucide-react";
+import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3, BookOpen } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/hooks/use-sound";
@@ -55,6 +55,7 @@ interface HeaderProps {
   bestDailyLoginStreak?: number;
   isPremium?: boolean;
   hideProfile?: boolean;
+  onHowToPlayOpen?: () => void;
 }
 
 export default function Header({ 
@@ -73,7 +74,8 @@ export default function Header({
   dailyLoginStreak = 0,
   bestDailyLoginStreak = 0,
   isPremium = false,
-  hideProfile = false
+  hideProfile = false,
+  onHowToPlayOpen
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const fluencyLevel = getFluencyLevel(elo);
@@ -401,6 +403,20 @@ export default function Header({
                       <span>Sound Off</span>
                     </>
                   )}
+                </Button>
+
+                {/* How to Play Button */}
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3"
+                  onClick={() => {
+                    onHowToPlayOpen?.();
+                    setMobileMenuOpen(false);
+                  }}
+                  data-testid="button-how-to-play"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>How to Play</span>
                 </Button>
 
                 {isAuthenticated && (

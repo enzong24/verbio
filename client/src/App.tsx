@@ -863,6 +863,7 @@ function MainApp() {
         dailyLoginStreak={isAuthenticated ? (languageStats?.dailyLoginStreak ?? 0) : 0}
         bestDailyLoginStreak={0}
         isPremium={user?.isPremium === 1}
+        onHowToPlayOpen={handleHowToPlayOpen}
       />
       
       <main className="pt-16">
