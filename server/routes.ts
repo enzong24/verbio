@@ -810,6 +810,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get monthly wins leaderboard for a specific language
+  app.get("/api/leaderboard/monthly-wins", async (req, res) => {
+    try {
+      const language = (req.query.language as string) || "Chinese";
+      
+      const allUsers = await storage.getAllUsers();
+      const userMap = new Map(allUsers.map(user => [user.id, user]));
+      const allStats = await storage.getAllLanguageStats(language);
+      
+      // Get current month to check for reset
+      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+      
+      const leaderboard = allStats
+        .map(stats => {
+          // Reset monthly wins if it's a new month (defensive check)
+          const monthlyWins = stats.monthlyResetDate === currentMonth ? (stats.monthlyWins ?? 0) : 0;
+          return {
+            ...stats,
+            monthlyWins,
+          };
+        })
+        .filter(stats => stats.monthlyWins > 0) // Only show users with wins this month
+        .sort((a, b) => b.monthlyWins - a.monthlyWins) // Sort by monthly wins
+        .map(stats => {
+          const user = userMap.get(stats.userId);
+          return {
+            username: user?.firstName || user?.email?.split('@')[0] || "Unknown",
+            monthlyWins: stats.monthlyWins,
+            elo: stats.elo,
+            wins: stats.wins,
+            losses: stats.losses,
+          };
+        });
+      
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching monthly wins leaderboard:", error);
+      res.status(500).json({ message: "Failed to fetch monthly wins leaderboard" });
+    }
+  });
+
   // Send friend request
   app.post("/api/friends/request", async (req: any, res) => {
     try {

@@ -164,6 +164,8 @@ export class MemStorage implements IStorage {
       bestWinStreak: statsData.bestWinStreak ?? existing?.bestWinStreak ?? 0,
       dailyLoginStreak: statsData.dailyLoginStreak ?? existing?.dailyLoginStreak ?? 0,
       lastLoginDate: statsData.lastLoginDate ?? existing?.lastLoginDate ?? null,
+      monthlyWins: statsData.monthlyWins ?? existing?.monthlyWins ?? 0,
+      monthlyResetDate: statsData.monthlyResetDate ?? existing?.monthlyResetDate ?? null,
       highestFluencyLevel: statsData.highestFluencyLevel ?? existing?.highestFluencyLevel ?? "A1",
       initialLevelSelected: existing?.initialLevelSelected ?? 0,
       createdAt: existing?.createdAt || new Date(),
@@ -198,6 +200,8 @@ export class MemStorage implements IStorage {
       bestWinStreak: existing?.bestWinStreak ?? 0,
       dailyLoginStreak: existing?.dailyLoginStreak ?? 0,
       lastLoginDate: existing?.lastLoginDate ?? null,
+      monthlyWins: existing?.monthlyWins ?? 0,
+      monthlyResetDate: existing?.monthlyResetDate ?? null,
       highestFluencyLevel: existing?.highestFluencyLevel ?? "A1",
       initialLevelSelected: 1,
       createdAt: existing?.createdAt || new Date(),
@@ -791,19 +795,26 @@ export class DbStorage implements IStorage {
     const stats = await this.getUserLanguageStats(userId, language) || await this.upsertUserLanguageStats({ userId, language });
     
     if (isForfeit) {
-      // Forfeits don't affect win streaks
+      // Forfeits don't affect win streaks or monthly wins
       return stats;
     }
+    
+    // Check if we need to reset monthly wins (new month)
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+    const needsMonthlyReset = stats.monthlyResetDate !== currentMonth;
     
     if (isWin) {
       const newStreak = stats.winStreak + 1;
       const newBestStreak = Math.max(newStreak, stats.bestWinStreak);
+      const newMonthlyWins = needsMonthlyReset ? 1 : (stats.monthlyWins ?? 0) + 1;
       
       const result = await db
         .update(userLanguageStats)
         .set({
           winStreak: newStreak,
           bestWinStreak: newBestStreak,
+          monthlyWins: newMonthlyWins,
+          monthlyResetDate: currentMonth,
           updatedAt: new Date(),
         })
         .where(and(
@@ -813,12 +824,20 @@ export class DbStorage implements IStorage {
         .returning();
       return result[0];
     } else {
+      const updateData: any = {
+        winStreak: 0,
+        updatedAt: new Date(),
+      };
+      
+      // Reset monthly wins if it's a new month
+      if (needsMonthlyReset) {
+        updateData.monthlyWins = 0;
+        updateData.monthlyResetDate = currentMonth;
+      }
+      
       const result = await db
         .update(userLanguageStats)
-        .set({
-          winStreak: 0,
-          updatedAt: new Date(),
-        })
+        .set(updateData)
         .where(and(
           eq(userLanguageStats.userId, userId),
           eq(userLanguageStats.language, language)

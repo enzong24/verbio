@@ -39,6 +39,16 @@ interface LeaderboardEntry {
   isCurrentUser?: boolean;
 }
 
+interface MonthlyWinsLeaderboardEntry {
+  rank?: number;
+  username: string;
+  monthlyWins: number;
+  elo: number;
+  wins: number;
+  losses: number;
+  isCurrentUser?: boolean;
+}
+
 interface HeaderProps {
   username?: string;
   elo?: number;
@@ -136,13 +146,24 @@ export default function Header({
     enabled: isAuthenticated,
   });
 
-  // Fetch leaderboard data
+  // Fetch leaderboard data (Fluency Score)
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardEntry[]>({
     queryKey: [`/api/leaderboard?language=${currentLanguage}`],
     refetchOnWindowFocus: false,
   });
 
   const leaderboardEntries = leaderboardData?.map((entry, index) => ({
+    ...entry,
+    rank: index + 1,
+  })) || [];
+
+  // Fetch monthly wins leaderboard data
+  const { data: monthlyWinsData, isLoading: isLoadingMonthlyWins } = useQuery<MonthlyWinsLeaderboardEntry[]>({
+    queryKey: [`/api/leaderboard/monthly-wins?language=${currentLanguage}`],
+    refetchOnWindowFocus: false,
+  });
+
+  const monthlyWinsEntries = monthlyWinsData?.map((entry, index) => ({
     ...entry,
     rank: index + 1,
   })) || [];
@@ -639,15 +660,80 @@ export default function Header({
               </div>
             </TabsContent>
             
-            <TabsContent value="leaderboard" className="mt-4">
-              <div className="mb-3 text-center">
-                <p className="text-xs text-muted-foreground">{timeUntilReset}</p>
-              </div>
+            <TabsContent value="leaderboard" className="mt-4 space-y-4">
+              {/* Most Wins This Season Leaderboard */}
+              <Card className="border-card-border">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-gold" />
+                      Most Wins This Season
+                    </CardTitle>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{timeUntilReset}</p>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingMonthlyWins ? (
+                    <div className="text-center text-muted-foreground text-sm py-4">
+                      Loading leaderboard...
+                    </div>
+                  ) : monthlyWinsEntries.length > 0 ? (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {monthlyWinsEntries.slice(0, 20).map((entry) => (
+                        <div
+                          key={entry.rank}
+                          className={`flex items-center gap-3 p-2 rounded-md ${
+                            entry.username === username
+                              ? 'bg-primary/10 border border-primary/20'
+                              : 'hover-elevate'
+                          }`}
+                          data-testid={`monthly-wins-entry-${entry.rank}`}
+                        >
+                          <div className="w-8 text-center">
+                            {getRankIcon(entry.rank!) || (
+                              <span className="font-mono font-bold text-xs text-muted-foreground">
+                                #{entry.rank}
+                              </span>
+                            )}
+                          </div>
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className="text-xs">
+                              {entry.username.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate flex items-center gap-2">
+                              {entry.username}
+                              {entry.username === username && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
+                                  You
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {entry.monthlyWins} wins this season
+                            </div>
+                          </div>
+                          <div className="font-mono font-bold text-sm text-gold">
+                            {entry.monthlyWins}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground text-sm py-4">
+                      No wins recorded this season
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Fluency Score Leaderboard */}
               <Card className="border-card-border">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-gold" />
-                    Top {currentLanguage} Learners
+                    <Trophy className="w-4 h-4 text-primary" />
+                    Fluency Score Leaderboard
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -656,7 +742,7 @@ export default function Header({
                       Loading leaderboard...
                     </div>
                   ) : leaderboardEntries.length > 0 ? (
-                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
                       {leaderboardEntries.slice(0, 20).map((entry) => (
                         <div
                           key={entry.rank}
