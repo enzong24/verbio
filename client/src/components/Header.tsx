@@ -224,6 +224,13 @@ export default function Header({
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem
+                onClick={() => onNavigate?.("analytics")}
+                data-testid="menu-analytics"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={() => {
                   localStorage.clear();
