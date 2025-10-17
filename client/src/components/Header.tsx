@@ -368,11 +368,11 @@ export default function Header({
                       </CardHeader>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <CardContent className="space-y-2">
+                      <CardContent className="space-y-3 pb-4">
                         <p className="text-xs text-muted-foreground">
                           Build streaks to earn bonus Fluency Score on wins!
                         </p>
-                        <div className="space-y-1.5">
+                        <div className="space-y-2.5">
                           <div className="flex items-start gap-2">
                             <Zap className="w-3 h-3 text-blue-500 mt-0.5" />
                             <div className="flex-1">
@@ -386,7 +386,7 @@ export default function Header({
                             </div>
                           </div>
                         </div>
-                        <div className="pt-2 border-t border-border">
+                        <div className="pt-3 border-t border-border">
                           <p className="text-[10px] text-muted-foreground">
                             Max 1.5x • Applies to wins only • Per language
                           </p>
