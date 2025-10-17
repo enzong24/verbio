@@ -37,9 +37,11 @@ export default function InstallPrompt() {
       } else {
         // New user - wait longer to allow other dialogs to show first
         // Check periodically if How to Play dialog has been seen
+        let hasShown = false;
         const checkInterval = setInterval(() => {
           const nowHasSeen = localStorage.getItem('hasSeenHowToPlay') === 'true';
-          if (nowHasSeen) {
+          if (nowHasSeen && !hasShown) {
+            hasShown = true;
             clearInterval(checkInterval);
             // Show install prompt after How to Play dialog is dismissed
             setTimeout(() => setShowPrompt(true), 1000);
@@ -47,14 +49,18 @@ export default function InstallPrompt() {
         }, 500);
         
         // Fallback: show after 15 seconds even if How to Play isn't dismissed
-        setTimeout(() => {
+        const fallbackTimeout = setTimeout(() => {
           clearInterval(checkInterval);
-          if (!showPrompt) {
+          if (!hasShown) {
+            hasShown = true;
             setShowPrompt(true);
           }
         }, 15000);
         
-        return () => clearInterval(checkInterval);
+        return () => {
+          clearInterval(checkInterval);
+          clearTimeout(fallbackTimeout);
+        };
       }
     }
   }, []);
