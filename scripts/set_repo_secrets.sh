@@ -32,13 +32,35 @@ for name in "${SECRETS[@]}"; do
   if [ -n "${!name-}" ]; then
     val="${!name}"
   else
-    read -rp "Enter value for $name (leave blank to skip): " val
+    if [ "$name" = "DATABASE_URL" ]; then
+      # Re-prompt for DATABASE_URL until user provides a value or explicitly skips
+      while true; do
+        read -rp "Enter value for DATABASE_URL (required) or leave blank to skip: " val
+        if [ -n "$val" ]; then
+          break
+        fi
+        read -rp "You didn't enter a value. Do you want to skip DATABASE_URL? (y/N): " yn
+        case "$yn" in
+          [Yy]*)
+            val=""
+            break
+            ;;
+          *)
+            # loop again to re-prompt
+            ;;
+        esac
+      done
+    else
+      read -rp "Enter value for $name (leave blank to skip): " val
+    fi
   fi
 
   if [ -n "$val" ]; then
     echo "Setting secret: $name"
-    # gh will prompt for confirmation if needed
-    printf "%s" "$val" | gh secret set "$name" --repo "$REPO" -b - >/dev/null
+    # Use stdin to avoid shell interpolation issues. Capture gh failure but continue.
+    if ! printf "%s" "$val" | gh secret set "$name" --repo "$REPO" -b - >/dev/null 2>&1; then
+      echo "Warning: failed to set secret $name (check gh auth and permissions)"
+    fi
   else
     echo "Skipping $name"
   fi
