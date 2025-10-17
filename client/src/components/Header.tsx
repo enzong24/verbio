@@ -385,40 +385,6 @@ export default function Header({
                   </CardContent>
                 </Card>
 
-                {/* Sound Toggle */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-3"
-                  onClick={toggleSound}
-                  data-testid="button-toggle-sound"
-                >
-                  {soundEnabled ? (
-                    <>
-                      <Volume2 className="w-4 h-4" />
-                      <span>Sound On</span>
-                    </>
-                  ) : (
-                    <>
-                      <VolumeX className="w-4 h-4" />
-                      <span>Sound Off</span>
-                    </>
-                  )}
-                </Button>
-
-                {/* How to Play Button */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-3"
-                  onClick={() => {
-                    onHowToPlayOpen?.();
-                    setMobileMenuOpen(false);
-                  }}
-                  data-testid="button-how-to-play"
-                >
-                  <BookOpen className="w-4 h-4" />
-                  <span>How to Play</span>
-                </Button>
-
                 {isAuthenticated && (
                   <>
                     <Card className="border-card-border">
@@ -563,6 +529,40 @@ export default function Header({
                       <span>Friends</span>
                     </Button>
                   )}
+
+                  {/* Sound Toggle */}
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-3"
+                    onClick={toggleSound}
+                    data-testid="button-toggle-sound"
+                  >
+                    {soundEnabled ? (
+                      <>
+                        <Volume2 className="w-4 h-4" />
+                        <span>Sound On</span>
+                      </>
+                    ) : (
+                      <>
+                        <VolumeX className="w-4 h-4" />
+                        <span>Sound Off</span>
+                      </>
+                    )}
+                  </Button>
+
+                  {/* How to Play Button */}
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-3"
+                    onClick={() => {
+                      onHowToPlayOpen?.();
+                      setMobileMenuOpen(false);
+                    }}
+                    data-testid="button-how-to-play"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>How to Play</span>
+                  </Button>
                   
                   {isAuthenticated && (
                     <>
