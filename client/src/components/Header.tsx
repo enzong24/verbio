@@ -1,4 +1,4 @@
-import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3, BookOpen } from "lucide-react";
+import { Trophy, User, Target, LogOut, Menu, Languages, TrendingUp, Calendar, Crown, Medal, Users, Flame, Zap, Volume2, VolumeX, Eye, BarChart3, BookOpen, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/hooks/use-sound";
@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import MatchDetails from "@/components/MatchDetails";
 import { getFluencyLevel } from "@shared/fluencyLevels";
 
@@ -83,6 +84,7 @@ export default function Header({
   const { setEnabled, isEnabled } = useSound();
   const [soundEnabled, setSoundEnabled] = useState(isEnabled());
   const [timeUntilReset, setTimeUntilReset] = useState('');
+  const [streakMultiplierOpen, setStreakMultiplierOpen] = useState(false);
 
   const totalMatches = wins + losses;
   const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
@@ -352,38 +354,47 @@ export default function Header({
                 </div>
 
                 {/* Streak Multiplier Info */}
-                <Card className="border-primary/20">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-primary" />
-                      Streak Multiplier
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Build streaks to earn bonus Fluency Score on wins!
-                    </p>
-                    <div className="space-y-1.5">
-                      <div className="flex items-start gap-2">
-                        <Zap className="w-3 h-3 text-blue-500 mt-0.5" />
-                        <div className="flex-1">
-                          <p className="text-xs font-medium">Day Streak: +5% per 3 days (max +20%)</p>
+                <Collapsible open={streakMultiplierOpen} onOpenChange={setStreakMultiplierOpen}>
+                  <Card className="border-primary/20">
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className="pb-3 cursor-pointer hover-elevate">
+                        <CardTitle className="text-sm flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-primary" />
+                            Streak Multiplier
+                          </div>
+                          <ChevronDown className={`w-4 h-4 transition-transform ${streakMultiplierOpen ? 'rotate-180' : ''}`} />
+                        </CardTitle>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <CardContent className="space-y-2">
+                        <p className="text-xs text-muted-foreground">
+                          Build streaks to earn bonus Fluency Score on wins!
+                        </p>
+                        <div className="space-y-1.5">
+                          <div className="flex items-start gap-2">
+                            <Zap className="w-3 h-3 text-blue-500 mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium">Day Streak: +5% per 3 days (max +20%)</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Flame className="w-3 h-3 text-orange-500 mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-xs font-medium">Win Streak: +10% per 2 wins (max +30%)</p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Flame className="w-3 h-3 text-orange-500 mt-0.5" />
-                        <div className="flex-1">
-                          <p className="text-xs font-medium">Win Streak: +10% per 2 wins (max +30%)</p>
+                        <div className="pt-2 border-t border-border">
+                          <p className="text-[10px] text-muted-foreground">
+                            Max 1.5x • Applies to wins only • Per language
+                          </p>
                         </div>
-                      </div>
-                    </div>
-                    <div className="pt-2 border-t border-border">
-                      <p className="text-[10px] text-muted-foreground">
-                        Max 1.5x • Applies to wins only • Per language
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
 
                 {isAuthenticated && (
                   <>
@@ -533,7 +544,7 @@ export default function Header({
                   {/* Sound Toggle */}
                   <Button
                     variant="outline"
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-center gap-3"
                     onClick={toggleSound}
                     data-testid="button-toggle-sound"
                   >
@@ -553,7 +564,7 @@ export default function Header({
                   {/* How to Play Button */}
                   <Button
                     variant="outline"
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-center gap-3"
                     onClick={() => {
                       onHowToPlayOpen?.();
                       setMobileMenuOpen(false);
