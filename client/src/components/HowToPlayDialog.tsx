@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { MessageCircle, Settings, ArrowRightLeft, BookOpen, Clock, Trophy } from "lucide-react";
 
 interface HowToPlayDialogProps {
@@ -35,18 +34,14 @@ export default function HowToPlayDialog({ open, onClose }: HowToPlayDialogProps)
           </div>
 
           {/* Step 2: Question Phase */}
-          <Card className="border-primary/20">
-            <CardContent className="pt-4 pb-4">
-              <div className="flex gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                  <ArrowRightLeft className="w-4 h-4 text-blue-500" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm mb-1">2. Question & Answer Phases</h4>
-                  <p className="text-xs text-muted-foreground">Take turns asking and answering questions</p>
-                </div>
-              </div>
-              <div className="space-y-2 pl-11">
+          <div className="flex gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <ArrowRightLeft className="w-4 h-4 text-blue-500" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-sm mb-1">2. Question & Answer Phases</h4>
+              <p className="text-xs text-muted-foreground mb-2">Take turns asking and answering questions</p>
+              <div className="space-y-2 pl-0">
                 <div className="flex items-start gap-2">
                   <div className="w-5 h-5 rounded bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-[10px] font-bold text-blue-500">Q</span>
@@ -60,8 +55,8 @@ export default function HowToPlayDialog({ open, onClose }: HowToPlayDialogProps)
                   <p className="text-xs text-muted-foreground flex-1"><strong>Answer Phase:</strong> You respond using vocabulary words, then ask a question back</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Step 3: Vocabulary */}
           <div className="flex gap-3">
