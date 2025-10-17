@@ -1,16 +1,27 @@
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import * as schema from "@shared/schema";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is required");
+// Support either SUPABASE_URL + SERVICE_ROLE_KEY for full Supabase feature usage,
+// or fall back to DATABASE_URL which can point to any Postgres-compatible host.
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!supabaseUrl && !databaseUrl) {
+  throw new Error("Either SUPABASE_URL (with service role key) or DATABASE_URL is required");
 }
 
-// Configure Neon connection
-// Neon automatically handles connection pooling via serverless architecture
-const sql = neon(process.env.DATABASE_URL);
+// Initialize postgres client for Drizzle
+const sql = databaseUrl ? postgres(databaseUrl, { ssl: 'require' }) : postgres(process.env.SUPABASE_DB_URL ?? '', { ssl: 'require' });
 
 export const db = drizzle(sql, { schema });
+
+// Export a Supabase admin client if service role key is provided
+export const supabaseAdmin = supabaseUrl && supabaseServiceKey
+  ? createSupabaseClient(supabaseUrl, supabaseServiceKey)
+  : null;
 
 // Database connection health monitoring
 let queryCount = 0;

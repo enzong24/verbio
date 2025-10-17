@@ -5,7 +5,7 @@ import { gradingRequestSchema, users } from "@shared/schema";
 import { gradeConversation, generateBotQuestion, generateBotAnswer, validateQuestion, generateVocabulary, translateText, generateExampleResponse } from "./openai";
 import { setupMatchmaking } from "./matchmaking";
 import { vocabularyCache } from "./vocabularyCache";
-import { db } from "./db";
+import { db, supabaseAdmin } from "./db";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { setupAuth, isAuthenticated } from "./googleAuth";
@@ -40,6 +40,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Health check - verifies DB connectivity and Supabase admin availability
+  app.get('/api/health', async (_req, res) => {
+    try {
+      // Simple DB check: attempt a trivial select
+      await db.select().from(users).limit(1);
+
+      const supabaseStatus = supabaseAdmin ? 'configured' : 'not-configured';
+
+      res.json({ status: 'ok', db: 'ok', supabase: supabaseStatus });
+    } catch (error: any) {
+      console.error('Health check failed:', error);
+      res.status(500).json({ status: 'error', message: error.message });
     }
   });
 
