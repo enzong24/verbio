@@ -349,6 +349,40 @@ export default function Header({
                   </Card>
                 </div>
 
+                {/* Streak Multiplier Info */}
+                <Card className="border-primary/20">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-primary" />
+                      Streak Multiplier
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      Build streaks to earn bonus Fluency Score on wins!
+                    </p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-start gap-2">
+                        <Zap className="w-3 h-3 text-blue-500 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs font-medium">Day Streak: +5% per 3 days (max +20%)</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Flame className="w-3 h-3 text-orange-500 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-xs font-medium">Win Streak: +10% per 2 wins (max +30%)</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-[10px] text-muted-foreground">
+                        Max 1.5x • Applies to wins only • Per language
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Sound Toggle */}
                 <Button
                   variant="outline"
