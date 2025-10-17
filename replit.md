@@ -70,3 +70,10 @@ The backend uses Express.js with Node.js and TypeScript, providing RESTful APIs 
 - **Stripe**: Payment processing for subscriptions.
 - **@stripe/stripe-js, @stripe/react-stripe-js**: Stripe SDKs.
 - **Webhook Integration**: For automatic subscription status updates.
+
+## Development Notes
+
+### Database Schema Management
+- **Schema Sync**: The project uses Drizzle's push mode (`npm run db:push`) for schema synchronization in development.
+- **Known Issue**: Interactive prompts in `drizzle-kit push` may prevent automated schema sync. If schema drift occurs, use SQL ALTER TABLE commands with IF NOT EXISTS clauses for idempotent column additions.
+- **Critical Fix (2025-10-17)**: Added `has_selected_initial_language` column via SQL to resolve authentication crashes. Run: `ALTER TABLE users ADD COLUMN IF NOT EXISTS has_selected_initial_language integer NOT NULL DEFAULT 0` if missing in new environments.
