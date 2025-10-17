@@ -23,6 +23,7 @@ import { StreakNotification } from "@/components/StreakNotification";
 import LevelUpDialog from "@/components/LevelUpDialog";
 import InitialLevelDialog from "@/components/InitialLevelDialog";
 import InitialLanguageDialog from "@/components/InitialLanguageDialog";
+import HowToPlayDialog from "@/components/HowToPlayDialog";
 import InstallPrompt from "@/components/InstallPrompt";
 import type { GradingResult, UserLanguageStats } from "@shared/schema";
 import { THEMES, getThemeVocabulary, getThemeTitle } from "@shared/themes";
@@ -79,6 +80,7 @@ function MainApp() {
   // Initial language and level selection state
   const [showInitialLanguageDialog, setShowInitialLanguageDialog] = useState(false);
   const [showInitialLevelDialog, setShowInitialLevelDialog] = useState(false);
+  const [showHowToPlayDialog, setShowHowToPlayDialog] = useState(false);
   
   // Streak notification state
   const [streakNotification, setStreakNotification] = useState<{
@@ -741,6 +743,24 @@ function MainApp() {
       await refetchStats();
       setShowInitialLevelDialog(false);
     }
+    
+    // Check if user has seen How to Play dialog
+    const hasSeenHowToPlay = localStorage.getItem('hasSeenHowToPlay') === 'true';
+    if (!hasSeenHowToPlay) {
+      // Show How to Play dialog after a brief delay
+      setTimeout(() => {
+        setShowHowToPlayDialog(true);
+      }, 500);
+    }
+  };
+
+  const handleHowToPlayClose = () => {
+    localStorage.setItem('hasSeenHowToPlay', 'true');
+    setShowHowToPlayDialog(false);
+  };
+
+  const handleHowToPlayOpen = () => {
+    setShowHowToPlayDialog(true);
   };
 
   const handleForfeit = async () => {
@@ -819,6 +839,12 @@ function MainApp() {
         language={currentLanguage}
         onComplete={handleInitialLevelComplete}
         isGuestMode={isGuestMode}
+      />
+      
+      {/* How to Play Dialog */}
+      <HowToPlayDialog
+        open={showHowToPlayDialog}
+        onClose={handleHowToPlayClose}
       />
       
       <Header 
