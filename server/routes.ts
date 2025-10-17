@@ -427,6 +427,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mark that user has selected their initial language
+  app.post("/api/user/mark-initial-language-selected", async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      await storage.markInitialLanguageSelected(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking initial language selected:", error);
+      res.status(500).json({ message: "Failed to mark initial language selected" });
+    }
+  });
+
   // Set initial proficiency level for a language
   app.post("/api/user/set-initial-level", async (req: any, res) => {
     try {

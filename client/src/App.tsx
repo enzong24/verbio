@@ -111,14 +111,19 @@ function MainApp() {
 
   // Check if user needs to select initial language (first-time users)
   useEffect(() => {
-    if (isAuthenticated || isGuestMode) {
-      // Check if user has ever selected a language
+    if (isAuthenticated) {
+      // For authenticated users, check database field
+      if (user && user.hasSelectedInitialLanguage === 0) {
+        setShowInitialLanguageDialog(true);
+      }
+    } else if (isGuestMode) {
+      // For guests, check localStorage
       const hasSelectedLanguage = localStorage.getItem('has_selected_initial_language') === 'true';
       if (!hasSelectedLanguage) {
         setShowInitialLanguageDialog(true);
       }
     }
-  }, [isAuthenticated, isGuestMode]);
+  }, [isAuthenticated, isGuestMode, user]);
 
   // Check if user needs to select initial level (only after language is selected)
   useEffect(() => {
@@ -720,11 +725,23 @@ function MainApp() {
     }
   };
 
-  const handleInitialLanguageComplete = (selectedLanguage: string) => {
+  const handleInitialLanguageComplete = async (selectedLanguage: string) => {
     // Update current language
     setCurrentLanguage(selectedLanguage as Language);
+    
     // Mark that user has selected their initial language
-    localStorage.setItem('has_selected_initial_language', 'true');
+    if (isAuthenticated) {
+      // For authenticated users, update database
+      try {
+        await fetch('/api/user/mark-initial-language-selected', { method: 'POST' });
+      } catch (error) {
+        console.error('Failed to mark initial language selected:', error);
+      }
+    } else {
+      // For guests, use localStorage
+      localStorage.setItem('has_selected_initial_language', 'true');
+    }
+    
     // Close language dialog
     setShowInitialLanguageDialog(false);
     // The level dialog will automatically open via the useEffect

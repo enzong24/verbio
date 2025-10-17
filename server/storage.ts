@@ -34,6 +34,7 @@ export interface IStorage {
   upsertUserLanguageStats(stats: InsertUserLanguageStats): Promise<UserLanguageStats>;
   getAllLanguageStats(language: string): Promise<UserLanguageStats[]>;
   setInitialLevel(userId: string, language: string, elo: number): Promise<UserLanguageStats>;
+  markInitialLanguageSelected(userId: string): Promise<void>;
   
   // Match history
   createMatch(match: InsertMatch): Promise<Match>;
@@ -126,6 +127,7 @@ export class MemStorage implements IStorage {
       lastPremiumFeedbackDate: existingUser?.lastPremiumFeedbackDate || null,
       stripeCustomerId: existingUser?.stripeCustomerId || null,
       stripeSubscriptionId: existingUser?.stripeSubscriptionId || null,
+      hasSelectedInitialLanguage: existingUser?.hasSelectedInitialLanguage ?? 0,
     };
     this.users.set(user.id, user);
     return user;
@@ -173,6 +175,13 @@ export class MemStorage implements IStorage {
 
   async getAllLanguageStats(language: string): Promise<UserLanguageStats[]> {
     return Array.from(this.languageStats.values()).filter(stats => stats.language === language);
+  }
+
+  async markInitialLanguageSelected(userId: string): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      this.users.set(userId, { ...user, hasSelectedInitialLanguage: 1 });
+    }
   }
 
   async setInitialLevel(userId: string, language: string, elo: number): Promise<UserLanguageStats> {
@@ -661,6 +670,13 @@ export class DbStorage implements IStorage {
       .from(userLanguageStats)
       .where(eq(userLanguageStats.language, language))
       .orderBy(desc(userLanguageStats.elo));
+  }
+
+  async markInitialLanguageSelected(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ hasSelectedInitialLanguage: 1 })
+      .where(eq(users.id, userId));
   }
 
   async setInitialLevel(userId: string, language: string, elo: number): Promise<UserLanguageStats> {
