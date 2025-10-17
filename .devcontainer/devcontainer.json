@@ -1,0 +1,18 @@
+{
+  "name": "Verbio Dev",
+  "features": { "ghcr.io/devcontainers/features/node:1": { "version": "20" } },
+  "postCreateCommand": "npm install",
+  "forwardPorts": [5000],
+  "portsAttributes": { "5000": { "label": "Web App", "onAutoForward": "openPreview" } },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vsliveshare.vsliveshare"
+      ],
+      "settings": { "editor.formatOnSave": true }
+    }
+  },
+  "remoteEnv": { "NODE_ENV": "development", "PORT": "5000" }
+}
